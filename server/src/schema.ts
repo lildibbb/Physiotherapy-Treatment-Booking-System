@@ -12,15 +12,24 @@ export const hospitals = pgTable("hospitals", {
   hospitalID: serial("hospitalID").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(), // Add length and notNull
   location: varchar("location", { length: 255 }).notNull(), // Add length and notNull
+  longitude: varchar("longitude", { length: 50 }).notNull(), // Add length and notNull
+  latitude: varchar("latitude", { length: 50 }).notNull(), // Add length and notNull
+  avatar: varchar("avatar", { length: 255 }), // Add avatar for profile images (can be nullable)
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Define the user authentication table schema
 export const user_authentications = pgTable("user_authentications", {
   userID: serial("userID").primaryKey(),
-  username: varchar("username", { length: 100 }).notNull(), // Add length and notNull
+  email: varchar("email", { length: 100 }).notNull(), // Add length and notNull
   password: varchar("password", { length: 255 }).notNull(), // Add length and notNull
   role: varchar("role", { length: 50 }).notNull(), // Add length and notNull
   associatedID: varchar("associatedID", { length: 100 }), // FK to Patient or Staff, keep nullable
+  name: varchar("name", { length: 100 }),
+  avatar: varchar("avatar", { length: 255 }), // Add avatar for profile images (can be nullable)
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Define the patient table schema
@@ -80,6 +89,9 @@ export const appointments = pgTable("appointments", {
   staffID: integer("staffID")
     .references(() => staffs.staffID)
     .notNull(), // FK to Staff, notNull
+  userID: integer("userID") // Reference to user_authentications table
+    .references(() => user_authentications.userID)
+    .notNull(),
 });
 
 // Define the exercise table schema

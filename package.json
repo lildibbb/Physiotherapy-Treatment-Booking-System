@@ -2,11 +2,18 @@
   "name": "fyp-dev",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "dev": "bunx --bun concurrently -n \"client,server\" -c \"green,red\" \"cd client && bun run dev\" \"cd server && bun run dev\""
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "concurrently": "^9.0.1"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
   }
 }
