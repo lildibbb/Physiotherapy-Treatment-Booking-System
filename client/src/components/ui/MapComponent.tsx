@@ -14,7 +14,6 @@ interface MapComponentProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
-// Separate component to handle centering and watching for userLocation changes
 const MapController = ({
   center,
   onMapReady,
@@ -26,11 +25,8 @@ const MapController = ({
   const isFirstMount = useRef(true);
 
   useEffect(() => {
-    if (isFirstMount.current && center.lat !== 0 && center.lng !== 0) {
-      map.setView([center.lat, center.lng], 13, {
-        animate: true,
-        duration: 1,
-      });
+    if (isFirstMount.current) {
+      map.setView([center.lat, center.lng], 13);
       isFirstMount.current = false;
       onMapReady();
     }
@@ -61,18 +57,42 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const handleRecenter = () => {
-    if (mapRef.current && userLocation.lat !== 0 && userLocation.lng !== 0) {
-      setIsLoading(true);
-      mapRef.current.setView([userLocation.lat, userLocation.lng], 13, {
-        animate: true,
-        duration: 1,
-      });
-      setTimeout(() => setIsLoading(false), 1000); // Match animation duration
+    setIsLoading(true);
+
+    const options = {
+      enableHighAccuracy: false,
+      timeout: 5000,
+      maximumAge: 300000,
+    };
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const newLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+
+          if (mapRef.current) {
+            mapRef.current.setView([newLocation.lat, newLocation.lng], 13, {
+              animate: true,
+              duration: 1,
+            });
+          }
+          setIsLoading(false);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          // Fallback to current map center
+          setIsLoading(false);
+        },
+        options
+      );
     }
   };
 
   // Show loading state if we don't have valid coordinates yet
-  if (!userLocation || userLocation.lat === 0 || userLocation.lng === 0) {
+  if (!userLocation || (userLocation.lat === 0 && userLocation.lng === 0)) {
     return (
       <div className="flex items-center justify-center h-full w-full bg-gray-100 rounded-lg">
         <Loader2 className="h-6 w-6 animate-spin mr-2" />
@@ -85,7 +105,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     <div className="relative h-full w-full">
       <MapContainer
         ref={mapRef}
-        center={[0, 0]}
+        center={[userLocation.lat, userLocation.lng]}
         zoom={13}
         scrollWheelZoom={true}
         dragging={true}
@@ -94,12 +114,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
         minZoom={3}
         maxZoom={18}
       >
-        <MapController center={userLocation} onMapReady={handleMapReady} />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <Marker key="user-location" position={userLocation} icon={userIcon}>
+        <Marker position={userLocation} icon={userIcon}>
           <Popup>You are here</Popup>
         </Marker>
         {hospitals.map((hospital, index) => (
@@ -109,9 +128,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
             onOpenChange={onOpenChange}
           />
         ))}
+        <MapController center={userLocation} onMapReady={handleMapReady} />
       </MapContainer>
 
-      {/* Recenter button */}
       {isMapReady && (
         <Button
           className="absolute bottom-4 right-4 z-[1000] shadow-lg"

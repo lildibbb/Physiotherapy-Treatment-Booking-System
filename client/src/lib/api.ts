@@ -54,3 +54,11 @@ export const fetchHospitals = async () => {
   }
   return await response.json();
 };
+
+export const fetchDoctor = async (hospitalId: number) => {
+  const response = await fetch(`${apiBaseUrl}/hospitals/${hospitalId}/doctors`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch doctor");
+  }
+  return await response.json();
+};

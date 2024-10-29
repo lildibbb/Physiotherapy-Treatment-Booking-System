@@ -6,6 +6,7 @@ import DashboardPage from "./pages/dashboard";
 import UserProfile from "./pages/user_profile";
 import Appointment from "./pages/appointment";
 import Book from "./pages/book";
+import DoctorList from "./pages/doctorList";
 const App: React.FC = () => {
   return (
     <Router>
@@ -17,6 +18,8 @@ const App: React.FC = () => {
           <Route path="/auth/user_profile" element={<UserProfile />} />
           <Route path="/auth/appointment" element={<Appointment />} />
           <Route path="/auth/book" element={<Book />} />
+          <Route path="/doctors/:hospitalId" element={<DoctorList />} />{" "}
+          {/* Dynamic route for doctor list */}
         </Routes>
       </div>
     </Router>

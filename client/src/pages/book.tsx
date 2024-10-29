@@ -15,17 +15,16 @@ import MapComponent from "../components/ui/MapComponent";
 import LocationPermission from "../components/ui/LocationPermission";
 import { HospitalData } from "../types/types";
 import { fetchHospitals } from "../lib/api";
+import { useNavigate } from "react-router-dom";
 
 export default function Booking() {
+  const DEFAULT_LOCATION = {
+    lat: 6.1218, // Your default location for Kedah
+    lng: 100.3676,
+  };
   const [hospitals, setHospitals] = useState<HospitalData[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [userLocation, setUserLocation] = useState<{
-    lat: number;
-    lng: number;
-  } | null>({
-    lat: 6.1218,
-    lng: 100.3676,
-  });
+  const [userLocation, setUserLocation] = useState(DEFAULT_LOCATION); // Initialize with default
   const [isInteractionDisabled, setIsInteractionDisabled] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
 
@@ -66,6 +65,11 @@ export default function Booking() {
     hospital.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const navigate = useNavigate();
+
+  const handleBookNowClick = (hospitalId: number) => {
+    navigate(`/doctors/${hospitalId}`); // Navigate to DoctorList with hospitalId
+  };
   return (
     <SidebarProvider>
       <div className="flex min-h-screen">
@@ -94,6 +98,7 @@ export default function Booking() {
           <LocationPermission
             onLocationFound={handleLocationFound}
             onError={handleLocationError}
+            defaultLocation={DEFAULT_LOCATION}
           />
 
           {locationError && (
@@ -141,7 +146,11 @@ export default function Booking() {
                   <p className="mt-2 text-sm text-gray-700">
                     {hospital.distance} km away
                   </p>
-                  <Button variant="default" className="mt-4 w-full">
+                  <Button
+                    variant="default"
+                    className="mt-4 w-full"
+                    onClick={() => handleBookNowClick(hospital.id)} // Pass hospital ID
+                  >
                     Book Now
                   </Button>
                 </CardContent>
