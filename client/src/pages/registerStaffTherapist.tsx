@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { registerStaff, registertherapist } from "@/lib/api";
+import { registerStaff, registerTherapist } from "@/lib/api";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -87,7 +87,7 @@ const RegisterStaffTherapist: React.FC = () => {
 
   const handleRegisterTherapist = async (data: TherapistFormData) => {
     try {
-      await registertherapist(
+      await registerTherapist(
         data.email,
         data.password,
         data.name,

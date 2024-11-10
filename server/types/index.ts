@@ -48,6 +48,13 @@ export type Staff = {
   role?: string;
 };
 
+export type Therapist = {
+  email?: string; // Email for the staff account ( Optional )
+  password?: string; // Password for the staff account ( Optional )
+  name?: string; // Optional name for the staff
+  specialization?: string;
+  contactDetails?: string;
+};
 // Define the UserRegistration type schema
 export const UserRegistrationSchema = t.Object({
   email: t.String(),
@@ -97,4 +104,12 @@ export const StaffSchema = t.Object({
   password: t.String(),
   name: t.String(),
   role: t.String(),
+});
+
+export const TherapistSchema = t.Object({
+  email: t.String(),
+  password: t.String(),
+  name: t.String(),
+  specialization: t.String(),
+  contactDetails: t.String(),
 });

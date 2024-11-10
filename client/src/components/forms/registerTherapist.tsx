@@ -19,10 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { roles } from "../../data/roles.json";
+import specialization from "../../data/specialization.json";
 
 // Define Zod schema for form validation
-const staffSchema = z.object({
+const therapistSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z
     .string()
@@ -32,23 +32,27 @@ const staffSchema = z.object({
       "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
     ),
   name: z.string().min(1, "Name is required"),
-  role: z.string().min(1, "Role is required"),
+  specialization: z.string().min(1, "Specialization is required"),
+  contactDetails: z.string().min(1, "Contact details are required"),
 });
 
-type StaffFormData = z.infer<typeof staffSchema>;
+type TherapistFormData = z.infer<typeof therapistSchema>;
 
-interface RegisterStaffFormProps {
-  onSubmit: (data: StaffFormData) => void;
+interface RegisterTherapistFormProps {
+  onSubmit: (data: TherapistFormData) => void;
 }
 
-const RegisterStaffForm: React.FC<RegisterStaffFormProps> = ({ onSubmit }) => {
-  const form = useForm<StaffFormData>({
-    resolver: zodResolver(staffSchema),
+const RegisterTherapistForm: React.FC<RegisterTherapistFormProps> = ({
+  onSubmit,
+}) => {
+  const form = useForm<TherapistFormData>({
+    resolver: zodResolver(therapistSchema),
     defaultValues: {
       email: "",
       password: "",
       name: "",
-      role: "",
+      specialization: "",
+      contactDetails: "",
     },
   });
 
@@ -63,7 +67,7 @@ const RegisterStaffForm: React.FC<RegisterStaffFormProps> = ({ onSubmit }) => {
               <FormItem className="flex-1">
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Staff member's full name" {...field} />
+                  <Input placeholder="Therapist's full name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -71,23 +75,23 @@ const RegisterStaffForm: React.FC<RegisterStaffFormProps> = ({ onSubmit }) => {
           />
           <FormField
             control={form.control}
-            name="role"
+            name="specialization"
             render={({ field }) => (
               <FormItem className="flex-1">
-                <FormLabel>Role</FormLabel>
+                <FormLabel>Specialization</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a role" />
+                      <SelectValue placeholder="Select specialization" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {roles.map((role) => (
-                      <SelectItem key={role} value={role.toLowerCase()}>
-                        {role}
+                    {specialization.specializations.map((name) => (
+                      <SelectItem key={name} value={name}>
+                        {name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -107,7 +111,7 @@ const RegisterStaffForm: React.FC<RegisterStaffFormProps> = ({ onSubmit }) => {
               <FormControl>
                 <Input
                   type="email"
-                  placeholder="staff@example.com"
+                  placeholder="therapist@example.com"
                   {...field}
                 />
               </FormControl>
@@ -134,12 +138,29 @@ const RegisterStaffForm: React.FC<RegisterStaffFormProps> = ({ onSubmit }) => {
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="contactDetails"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Contact Details</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Phone number or contact details"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button type="submit" className="w-full">
-          Register Staff
+          Register Therapist
         </Button>
       </form>
     </Form>
   );
 };
 
-export default RegisterStaffForm;
+export default RegisterTherapistForm;

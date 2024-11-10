@@ -150,6 +150,129 @@ export async function updateStaffDetails(
     return jsonResponse({ message: "Error updating staff", error }, 500);
   }
 }
+export async function getAllTherapistByBusiness(jwt: any, token: string) {
+  const decodedToken = await jwt.verify(token, "secretKey");
+  const businessID = decodedToken.businessID;
+
+  if (!businessID) {
+    throw { message: "Only authorized users can access this", status: 403 };
+  }
+
+  const therapistData = await db
+    .select({
+      therapistID: physiotherapists.therapistID,
+      name: physiotherapists.name,
+      email: user_authentications.email,
+      password: user_authentications.password,
+      specialization: physiotherapists.specialization,
+      contactDetails: physiotherapists.contactDetails,
+    })
+    .from(physiotherapists)
+    .innerJoin(
+      user_authentications,
+      eq(physiotherapists.userID, user_authentications.userID)
+    )
+    .where(eq(physiotherapists.businessID, businessID))
+    .execute();
+
+  return therapistData;
+}
+
+export async function updateTherapistDetails(
+  reqBody: Partial<Staff>,
+  jwt: any,
+  token: string,
+  therapistID: string
+) {
+  const therapistIDNumber = parseInt(therapistID, 10);
+
+  const decodedToken = await jwt.verify(token, "secretKey");
+  const businessID = decodedToken.businessID;
+
+  if (!businessID) {
+    return jsonResponse(
+      { error: "Only authorized users can access this" },
+      403
+    );
+  }
+
+  const therapistData = await db
+    .select({
+      userID: physiotherapists.userID,
+      businessID: physiotherapists.businessID,
+    })
+    .from(physiotherapists)
+    .where(eq(physiotherapists.therapistID, therapistIDNumber))
+    .execute();
+
+  if (
+    therapistData.length === 0 ||
+    therapistData[0].businessID !== businessID
+  ) {
+    return jsonResponse(
+      { error: "Therapist not found or unauthorized to update" },
+      403
+    );
+  }
+
+  const userID = therapistData[0].userID;
+
+  if (reqBody.email) {
+    const existingUser = await db
+      .select()
+      .from(user_authentications)
+      .where(eq(user_authentications.email, reqBody.email))
+      .execute();
+
+    if (existingUser.length > 0 && existingUser[0].userID !== userID) {
+      return jsonResponse(
+        { error: "Email is already in use. Please use a different email." },
+        409
+      );
+    }
+  }
+
+  try {
+    const authUpdateFields: Partial<Staff> = {};
+    if (reqBody.email) authUpdateFields.email = reqBody.email;
+
+    if (reqBody.password) {
+      const hashedPassword = await bcrypt.hash(reqBody.password, 10);
+      authUpdateFields.password = hashedPassword;
+    }
+
+    if (Object.keys(authUpdateFields).length > 0) {
+      await db
+        .update(user_authentications)
+        .set(authUpdateFields)
+        .where(eq(user_authentications.userID, userID))
+        .execute();
+    }
+
+    const therapistUpdateFields: Partial<Staff> = {};
+    if (reqBody.name) therapistUpdateFields.name = reqBody.name;
+    if (reqBody.role) therapistUpdateFields.role = reqBody.role;
+
+    if (Object.keys(therapistUpdateFields).length > 0) {
+      await db
+        .update(physiotherapists)
+        .set(therapistUpdateFields)
+        .where(eq(physiotherapists.therapistID, therapistIDNumber))
+        .execute();
+    }
+
+    return jsonResponse(
+      {
+        message: "Therapist details updated successfully",
+        therapist: therapistUpdateFields,
+      },
+      200
+    );
+  } catch (error) {
+    console.error("Error updating therapist:", error);
+    return jsonResponse({ message: "Error updating therapist", error }, 500);
+  }
+}
 // Function to retrieve all appointments - can add filtering by user if needed
 // export async function getAppointments(userId: number) {
 //   try {

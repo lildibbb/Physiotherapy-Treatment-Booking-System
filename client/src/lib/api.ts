@@ -100,7 +100,7 @@ export const registerStaff = async (
   return await response.json();
 };
 
-export const registertherapist = async (
+export const registerTherapist = async (
   email: string,
   password: string,
   name: string,
@@ -194,6 +194,60 @@ export const updateStaffDetails = async (
   }
 };
 
+export const fetchTherapistDetails = async () => {
+  const response = await fetch(`${apiBaseUrl}/auth/therapist`, {
+    method: "GET",
+    headers: {
+      "Content-type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch Therapist details");
+  }
+  return await response.json();
+};
+
+export const updateTherapistDetails = async (
+  therapistID: string,
+  email: string,
+  password: string,
+  name: string,
+  specialization: string,
+  contactDetails: string
+) => {
+  try {
+    const response = await fetch(
+      `${apiBaseUrl}/auth/therapist/${therapistID}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          specialization,
+          contactDetails,
+        }),
+      }
+    );
+
+    // Check if the response is successful
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update therapist details");
+    }
+
+    // Return parsed response data if needed
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating therapist details:", error);
+    throw error;
+  }
+};
 export const fetchUserAppointments = async (token: string | null) => {
   return await fetch(`${apiBaseUrl}/appointments/user`, {
     headers: {

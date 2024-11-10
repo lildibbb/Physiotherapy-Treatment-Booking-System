@@ -5,7 +5,12 @@ import "dotenv/config";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
 import { jwt } from "@elysiajs/jwt";
-import { getAllStaffByBusiness, updateStaffDetails } from "./auth/routes";
+import {
+  getAllStaffByBusiness,
+  getAllTherapistByBusiness,
+  updateStaffDetails,
+  updateTherapistDetails,
+} from "./auth/routes";
 import {
   registerUser,
   loginUser,
@@ -430,7 +435,55 @@ const app = new Elysia()
       },
     }
   )
+  // Therapist details
+  .get(
+    `${basePath}/auth/therapist`,
+    async ({ jwt, headers }) => {
+      const authHeader = headers.authorization || "";
+      const token = authHeader.replace("Bearer ", "");
+      if (!token) {
+        return jsonResponse(
+          { message: "Unauthorized access - token missing" },
+          401
+        );
+      }
 
+      try {
+        // Call the helper function to get staff data by business ID
+        const therapistData = await getAllTherapistByBusiness(jwt, token);
+
+        // Return the fetched staff data using jsonResponse helper
+        return jsonResponse(therapistData);
+      } catch (error: any) {
+        const status = error.status || 500;
+        const message = error.message || "Failed to fetch therapist data";
+        console.error("Error fetching therapist data:", error);
+
+        return jsonResponse({ message }, status);
+      }
+    },
+    {
+      detail: {
+        description: "Get all physiotherapist information related to business",
+        tags: ["Physiotherapist"],
+        responses: {
+          200: {
+            description: "Physiotherapist details listed successfully",
+          },
+          401: {
+            description: "Unauthorized - token missing or invalid",
+          },
+          403: {
+            description:
+              "Forbidden - Unauthorized access due to missing or invalid business ID",
+          },
+          500: {
+            description: "Internal Server Error",
+          },
+        },
+      },
+    }
+  )
   .patch(
     `${basePath}/auth/staff/:staffID`,
     async ({ jwt, headers, body, params }) => {
@@ -475,6 +528,65 @@ const app = new Elysia()
         ],
         responses: {
           200: { description: "Staff details updated successfully" },
+          400: { description: "Invalid field(s) provided" },
+          401: { description: "Unauthorized - token missing or invalid" },
+          409: { description: "Conflict - Email already in use" },
+          500: { description: "Internal Server Error" },
+        },
+      },
+    }
+  )
+
+  .patch(
+    `${basePath}/auth/therapist/:therapistID`,
+    async ({ jwt, headers, body, params }) => {
+      const authHeader = headers.authorization || "";
+      const token = authHeader.replace("Bearer ", "");
+      const therapistID = params.therapistID;
+
+      if (!token) {
+        return jsonResponse(
+          { message: "Unauthorized access - token missing" },
+          401
+        );
+      }
+
+      // Type assertion for body to ensure it's an object
+      const bodyObj = body as Partial<TherapistRegistration>;
+
+      // Validate fields to ensure only valid fields are updated
+      const validFields = [
+        "email",
+        "password",
+        "name",
+        "specialization",
+        "contactDetails",
+      ];
+      for (const key of Object.keys(bodyObj)) {
+        if (!validFields.includes(key)) {
+          return jsonResponse({ error: `Invalid field: ${key}` }, 400);
+        }
+      }
+
+      // Call the updateTherapistDetails function with the provided parameters
+      return await updateTherapistDetails(bodyObj, jwt, token, therapistID);
+    },
+    {
+      body: TherapistRegistrationSchema,
+      detail: {
+        description: "Update therapist details by ID",
+        tags: ["Therapist"],
+        parameters: [
+          {
+            name: "therapistID",
+            in: "path",
+            description: "ID of the therapist to update",
+            required: true,
+            schema: { type: "integer" },
+          },
+        ],
+        responses: {
+          200: { description: "Therapist details updated successfully" },
           400: { description: "Invalid field(s) provided" },
           401: { description: "Unauthorized - token missing or invalid" },
           409: { description: "Conflict - Email already in use" },

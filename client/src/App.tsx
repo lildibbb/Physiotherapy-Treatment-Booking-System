@@ -9,8 +9,9 @@ import Appointment from "./pages/appointment";
 import Book from "./pages/book";
 import DoctorList from "./pages/doctorList";
 import HomePageMerchant from "./pages/homePageMerchant";
-import RegisterStaffTherapist from "./pages/registerStaffTherapist";
+
 import Staff from "./pages/staff";
+import Therapist from "./pages/therapist";
 const App: React.FC = () => {
   return (
     <Router>
@@ -21,11 +22,8 @@ const App: React.FC = () => {
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/signup/user" element={<Signup />} />
           <Route path="/auth/signup/business" element={<SignupBusiness />} />
-          <Route
-            path="/auth/register_staff_therapist"
-            element={<RegisterStaffTherapist />}
-          />
           <Route path="/auth/staff" element={<Staff />} />
+          <Route path="/auth/therapist" element={<Therapist />} />
           <Route path="/auth/user_profile" element={<UserProfile />} />
           <Route path="/auth/appointment" element={<Appointment />} />
           <Route path="/auth/book" element={<Book />} />
