@@ -13,7 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RoleBadge from "@/components/ui/roleBadge";
-import { fetchStaffDetails, registerStaff } from "../lib/api";
+import {
+  fetchStaffDetails,
+  registerStaff,
+  updateStaffDetails,
+} from "../lib/api";
 import RegisterStaffForm from "../components/forms/registerStaff";
 import {
   Dialog,
@@ -43,6 +47,7 @@ import {
 import { roles } from "../data/roles.json";
 
 interface StaffData {
+  staffID?: string;
   email: string;
   password: string;
   name: string;
@@ -64,6 +69,7 @@ export default function Staff() {
       setLoading(true);
       try {
         const data = await fetchStaffDetails();
+        console.log("Fetched staff data:", data);
         setStaff(data);
       } catch (error) {
         console.error("Error fetching staff details:", error);
@@ -75,16 +81,21 @@ export default function Staff() {
     fetchStaff();
   }, []);
 
-  const handleRegisterStaff = async (data: StaffData) => {
+  const handleRegisterStaff = async (data: Omit<StaffData, "id">) => {
     try {
-      await registerStaff(data.email, data.password, data.name, data.role);
-      setStaff((prevStaff) => [...prevStaff, data]);
+      const newStaff = await registerStaff(
+        data.email,
+        data.password,
+        data.name,
+        data.role
+      );
+      // Add the `id` returned by the API to the new staff data
+      setStaff((prevStaff) => [...prevStaff, { ...data, id: newStaff.id }]);
       setIsSheetOpen(false);
     } catch (error) {
       console.error("Failed to register staff:", error);
     }
   };
-
   const handleEditClick = (index: number) => {
     setEditingIndex(index);
     setEditFormData(staff[index]);
@@ -102,16 +113,38 @@ export default function Staff() {
     );
   };
 
-  const handleSaveClick = (index: number) => {
+  const handleSaveClick = async (index: number) => {
     if (editFormData) {
-      const updatedStaff = [...staff];
-      updatedStaff[index] = editFormData;
-      setStaff(updatedStaff);
-    }
-    setEditingIndex(null);
-    setEditFormData(null);
-  };
+      try {
+        // Access staffID from the updated `staff` array with `id` property
+        const staffID = staff[index]?.staffID;
+        console.log("staffID:", staffID);
+        if (!staffID) {
+          alert("Staff ID is missing. Cannot update.");
+          return;
+        }
+        await updateStaffDetails(
+          staffID,
+          editFormData.email,
+          editFormData.password,
+          editFormData.name,
+          editFormData.role
+        );
 
+        // Update the local state if the API call succeeds
+        const updatedStaff = [...staff];
+        updatedStaff[index] = editFormData;
+        setStaff(updatedStaff);
+
+        // Clear editing state
+        setEditingIndex(null);
+        setEditFormData(null);
+      } catch (error) {
+        console.error("Failed to update staff details:", error);
+        alert("Failed to update staff details. Please try again.");
+      }
+    }
+  };
   const handleCancelClick = () => {
     setEditingIndex(null);
     setEditFormData(null);

@@ -5,13 +5,7 @@ import "dotenv/config";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
 import { jwt } from "@elysiajs/jwt";
-import {
-  getAppointments,
-  getAppointmentById,
-  createAppointment,
-  updateAppointment,
-  getAllStaffByBusiness,
-} from "./auth/routes";
+import { getAllStaffByBusiness, updateStaffDetails } from "./auth/routes";
 import {
   registerUser,
   loginUser,
@@ -21,7 +15,9 @@ import {
 import {
   type BusinessRegistration,
   BusinessRegistrationSchema,
+  type Staff,
   type StaffRegistration,
+  StaffSchema,
   type TherapistRegistration,
   TherapistRegistrationSchema,
 } from "../types/index";
@@ -32,7 +28,6 @@ import {
   UserLoginSchema,
 } from "../types/index";
 
-import { type UserProfile, UserProfileSchema } from "../types/index";
 import { registerStaff } from "./auth/auth";
 import { StaffRegistrationSchema } from "../types/index";
 import jsonResponse from "./auth/auth";
@@ -387,30 +382,107 @@ const app = new Elysia()
   )
 
   // Staff details
-  .get(`${basePath}/auth/staff`, async ({ jwt, headers, set }) => {
-    const authHeader = headers.authorization || "";
-    const token = authHeader.replace("Bearer ", "");
-    if (!token) {
-      return jsonResponse(
-        { message: "Unauthorized access - token missing" },
-        401
-      );
+  .get(
+    `${basePath}/auth/staff`,
+    async ({ jwt, headers }) => {
+      const authHeader = headers.authorization || "";
+      const token = authHeader.replace("Bearer ", "");
+      if (!token) {
+        return jsonResponse(
+          { message: "Unauthorized access - token missing" },
+          401
+        );
+      }
+
+      try {
+        // Call the helper function to get staff data by business ID
+        const staffData = await getAllStaffByBusiness(jwt, token);
+
+        // Return the fetched staff data using jsonResponse helper
+        return jsonResponse(staffData);
+      } catch (error: any) {
+        const status = error.status || 500;
+        const message = error.message || "Failed to fetch staff data";
+        console.error("Error fetching staff data:", error);
+
+        return jsonResponse({ message }, status);
+      }
+    },
+    {
+      detail: {
+        description: "Get all staff information related to business",
+        tags: ["Staff"],
+        responses: {
+          200: {
+            description: "Staff details listed successfully",
+          },
+          401: {
+            description: "Unauthorized - token missing or invalid",
+          },
+          403: {
+            description:
+              "Forbidden - Unauthorized access due to missing or invalid business ID",
+          },
+          500: {
+            description: "Internal Server Error",
+          },
+        },
+      },
     }
+  )
 
-    try {
-      // Call the helper function to get staff data by business ID
-      const staffData = await getAllStaffByBusiness(jwt, token);
+  .patch(
+    `${basePath}/auth/staff/:staffID`,
+    async ({ jwt, headers, body, params }) => {
+      const authHeader = headers.authorization || "";
+      const token = authHeader.replace("Bearer ", "");
+      const staffID = params.staffID;
 
-      // Return the fetched staff data using jsonResponse helper
-      return jsonResponse(staffData);
-    } catch (error: any) {
-      const status = error.status || 500;
-      const message = error.message || "Failed to fetch staff data";
-      console.error("Error fetching staff data:", error);
+      if (!token) {
+        return jsonResponse(
+          { message: "Unauthorized access - token missing" },
+          401
+        );
+      }
 
-      return jsonResponse({ message }, status);
+      // Type assertion for body to ensure it's an object
+      const bodyObj = body as Partial<Staff>;
+
+      // Validate fields to ensure only valid fields are updated
+      const validFields = ["email", "password", "name", "role"];
+      for (const key of Object.keys(bodyObj)) {
+        if (!validFields.includes(key)) {
+          return jsonResponse({ error: `Invalid field: ${key}` }, 400);
+        }
+      }
+
+      // Directly return the result of updateStaffDetails
+      return await updateStaffDetails(bodyObj, jwt, token, staffID);
+    },
+    {
+      body: StaffSchema,
+      detail: {
+        description: "Update staff details by ID",
+        tags: ["Staff"],
+        parameters: [
+          {
+            name: "staffID",
+            in: "path",
+            description: "ID of the staff member to update",
+            required: true,
+            schema: { type: "integer" },
+          },
+        ],
+        responses: {
+          200: { description: "Staff details updated successfully" },
+          400: { description: "Invalid field(s) provided" },
+          401: { description: "Unauthorized - token missing or invalid" },
+          409: { description: "Conflict - Email already in use" },
+          500: { description: "Internal Server Error" },
+        },
+      },
     }
-  });
+  );
 // Appointments Routes
 // .get(
 //   `${basePath}/appointments`,

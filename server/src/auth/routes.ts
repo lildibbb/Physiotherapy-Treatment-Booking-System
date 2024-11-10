@@ -8,6 +8,8 @@ import {
   staffs,
   user_authentications,
 } from "../schema";
+import type { Staff } from "../../types";
+import bcrypt from "bcryptjs";
 
 // Helper function for consistent response formatting
 export default function jsonResponse(data: any, status = 200) {
@@ -30,6 +32,7 @@ export async function getAllStaffByBusiness(jwt: any, token: string) {
   // Query the database for staff belonging to this businessID
   const staffData = await db
     .select({
+      staffID: staffs.staffID,
       name: staffs.name,
       email: user_authentications.email,
       password: user_authentications.password,
@@ -44,6 +47,108 @@ export async function getAllStaffByBusiness(jwt: any, token: string) {
     .execute();
 
   return staffData;
+}
+
+// Fixed version of updateStaffDetails function
+export async function updateStaffDetails(
+  reqBody: Partial<Staff>,
+  jwt: any,
+  token: string,
+  staffID: string
+) {
+  // Convert staffID to a number
+  const staffIDNumber = parseInt(staffID, 10);
+
+  // Decode the token to extract the businessID
+  const decodedToken = await jwt.verify(token, "secretKey");
+  const businessID = decodedToken.businessID;
+
+  if (!businessID) {
+    return jsonResponse(
+      { error: "Only authorized users can access this" },
+      403
+    );
+  }
+
+  // Step 1: Fetch the staff record by `staffID` and verify it belongs to the current `businessID`
+  const staffData = await db
+    .select({
+      userID: staffs.userID,
+      businessID: staffs.businessID,
+    })
+    .from(staffs)
+    .where(eq(staffs.staffID, staffIDNumber))
+    .execute();
+
+  // Step 2: Check if the staff exists and belongs to the correct business
+  if (staffData.length === 0 || staffData[0].businessID !== businessID) {
+    return jsonResponse(
+      { error: "Staff member not found or unauthorized to update" },
+      403
+    );
+  }
+
+  // Extract the userID from the staffData
+  const userID = staffData[0].userID;
+
+  // Step 3: Check if a user with the same email already exists to avoid conflicts
+  if (reqBody.email) {
+    const existingUser = await db
+      .select()
+      .from(user_authentications)
+      .where(eq(user_authentications.email, reqBody.email))
+      .execute();
+
+    if (existingUser.length > 0 && existingUser[0].userID !== userID) {
+      return jsonResponse(
+        { error: "Email is already in use. Please use a different email." },
+        409
+      );
+    }
+  }
+
+  try {
+    // Step 4: Update `user_authentications` table (for email and password)
+    const authUpdateFields: Partial<Staff> = {};
+    if (reqBody.email) authUpdateFields.email = reqBody.email;
+
+    if (reqBody.password) {
+      const hashedPassword = await bcrypt.hash(reqBody.password, 10);
+      authUpdateFields.password = hashedPassword;
+    }
+
+    if (Object.keys(authUpdateFields).length > 0) {
+      await db
+        .update(user_authentications)
+        .set(authUpdateFields)
+        .where(eq(user_authentications.userID, userID))
+        .execute();
+    }
+
+    // Step 5: Update `staffs` table (for role and name)
+    const staffUpdateFields: Partial<Staff> = {};
+    if (reqBody.name) staffUpdateFields.name = reqBody.name;
+    if (reqBody.role) staffUpdateFields.role = reqBody.role;
+
+    if (Object.keys(staffUpdateFields).length > 0) {
+      await db
+        .update(staffs)
+        .set(staffUpdateFields)
+        .where(eq(staffs.staffID, staffIDNumber))
+        .execute();
+    }
+
+    return jsonResponse(
+      {
+        message: "Staff details updated successfully",
+        staff: staffUpdateFields,
+      },
+      200
+    );
+  } catch (error) {
+    console.error("Error updating staff:", error);
+    return jsonResponse({ message: "Error updating staff", error }, 500);
+  }
 }
 // Function to retrieve all appointments - can add filtering by user if needed
 // export async function getAppointments(userId: number) {

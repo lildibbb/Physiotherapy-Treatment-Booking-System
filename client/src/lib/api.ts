@@ -163,6 +163,37 @@ export const fetchStaffDetails = async () => {
   return await response.json();
 };
 
+export const updateStaffDetails = async (
+  staffID: string,
+  email: string,
+  password: string,
+  name: string,
+  role: string
+) => {
+  try {
+    const response = await fetch(`${apiBaseUrl}/auth/staff/${staffID}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ email, password, name, role }),
+    });
+
+    // Check if the response is successful
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update staff details");
+    }
+
+    // Return parsed response data if needed
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating staff details:", error);
+    throw error;
+  }
+};
+
 export const fetchUserAppointments = async (token: string | null) => {
   return await fetch(`${apiBaseUrl}/appointments/user`, {
     headers: {

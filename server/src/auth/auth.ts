@@ -354,7 +354,10 @@ export async function registerTherapist(
       .returning()
       .execute();
     return jsonResponse(
-      { message: "Staff registration successful", staff: newTherapist[0] },
+      {
+        message: "Physiotherapist registration successful",
+        therapist: newTherapist[0],
+      },
       201
     );
   } catch (error) {
