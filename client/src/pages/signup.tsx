@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { registerUser } from "../lib/api";
-import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-
+import { Input } from "@/components/ui/input";
+import Header from "@/components/ui/header";
 import {
   Card,
   CardContent,
@@ -13,19 +13,37 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Header from "@/components/ui/header"; // Import the Header component
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+// Define Zod schema for form validation
+const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 const Signup: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   const { toast } = useToast();
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+  });
 
+  const onSubmit = async (data: FormData) => {
     try {
-      const response = await registerUser(email, password);
+      const response = await registerUser(data.name, data.email, data.password);
       console.log("Registration successful:", response);
 
       toast({
@@ -35,7 +53,6 @@ const Signup: React.FC = () => {
       });
     } catch (error) {
       console.error(error);
-
       toast({
         variant: "destructive",
         title: "Registration failed",
@@ -59,43 +76,62 @@ const Signup: React.FC = () => {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSignup}>
-              <div className="mb-4">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-200"
-                >
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 w-full"
-                  required
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Full Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="mb-6">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-200"
-                >
-                  Password
-                </label>
-                <Input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 w-full"
-                  required
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Email" type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <Button className="w-full" type="submit">
-                Sign Up
-              </Button>
-            </form>
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Password"
+                          type="password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" className="w-full">
+                  Sign Up
+                </Button>
+              </form>
+            </Form>
           </CardContent>
 
           <CardFooter className="flex flex-col items-center">
@@ -106,6 +142,7 @@ const Signup: React.FC = () => {
               </Link>
             </p>
           </CardFooter>
+
           <p className="px-8 text-center text-sm text-muted-foreground">
             By clicking continue, you agree to our{" "}
             <Link

@@ -1,5 +1,3 @@
-// src/components/app-sidebar.tsx
-
 import * as React from "react";
 import {
   Home,
@@ -9,6 +7,7 @@ import {
   Bell,
   Sparkles,
   NotebookPen,
+  UserPlus,
 } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -29,10 +28,16 @@ const navItems = [
     icon: Home,
   },
   {
+    title: "Register User",
+    url: "/auth/register_staff_therapist",
+    icon: UserPlus,
+  },
+  {
     title: "Appointments",
     url: "/auth/appointment",
     icon: Calendar,
   },
+
   {
     title: "Book",
     url: "/auth/book",

@@ -1,17 +1,21 @@
 const apiBaseUrl = "http://localhost:5431/api";
-// Booking component
 
 // Fetch data from the API
-export const registerUser = async (email: string, password: string) => {
-  const response = await fetch(`${apiBaseUrl}/auth/register`, {
+export const registerUser = async (
+  name: string,
+  email: string,
+  password: string
+) => {
+  const response = await fetch(`${apiBaseUrl}/auth/register/user`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
+      name,
       email,
       password,
-      role: "user", // Set default role
+      role: "patient", // Set default role
       associatedID: "", // Set associatedID as an empty string
     }),
   });
@@ -21,7 +25,113 @@ export const registerUser = async (email: string, password: string) => {
     throw new Error("Failed to register");
   }
 
-  return response.json();
+  return await response.json();
+};
+
+export const registerBusinessUser = async (
+  personInChargeName: string,
+  contactEmail: string,
+  contactPhone: string,
+  companyName: string,
+  businessRegistrationNumber: string,
+  contractSigneeName: string,
+  contractSigneeNRIC: string,
+  businessAddress: string,
+  state: string,
+  city: string,
+  postalCode: string
+) => {
+  const response = await fetch(`${apiBaseUrl}/auth/register/business`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      personInChargeName,
+      contactEmail,
+      contactPhone,
+      companyName,
+      businessRegistrationNumber,
+      contractSigneeName,
+      contractSigneeNRIC,
+      businessAddress,
+      state,
+      city,
+      postalCode,
+    }),
+  });
+  // Check if email already exists
+  if (response.status === 409) {
+    // Assuming 409 means conflict (email exists)
+    throw new Error("Email is already in use");
+  }
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    console.error("Error response:", errorMessage);
+    throw new Error("Failed to register");
+  }
+
+  return await response.json();
+};
+
+export const registerStaff = async (
+  email: string,
+  password: string,
+  name: string,
+  role: string
+) => {
+  const response = await fetch(`${apiBaseUrl}/register/staff`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify({ email, password, name, role }),
+  });
+  //check if email already exist
+  if (response.status === 409) {
+    throw new Error("Email is already in use");
+  }
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    console.error("Error response:", errorMessage);
+    throw new Error("Failed to register");
+  }
+  return await response.json();
+};
+
+export const registertherapist = async (
+  email: string,
+  password: string,
+  name: string,
+  specialization: string,
+  contactDetails: string
+) => {
+  const response = await fetch(`${apiBaseUrl}/register/physiotherapist`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify({
+      email,
+      password,
+      name,
+      specialization,
+      contactDetails,
+    }),
+  });
+
+  //check if email already exist
+  if (response.status === 409) {
+    throw new Error("Email is already in use");
+  }
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    console.error("Error response:", errorMessage);
+    throw new Error("Failed to register");
+  }
+  return await response.json();
 };
 
 export const loginUser = async (email: string, password: string) => {
@@ -36,7 +146,21 @@ export const loginUser = async (email: string, password: string) => {
     throw new Error("Failed to log in");
   }
 
-  return response.json();
+  return await response.json();
+};
+
+export const fetchStaffDetails = async () => {
+  const response = await fetch(`${apiBaseUrl}/auth/staff`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch staff details");
+  }
+  return await response.json();
 };
 
 export const fetchUserAppointments = async (token: string | null) => {

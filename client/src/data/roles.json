@@ -1,0 +1,10 @@
+{
+  "roles": [
+    "Administrator",
+    "Manager",
+    "Supervisor",
+    "Staff",
+    "Customer Service",
+    "Accountant"
+  ]
+}
