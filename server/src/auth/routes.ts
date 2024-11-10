@@ -8,7 +8,7 @@ import {
   staffs,
   user_authentications,
 } from "../schema";
-import type { Staff } from "../../types";
+import type { Staff, Therapist } from "../../types";
 import bcrypt from "bcryptjs";
 
 // Helper function for consistent response formatting
@@ -179,7 +179,7 @@ export async function getAllTherapistByBusiness(jwt: any, token: string) {
 }
 
 export async function updateTherapistDetails(
-  reqBody: Partial<Staff>,
+  reqBody: Partial<Therapist>,
   jwt: any,
   token: string,
   therapistID: string
@@ -217,6 +217,7 @@ export async function updateTherapistDetails(
 
   const userID = therapistData[0].userID;
 
+  // Check for existing email in user_authentications if provided
   if (reqBody.email) {
     const existingUser = await db
       .select()
@@ -233,7 +234,7 @@ export async function updateTherapistDetails(
   }
 
   try {
-    const authUpdateFields: Partial<Staff> = {};
+    const authUpdateFields: Partial<Therapist> = {};
     if (reqBody.email) authUpdateFields.email = reqBody.email;
 
     if (reqBody.password) {
@@ -241,6 +242,7 @@ export async function updateTherapistDetails(
       authUpdateFields.password = hashedPassword;
     }
 
+    // Update user_authentications table if email or password is provided
     if (Object.keys(authUpdateFields).length > 0) {
       await db
         .update(user_authentications)
@@ -249,10 +251,14 @@ export async function updateTherapistDetails(
         .execute();
     }
 
-    const therapistUpdateFields: Partial<Staff> = {};
+    const therapistUpdateFields: Partial<Therapist> = {};
     if (reqBody.name) therapistUpdateFields.name = reqBody.name;
-    if (reqBody.role) therapistUpdateFields.role = reqBody.role;
+    if (reqBody.specialization)
+      therapistUpdateFields.specialization = reqBody.specialization;
+    if (reqBody.contactDetails)
+      therapistUpdateFields.contactDetails = reqBody.contactDetails;
 
+    // Update physiotherapists table if specialization, name, or contactDetails is provided
     if (Object.keys(therapistUpdateFields).length > 0) {
       await db
         .update(physiotherapists)
