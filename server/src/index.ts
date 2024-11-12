@@ -16,6 +16,8 @@ import {
   loginUser,
   registerBusiness,
   registerTherapist,
+  requestResetPassword,
+  updatePasswordResetToken,
 } from "./auth/auth"; // Import authentication functions
 import {
   type BusinessRegistration,
@@ -36,6 +38,8 @@ import {
 import { registerStaff } from "./auth/auth";
 import { StaffRegistrationSchema } from "../types/index";
 import jsonResponse from "./auth/auth";
+import { sendEmail } from "./services/sendEmail";
+
 // Base API path
 const basePath = "/api";
 
@@ -73,6 +77,7 @@ const app = new Elysia()
     jwt({
       name: "jwt",
       secret: "secretKey",
+      expiresIn: "1h",
     })
   )
 
@@ -345,6 +350,7 @@ const app = new Elysia()
         id,
         email,
       };
+      console.log(tokenPayload);
       // Only add `businessID` if it's defined (not null)
       if (businessID !== null) {
         tokenPayload.businessID = businessID;
@@ -385,7 +391,227 @@ const app = new Elysia()
       },
     }
   )
+  // Send Email endpoint
+  .post(
+    `${basePath}/send-email`,
+    async ({ body }) => {
+      const { to, subject, html } = body as {
+        to: string;
+        subject: string;
+        html: string;
+      };
+      try {
+        await sendEmail({ to, subject, html });
+        return { status: "success", message: "Email sent successfully" };
+      } catch (error) {
+        return { status: "error", message: "Failed to send email" };
+      }
+    },
+    {
+      detail: {
+        description: "Sends an email with specified content",
+        tags: ["Email"],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  to: {
+                    type: "string",
+                    description: "Recipient's email address",
+                  },
+                  subject: { type: "string", description: "Email subject" },
+                  html: {
+                    type: "string",
+                    description: "HTML content of the email",
+                  },
+                },
+                required: ["to", "subject", "html"],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: "Email sent successfully" },
+          400: { description: "Bad Request" },
+          500: { description: "Failed to send email" },
+        },
+      },
+    }
+  )
 
+  .post(
+    `${basePath}/auth/request-password-reset`,
+    async ({ body, jwt, set }) => {
+      try {
+        const { email } = body as { email: string };
+
+        if (!email) {
+          set.status = 400;
+          return { message: "Email is required" };
+        }
+
+        const result = await requestResetPassword(jwt, { email });
+        return result; // The function returns a generic message for security
+      } catch (error) {
+        console.error("Error in password reset request:", error);
+        set.status = 500;
+        return { message: "Internal server error" };
+      }
+    },
+    {
+      detail: {
+        description: "Requests a password reset email",
+        tags: ["Email"],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  email: {
+                    type: "string",
+                    description: "User's email address",
+                  },
+                },
+                required: ["email"],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "If the email exists, a reset link will be sent.",
+          },
+          400: { description: "Bad Request - Email is required" },
+          500: { description: "Internal Server Error" },
+        },
+      },
+    }
+  )
+  .patch(
+    `${basePath}/auth/reset-password`,
+    async ({ body, jwt, set }) => {
+      const { token, password, confirmPassword } = body as {
+        token: string;
+        password: string;
+        confirmPassword: string;
+      };
+
+      // Validate required fields
+      if (!token || !password || !confirmPassword) {
+        return jsonResponse({ error: "Missing required fields" }, 400);
+      }
+
+      try {
+        // Call the updatePasswordResetToken function
+        const response = await updatePasswordResetToken(
+          jwt,
+          { password, confirmPassword },
+          token
+        );
+
+        // Return the response with the appropriate status
+        return jsonResponse(response.body, response.status);
+      } catch (error) {
+        console.error("Error in update_password_reset route:", error);
+        return jsonResponse({ error: "Internal server error" }, 500);
+      }
+    },
+    {
+      detail: {
+        description:
+          "Updates the user's password after verifying the reset token.",
+        tags: ["Authentication"],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  token: {
+                    type: "string",
+                    description: "JWT token for password reset",
+                  },
+                  password: {
+                    type: "string",
+                    description: "New password for the user",
+                  },
+                  confirmPassword: {
+                    type: "string",
+                    description: "Confirmation of the new password",
+                  },
+                },
+                required: ["token", "password", "confirmPassword"],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Password updated successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Password updated successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description:
+              "Bad Request - missing required fields or invalid data",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: {
+                      type: "string",
+                      example: "Missing required fields",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Unauthorized - token has expired or is invalid",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: { type: "string", example: "Token has expired" },
+                  },
+                },
+              },
+            },
+          },
+          500: {
+            description: "Internal Server Error",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: { type: "string", example: "Internal server error" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }
+  )
   // Staff details
   .get(
     `${basePath}/auth/staff`,
@@ -575,7 +801,7 @@ const app = new Elysia()
       body: TherapistRegistrationSchema,
       detail: {
         description: "Update therapist details by ID",
-        tags: ["Therapist"],
+        tags: ["Physiotherapist"],
         parameters: [
           {
             name: "therapistID",

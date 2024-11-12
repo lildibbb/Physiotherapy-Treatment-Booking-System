@@ -55,6 +55,15 @@ export type Therapist = {
   specialization?: string;
   contactDetails?: string;
 };
+
+export type Email = {
+  email?: string; // Email for the staff account (
+  to: string; // Email for the staff account
+  subject: string; // Subject line for the email
+  html: string;
+  resetUrl?: string; //
+};
+
 // Define the UserRegistration type schema
 export const UserRegistrationSchema = t.Object({
   email: t.String(),
@@ -112,4 +121,12 @@ export const TherapistSchema = t.Object({
   name: t.String(),
   specialization: t.String(),
   contactDetails: t.String(),
+});
+
+export const EmailSchema = t.Object({
+  email: t.String(), // Email for the staff account ( Optional )
+  to: t.String(),
+  subject: t.String(),
+  html: t.String(),
+  resetUrl: t.String(),
 });

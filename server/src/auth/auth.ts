@@ -9,6 +9,7 @@ import {
 } from "../schema";
 import type {
   BusinessRegistration,
+  Email,
   StaffRegistration,
   TherapistRegistration,
   UserLogin,
@@ -16,6 +17,7 @@ import type {
 import type { UserRegistration } from "../../types";
 import { jwt } from "@elysiajs/jwt";
 import { eq } from "drizzle-orm";
+import { sendEmail } from "../services/sendEmail";
 
 // Helper function for consistent response formatting
 export default function jsonResponse(data: any, status = 200) {
@@ -217,7 +219,7 @@ export async function registerStaff(
   token: string
 ) {
   if (!reqBody.email || !reqBody.password || !reqBody.name || !reqBody.role) {
-    return { error: "Missing required fields", status: 400 };
+    return jsonResponse({ error: "Missing required fields" }, 400);
   }
 
   // Decode JWT token to get businessID
@@ -226,7 +228,13 @@ export async function registerStaff(
   const businessID = decodedToken.businessID;
 
   if (!businessID) {
-    return { error: "Only business accounts can register staff", status: 403 };
+    console.log(
+      "Business ID is missing, unauthorized attempt to register staff."
+    );
+    return jsonResponse(
+      { error: "Only business accounts can register staff" },
+      403
+    );
   }
 
   // Check if a user with the same email already exists
@@ -364,6 +372,154 @@ export async function registerTherapist(
     console.error("Error registering therapist:", error);
     return jsonResponse(
       { error: "Error registering therapist", detail: error },
+      500
+    );
+  }
+}
+
+export async function requestResetPassword(jwt: any, reqBody: Partial<Email>) {
+  try {
+    if (reqBody.email) {
+      const existingUser = await db
+        .select({
+          userID: user_authentications.userID,
+          role: user_authentications.role,
+        })
+        .from(user_authentications)
+        .where(eq(user_authentications.email, reqBody.email))
+        .execute();
+
+      console.log("Existing user: ", existingUser);
+
+      if (existingUser.length > 0) {
+        const { userID, role } = existingUser[0];
+        let name;
+
+        // Fetch the name from the relevant table based on the role
+        if (role === "patient") {
+          const patient = await db
+            .select({ name: patients.name })
+            .from(patients)
+            .where(eq(patients.userID, userID))
+            .execute();
+          name = patient.length > 0 ? patient[0].name : null;
+        } else if (role === "business") {
+          const business = await db
+            .select({
+              name: business_entities.personInChargeName,
+            })
+            .from(business_entities)
+            .where(eq(business_entities.userID, userID))
+            .execute();
+          name = business.length > 0 ? business[0].name : null;
+        } else if (role === "staff") {
+          const staff = await db
+            .select({ name: staffs.name })
+            .from(staffs)
+            .where(eq(staffs.userID, userID))
+            .execute();
+          name = staff.length > 0 ? staff[0].name : null;
+        } else if (role === "therapist") {
+          const therapist = await db
+            .select({ name: physiotherapists.name })
+            .from(physiotherapists)
+            .where(eq(physiotherapists.userID, userID))
+            .execute();
+          name = therapist.length > 0 ? therapist[0].name : null;
+        }
+
+        if (!name) {
+          return jsonResponse({ error: "Name not found for user" }, 404);
+        }
+        // Generate a token with userID and purpose as payload
+        const resetToken = await jwt.sign(
+          {
+            userID: existingUser[0].userID, // Access userID directly
+            purpose: "password_reset",
+          },
+          { expiresIn: "15m" } // Expiry is set here
+        );
+
+        console.log("Generated resetToken:", resetToken); // Verify if it is a string
+
+        return jsonResponse({ token: resetToken, name });
+      }
+    }
+  } catch (error: any) {
+    console.error("Error requesting password reset:", error);
+    return jsonResponse(
+      { error: "Error requesting password reset", detail: error.message },
+      500
+    );
+  }
+
+  return jsonResponse({
+    message: "If the email exists, a reset link will be sent.",
+  });
+}
+
+export async function updatePasswordResetToken(
+  jwt: any,
+  reqBody: any,
+  token: string
+) {
+  // Log the incoming request for debugging
+  console.log("Received request to update password with token:", token);
+  console.log("Request body:", reqBody);
+
+  // Step 1: check for required fields
+  if (!reqBody.password || !reqBody.confirmPassword) {
+    return jsonResponse({ error: "Missing required fields" }, 400);
+  }
+
+  // Step 2: check if password and confirm password match
+  if (reqBody.password !== reqBody.confirmPassword) {
+    return jsonResponse({ error: "Passwords do not match" }, 400); // Fixed typo
+  }
+
+  try {
+    // Step 3: decode JWT token to retrieve userID
+    const decodedToken = await jwt.verify(token, "secretKey");
+    console.log("Decoded token:", decodedToken);
+
+    if (decodedToken.purpose !== "password_reset") {
+      return jsonResponse({ error: "Token is not for password reset" }, 400);
+    }
+
+    const userID = decodedToken.userID || decodedToken.UserID;
+    if (!userID) {
+      return jsonResponse({ error: "Invalid Token ID" }, 400);
+    }
+
+    // Step 4: hash the new password
+    const hashedPassword = await bcrypt.hash(reqBody.password, 10);
+
+    // Step 5: update the new user's password in user_authentications table
+    const result = await db
+      .update(user_authentications)
+      .set({ password: hashedPassword })
+      .where(eq(user_authentications.userID, userID))
+      .execute();
+
+    console.log("Password update result:", result); // Log the result to verify
+
+    if (result.rowCount === 0) {
+      console.warn("No rows affected; userID may not exist.");
+      return jsonResponse({ error: "User not found" }, 404);
+    }
+
+    // Step 6: Return a success response
+    return jsonResponse({ message: "Password updated successfully" }, 200);
+  } catch (error: any) {
+    console.error("Database update error:", error);
+
+    // Handle token expiration error
+    if (error.name === "TokenExpiredError") {
+      return jsonResponse({ error: "Token has expired" }, 401);
+    }
+
+    return jsonResponse(
+      { error: "Error updating password reset token", detail: error.message },
       500
     );
   }

@@ -248,6 +248,90 @@ export const updateTherapistDetails = async (
     throw error;
   }
 };
+
+export const sendEmail = async (to: string, subject: string, html: string) => {
+  try {
+    const response = await fetch(`${apiBaseUrl}/send-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ to, subject, html }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to send email");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+};
+
+export const requestPasswordReset = async (email: string) => {
+  try {
+    const response = await fetch(`${apiBaseUrl}/auth/request-password-reset`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to request password reset");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error requesting password reset:", error);
+    throw error;
+  }
+};
+
+export const resetPassword = async (
+  token: string,
+  password: string,
+  confirmPassword: string
+) => {
+  try {
+    const url = `${apiBaseUrl}/auth/reset-password`;
+    console.log("Attempting to call reset password endpoint:", url);
+    const response = await fetch(`${apiBaseUrl}/auth/reset-password`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token, password, confirmPassword }),
+    });
+
+    // Read response text in case it's not JSON
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      // Try parsing error as JSON if possible, otherwise use plain text
+      try {
+        const errorData = JSON.parse(responseText);
+        throw new Error(errorData.message || "Failed to reset password");
+      } catch {
+        throw new Error(responseText || "Failed to reset password");
+      }
+    }
+
+    // Parse JSON response if successful
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    throw error;
+  }
+};
+
 export const fetchUserAppointments = async (token: string | null) => {
   return await fetch(`${apiBaseUrl}/appointments/user`, {
     headers: {
@@ -255,7 +339,6 @@ export const fetchUserAppointments = async (token: string | null) => {
     },
   });
 };
-
 export const fetchHospitals = async () => {
   const response = await fetch(`${apiBaseUrl}/hospitals`);
   if (!response.ok) {

@@ -35,6 +35,7 @@ const MerchantHomePage: React.FC = () => {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
+
       <div className="relative w-full h-auto py-10  flex justify-center items-center">
         <div className="text-center px-6">
           <h2 className="text-5xl font-semibold mb-4">

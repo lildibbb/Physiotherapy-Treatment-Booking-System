@@ -45,6 +45,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { roles } from "../data/roles.json";
+import { sendAccountCreatedEmail } from "../emails/accountCreatedEmail";
 
 interface StaffData {
   staffID?: string;
@@ -92,6 +93,15 @@ export default function Staff() {
       // Add the `id` returned by the API to the new staff data
       setStaff((prevStaff) => [...prevStaff, { ...data, id: newStaff.id }]);
       setIsSheetOpen(false);
+
+      await sendAccountCreatedEmail({
+        name: data.name,
+        role: data.role,
+        email: data.email,
+        tempPassword: data.password,
+        loginUrl: "http://localhost:3000/auth/login", // Update this to your actual login URL
+        to: data.email,
+      });
     } catch (error) {
       console.error("Failed to register staff:", error);
     }
