@@ -3,7 +3,6 @@ import * as dotenv from "dotenv";
 
 import { drizzle } from "drizzle-orm/node-postgres"; // Import for Node.js and Postgres
 import { Pool } from "pg";
-import { appointments } from "./schema"; // Import the appointments model
 
 // Load environment variables from the .env file in the root directory
 dotenv.config({ path: "../.env" }); // Adjust the path based on the relative location
