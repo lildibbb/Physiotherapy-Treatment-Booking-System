@@ -7,13 +7,17 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "bunx --bun concurrently -n \"client,server\" -c \"green,red\" \"cd client && bun run dev\" \"cd server && bun run dev\""
+    "dev": "bunx --bun concurrently -n \"client,server\" -c \"green,red\" \"cd apps/client && bun run dev\" \"cd apps/server && bun run dev\""
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/bun": "latest",
     "concurrently": "^9.0.1",
     "dotenv": "^16.4.5",
-    "typescript": "^5.0.0"
-  }
+    "typescript": "^5.6.3"
+  },
+  "trustedDependencies": [
+    "@biomejs/biome",
+    "esbuild"
+  ]
 }

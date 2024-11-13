@@ -14,7 +14,6 @@
     "@elysiajs/jwt": "^1.1.1",
     "@elysiajs/swagger": "^1.1.5",
     "bcryptjs": "^2.4.3",
-    "dotenv": "^16.4.5",
     "drizzle-orm": "^0.32.0",
     "drizzle-orm-pg": "^0.16.3",
     "elysia": "^1.1.22",
@@ -25,12 +24,8 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/bun": "latest",
     "@types/nodemailer": "^6.4.16",
     "@types/pg": "^8.11.10",
     "drizzle-kit": "^0.23.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.6.3"
   }
 }
