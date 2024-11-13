@@ -1,16 +1,19 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
 export const Route = createRootRoute({
+	// beforeLoad: ({ context }) => {
+	// 	if (!context.auth.isAuthenticated) {
+	// 		throw redirect({ to: "/login" });
+	// 	}
+	// 	// Redirect root to dashboard
+	// 	throw redirect({ to: "/dashboard" });
+	// },
+
 	component: () => (
 		<>
-			<SidebarProvider>
-				<AppSidebar />
-				<Outlet />
-				<TanStackRouterDevtools position="bottom-right" />
-			</SidebarProvider>
+			<Outlet />
+			<TanStackRouterDevtools position="bottom-right" />
 		</>
 	),
 });

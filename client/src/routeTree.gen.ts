@@ -13,170 +13,256 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as UserLayoutImport } from './routes/user/_layout'
+import { Route as SignupImport } from './routes/signup'
+import { Route as PasswordresetImport } from './routes/password_reset'
+import { Route as LoginImport } from './routes/login'
+import { Route as DashboardImport } from './routes/dashboard'
+import { Route as StaffStaffImport } from './routes/staff/_staff'
+import { Route as UserUserProfileImport } from './routes/user/_user.profile'
+import { Route as UserUserDashboardImport } from './routes/user/_user.dashboard'
+import { Route as StaffStaffDashboardImport } from './routes/staff/_staff.dashboard'
 
 // Create Virtual Routes
 
-const UserImport = createFileRoute('/user')()
-const LoginLazyImport = createFileRoute('/login')()
-const IndexLazyImport = createFileRoute('/')()
-const UserTestLazyImport = createFileRoute('/user/test')()
-const AuthStaffLazyImport = createFileRoute('/auth/staff')()
+const StaffImport = createFileRoute('/staff')()
 
 // Create/Update Routes
 
-const UserRoute = UserImport.update({
-  id: '/user',
-  path: '/user',
+const StaffRoute = StaffImport.update({
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => rootRoute,
 } as any)
 
-const LoginLazyRoute = LoginLazyImport.update({
+const SignupRoute = SignupImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PasswordresetRoute = PasswordresetImport.update({
+  id: '/password_reset',
+  path: '/password_reset',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LoginRoute = LoginImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route))
+} as any)
 
-const IndexLazyRoute = IndexLazyImport.update({
-  id: '/',
-  path: '/',
+const DashboardRoute = DashboardImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+} as any)
 
-const UserTestLazyRoute = UserTestLazyImport.update({
-  id: '/test',
-  path: '/test',
-  getParentRoute: () => UserRoute,
-} as any).lazy(() => import('./routes/user/test.lazy').then((d) => d.Route))
+const StaffStaffRoute = StaffStaffImport.update({
+  id: '/_staff',
+  getParentRoute: () => StaffRoute,
+} as any)
 
-const AuthStaffLazyRoute = AuthStaffLazyImport.update({
-  id: '/auth/staff',
-  path: '/auth/staff',
+const UserUserProfileRoute = UserUserProfileImport.update({
+  id: '/user/_user/profile',
+  path: '/user/profile',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/auth.staff.lazy').then((d) => d.Route))
+} as any)
 
-const UserLayoutRoute = UserLayoutImport.update({
-  id: '/_layout',
-  getParentRoute: () => UserRoute,
+const UserUserDashboardRoute = UserUserDashboardImport.update({
+  id: '/user/_user/dashboard',
+  path: '/user/dashboard',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const StaffStaffDashboardRoute = StaffStaffDashboardImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => StaffStaffRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexLazyImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
     }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof LoginLazyImport
+      preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
-    '/user': {
-      id: '/user'
-      path: '/user'
-      fullPath: '/user'
-      preLoaderRoute: typeof UserImport
+    '/password_reset': {
+      id: '/password_reset'
+      path: '/password_reset'
+      fullPath: '/password_reset'
+      preLoaderRoute: typeof PasswordresetImport
       parentRoute: typeof rootRoute
     }
-    '/user/_layout': {
-      id: '/user/_layout'
-      path: '/user'
-      fullPath: '/user'
-      preLoaderRoute: typeof UserLayoutImport
-      parentRoute: typeof UserRoute
-    }
-    '/auth/staff': {
-      id: '/auth/staff'
-      path: '/auth/staff'
-      fullPath: '/auth/staff'
-      preLoaderRoute: typeof AuthStaffLazyImport
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
-    '/user/test': {
-      id: '/user/test'
-      path: '/test'
-      fullPath: '/user/test'
-      preLoaderRoute: typeof UserTestLazyImport
-      parentRoute: typeof UserImport
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffImport
+      parentRoute: typeof rootRoute
+    }
+    '/staff/_staff': {
+      id: '/staff/_staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffStaffImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/_staff/dashboard': {
+      id: '/staff/_staff/dashboard'
+      path: '/dashboard'
+      fullPath: '/staff/dashboard'
+      preLoaderRoute: typeof StaffStaffDashboardImport
+      parentRoute: typeof StaffStaffImport
+    }
+    '/user/_user/dashboard': {
+      id: '/user/_user/dashboard'
+      path: '/user/dashboard'
+      fullPath: '/user/dashboard'
+      preLoaderRoute: typeof UserUserDashboardImport
+      parentRoute: typeof rootRoute
+    }
+    '/user/_user/profile': {
+      id: '/user/_user/profile'
+      path: '/user/profile'
+      fullPath: '/user/profile'
+      preLoaderRoute: typeof UserUserProfileImport
+      parentRoute: typeof rootRoute
     }
   }
 }
 
 // Create and export the route tree
 
-interface UserRouteChildren {
-  UserLayoutRoute: typeof UserLayoutRoute
-  UserTestLazyRoute: typeof UserTestLazyRoute
+interface StaffStaffRouteChildren {
+  StaffStaffDashboardRoute: typeof StaffStaffDashboardRoute
 }
 
-const UserRouteChildren: UserRouteChildren = {
-  UserLayoutRoute: UserLayoutRoute,
-  UserTestLazyRoute: UserTestLazyRoute,
+const StaffStaffRouteChildren: StaffStaffRouteChildren = {
+  StaffStaffDashboardRoute: StaffStaffDashboardRoute,
 }
 
-const UserRouteWithChildren = UserRoute._addFileChildren(UserRouteChildren)
+const StaffStaffRouteWithChildren = StaffStaffRoute._addFileChildren(
+  StaffStaffRouteChildren,
+)
+
+interface StaffRouteChildren {
+  StaffStaffRoute: typeof StaffStaffRouteWithChildren
+}
+
+const StaffRouteChildren: StaffRouteChildren = {
+  StaffStaffRoute: StaffStaffRouteWithChildren,
+}
+
+const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexLazyRoute
-  '/login': typeof LoginLazyRoute
-  '/user': typeof UserLayoutRoute
-  '/auth/staff': typeof AuthStaffLazyRoute
-  '/user/test': typeof UserTestLazyRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
+  '/password_reset': typeof PasswordresetRoute
+  '/signup': typeof SignupRoute
+  '/staff': typeof StaffStaffRouteWithChildren
+  '/staff/dashboard': typeof StaffStaffDashboardRoute
+  '/user/dashboard': typeof UserUserDashboardRoute
+  '/user/profile': typeof UserUserProfileRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexLazyRoute
-  '/login': typeof LoginLazyRoute
-  '/user': typeof UserLayoutRoute
-  '/auth/staff': typeof AuthStaffLazyRoute
-  '/user/test': typeof UserTestLazyRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
+  '/password_reset': typeof PasswordresetRoute
+  '/signup': typeof SignupRoute
+  '/staff': typeof StaffStaffRouteWithChildren
+  '/staff/dashboard': typeof StaffStaffDashboardRoute
+  '/user/dashboard': typeof UserUserDashboardRoute
+  '/user/profile': typeof UserUserProfileRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexLazyRoute
-  '/login': typeof LoginLazyRoute
-  '/user': typeof UserRouteWithChildren
-  '/user/_layout': typeof UserLayoutRoute
-  '/auth/staff': typeof AuthStaffLazyRoute
-  '/user/test': typeof UserTestLazyRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
+  '/password_reset': typeof PasswordresetRoute
+  '/signup': typeof SignupRoute
+  '/staff': typeof StaffRouteWithChildren
+  '/staff/_staff': typeof StaffStaffRouteWithChildren
+  '/staff/_staff/dashboard': typeof StaffStaffDashboardRoute
+  '/user/_user/dashboard': typeof UserUserDashboardRoute
+  '/user/_user/profile': typeof UserUserProfileRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/user' | '/auth/staff' | '/user/test'
+  fullPaths:
+    | '/dashboard'
+    | '/login'
+    | '/password_reset'
+    | '/signup'
+    | '/staff'
+    | '/staff/dashboard'
+    | '/user/dashboard'
+    | '/user/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/user' | '/auth/staff' | '/user/test'
+  to:
+    | '/dashboard'
+    | '/login'
+    | '/password_reset'
+    | '/signup'
+    | '/staff'
+    | '/staff/dashboard'
+    | '/user/dashboard'
+    | '/user/profile'
   id:
     | '__root__'
-    | '/'
+    | '/dashboard'
     | '/login'
-    | '/user'
-    | '/user/_layout'
-    | '/auth/staff'
-    | '/user/test'
+    | '/password_reset'
+    | '/signup'
+    | '/staff'
+    | '/staff/_staff'
+    | '/staff/_staff/dashboard'
+    | '/user/_user/dashboard'
+    | '/user/_user/profile'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexLazyRoute: typeof IndexLazyRoute
-  LoginLazyRoute: typeof LoginLazyRoute
-  UserRoute: typeof UserRouteWithChildren
-  AuthStaffLazyRoute: typeof AuthStaffLazyRoute
+  DashboardRoute: typeof DashboardRoute
+  LoginRoute: typeof LoginRoute
+  PasswordresetRoute: typeof PasswordresetRoute
+  SignupRoute: typeof SignupRoute
+  StaffRoute: typeof StaffRouteWithChildren
+  UserUserDashboardRoute: typeof UserUserDashboardRoute
+  UserUserProfileRoute: typeof UserUserProfileRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexLazyRoute: IndexLazyRoute,
-  LoginLazyRoute: LoginLazyRoute,
-  UserRoute: UserRouteWithChildren,
-  AuthStaffLazyRoute: AuthStaffLazyRoute,
+  DashboardRoute: DashboardRoute,
+  LoginRoute: LoginRoute,
+  PasswordresetRoute: PasswordresetRoute,
+  SignupRoute: SignupRoute,
+  StaffRoute: StaffRouteWithChildren,
+  UserUserDashboardRoute: UserUserDashboardRoute,
+  UserUserProfileRoute: UserUserProfileRoute,
 }
 
 export const routeTree = rootRoute
@@ -189,35 +275,49 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
+        "/dashboard",
         "/login",
-        "/user",
-        "/auth/staff"
+        "/password_reset",
+        "/signup",
+        "/staff",
+        "/user/_user/dashboard",
+        "/user/_user/profile"
       ]
     },
-    "/": {
-      "filePath": "index.lazy.tsx"
+    "/dashboard": {
+      "filePath": "dashboard.tsx"
     },
     "/login": {
-      "filePath": "login.lazy.tsx"
+      "filePath": "login.tsx"
     },
-    "/user": {
-      "filePath": "user",
+    "/password_reset": {
+      "filePath": "password_reset.tsx"
+    },
+    "/signup": {
+      "filePath": "signup.tsx"
+    },
+    "/staff": {
+      "filePath": "staff",
       "children": [
-        "/user/_layout",
-        "/user/test"
+        "/staff/_staff"
       ]
     },
-    "/user/_layout": {
-      "filePath": "user/_layout.tsx",
-      "parent": "/user"
+    "/staff/_staff": {
+      "filePath": "staff/_staff.tsx",
+      "parent": "/staff",
+      "children": [
+        "/staff/_staff/dashboard"
+      ]
     },
-    "/auth/staff": {
-      "filePath": "auth.staff.lazy.tsx"
+    "/staff/_staff/dashboard": {
+      "filePath": "staff/_staff.dashboard.tsx",
+      "parent": "/staff/_staff"
     },
-    "/user/test": {
-      "filePath": "user/test.lazy.tsx",
-      "parent": "/user"
+    "/user/_user/dashboard": {
+      "filePath": "user/_user.dashboard.tsx"
+    },
+    "/user/_user/profile": {
+      "filePath": "user/_user.profile.tsx"
     }
   }
 }
