@@ -507,9 +507,66 @@ export async function updatePasswordResetToken(
       console.warn("No rows affected; userID may not exist.");
       return jsonResponse({ error: "User not found" }, 404);
     }
+    // Step 6: Retrieve user's name and email
 
-    // Step 6: Return a success response
-    return jsonResponse({ message: "Password updated successfully" }, 200);
+    const userEmail = await db
+      .select({
+        email: user_authentications.email,
+        role: user_authentications.role,
+      })
+      .from(user_authentications)
+      .where(eq(user_authentications.userID, userID))
+      .execute();
+
+    if (userEmail.length > 0) {
+      const { email, role } = userEmail[0];
+      let name;
+
+      // Fetch the name from the relevant table based on the role
+      if (role === "patient") {
+        const patient = await db
+          .select({ name: patients.name })
+          .from(patients)
+          .where(eq(patients.userID, userID))
+          .execute();
+        name = patient.length > 0 ? patient[0].name : null;
+      } else if (role === "business") {
+        const business = await db
+          .select({
+            name: business_entities.personInChargeName,
+          })
+          .from(business_entities)
+          .where(eq(business_entities.userID, userID))
+          .execute();
+        name = business.length > 0 ? business[0].name : null;
+      } else if (role === "staff") {
+        const staff = await db
+          .select({ name: staffs.name })
+          .from(staffs)
+          .where(eq(staffs.userID, userID))
+          .execute();
+        name = staff.length > 0 ? staff[0].name : null;
+      } else if (role === "therapist") {
+        const therapist = await db
+          .select({ name: physiotherapists.name })
+          .from(physiotherapists)
+          .where(eq(physiotherapists.userID, userID))
+          .execute();
+        name = therapist.length > 0 ? therapist[0].name : null;
+      }
+
+      if (!name) {
+        return jsonResponse({ error: "Name not found for user" }, 404);
+      }
+
+      console.log("Email:", email);
+      console.log("Name:", name);
+      // Step 7: Return a success response
+      return jsonResponse(
+        { message: "Password updated successfully", email: email, name: name },
+        200
+      );
+    }
   } catch (error: any) {
     console.error("Database update error:", error);
 

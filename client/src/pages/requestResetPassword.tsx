@@ -1,38 +1,53 @@
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { requestPasswordReset } from "../lib/api";
-import { sendForgotPasswordEmail } from "../emails/forgotPasswordEmail"; // Import the email sending function
-import { Label } from "@/components/ui/label";
+import { sendForgotPasswordEmail } from "../emails/forgotPasswordEmail";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+// Define the Zod schema for validation
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+// Define the form values type
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+
 const ForgotPassword: React.FC = () => {
-  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const handleResetPassword = async () => {
+  // Initialize the form with react-hook-form and zod for validation
+  const form = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+  });
+
+  // Handle form submission
+  const handleResetPassword = async (data: ForgotPasswordFormValues) => {
     setMessage("");
     setError("");
 
     try {
-      if (!email) {
-        setError("Please enter a valid email.");
-        return;
-      }
-
-      // Call requestPasswordReset to verify the email
-      const response = await requestPasswordReset(email);
-      console.log(response);
+      const response = await requestPasswordReset(data.email);
       if (response) {
-        // Assuming the backend includes user's name and reset URL in the response for this example
         const resetUrl = `http://localhost:3000/auth/reset-password?token=${response.token}`;
 
-        // Prepare email details and send the forgot password email
         await sendForgotPasswordEmail({
-          name: response.name || "User", // Replace with actual name from response if available
-          email,
+          name: response.name || "User",
+          email: data.email,
           resetUrl,
-          to: email,
+          to: data.email,
         });
 
         setMessage("If the email exists, a reset link will be sent.");
@@ -49,28 +64,34 @@ const ForgotPassword: React.FC = () => {
       <h2 className="text-2xl font-semibold text-center mb-4">
         Forgot Password
       </h2>
-      <div className="mb-4">
-        <Label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Email
-        </Label>
-        <Input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email"
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-        />
-      </div>
-      <Button
-        onClick={handleResetPassword}
-        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md"
-      >
-        Check
-      </Button>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleResetPassword)}>
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="email"
+                    placeholder="Enter your email"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button
+            type="submit"
+            className="w-full mt-4 text-white font-semibold py-2 rounded-md"
+          >
+            Check
+          </Button>
+        </form>
+      </Form>
 
       {message && <p className="text-green-500 text-sm mt-4">{message}</p>}
       {error && <p className="text-red-500 text-sm mt-4">{error}</p>}

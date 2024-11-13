@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { resetPassword } from "../lib/api"; // Import the actual resetPassword function
+import { sendUpdateResetPasswordEmail } from "@/emails/updateResetPassword";
 
 const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState("");
@@ -29,8 +30,24 @@ const ResetPassword: React.FC = () => {
     try {
       // Make the API call to reset the password
       if (token) {
-        await resetPassword(token, password, confirmPassword);
-        setSuccessMessage("Password has been reset successfully!");
+        const response = await resetPassword(token, password, confirmPassword);
+        console.log("Response from resetPassword:", response); // Verify the full response structure
+
+        if (response && response.email && response.name) {
+          setSuccessMessage("Password has been reset successfully!");
+          const { email, name } = response;
+          console.log("Email and Name:", email, name);
+
+          const updateUrl = "http://localhost:3000/auth/login";
+          await sendUpdateResetPasswordEmail({
+            name,
+            email,
+            updateUrl,
+            to: email,
+          });
+        } else {
+          setError("Missing email or name in the response.");
+        }
       } else {
         setError("Invalid token. Please try again.");
       }
@@ -42,7 +59,6 @@ const ResetPassword: React.FC = () => {
       );
     }
   };
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-full max-w-md p-6">

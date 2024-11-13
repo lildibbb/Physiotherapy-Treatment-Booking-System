@@ -511,9 +511,19 @@ const app = new Elysia()
           { password, confirmPassword },
           token
         );
+        console.log("Response from updatePasswordResetToken:", response);
+        // Ensure response is defined before accessing properties
+        if (response) {
+          // Extract JSON body and status from the response
+          const data = await response.json(); // Parse JSON data from the response
+          const status = response.status; // Get status code from response
 
-        // Return the response with the appropriate status
-        return jsonResponse(response.body, response.status);
+          // Return the parsed data and status using jsonResponse
+          return jsonResponse(data, status);
+        } else {
+          // Handle the case where response is undefined
+          return jsonResponse({ error: "Failed to update password" }, 500);
+        }
       } catch (error) {
         console.error("Error in update_password_reset route:", error);
         return jsonResponse({ error: "Internal server error" }, 500);

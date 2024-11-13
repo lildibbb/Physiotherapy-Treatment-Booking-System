@@ -303,7 +303,8 @@ export const resetPassword = async (
   try {
     const url = `${apiBaseUrl}/auth/reset-password`;
     console.log("Attempting to call reset password endpoint:", url);
-    const response = await fetch(`${apiBaseUrl}/auth/reset-password`, {
+
+    const response = await fetch(url, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -311,21 +312,19 @@ export const resetPassword = async (
       body: JSON.stringify({ token, password, confirmPassword }),
     });
 
-    // Read response text in case it's not JSON
-    const responseText = await response.text();
-
+    // Check if response is okay
     if (!response.ok) {
-      // Try parsing error as JSON if possible, otherwise use plain text
-      try {
-        const errorData = JSON.parse(responseText);
-        throw new Error(errorData.message || "Failed to reset password");
-      } catch {
-        throw new Error(responseText || "Failed to reset password");
-      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to reset password");
     }
 
-    // Parse JSON response if successful
-    return JSON.parse(responseText);
+    // Extract JSON data from response
+    const data = await response.json(); // This parses the JSON body from the response
+    console.log("Response from backend:", data); // Should log the backend response with `email` and `name`
+
+    // Log the specific fields to verify
+    console.log("Email:", data.email, "Name:", data.name);
+    return data;
   } catch (error) {
     console.error("Error resetting password:", error);
     throw error;

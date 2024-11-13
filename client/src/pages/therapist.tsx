@@ -45,6 +45,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import specialization from "../data/specialization.json"; // Import the specialization JSON
+import { sendAccountCreatedEmail } from "@/emails/accountCreatedEmail";
 
 interface TherapistData {
   therapistID?: string;
@@ -94,6 +95,15 @@ export default function Therapist() {
         { ...data, id: newTherapist.id },
       ]);
       setIsSheetOpen(false);
+
+      await sendAccountCreatedEmail({
+        name: data.name,
+        role: data.specialization,
+        email: data.email,
+        tempPassword: data.password,
+        loginUrl: "http://localhost:3000/auth/login", // Update this to your actual login URL
+        to: data.email,
+      });
     } catch (error) {
       console.error("Failed to register therapist:", error);
     }
