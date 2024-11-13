@@ -9,16 +9,6 @@
     "studio": "drizzle-kit studio --verbose",
     "seed": "bun run src/seed.ts"
   },
-  "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/bun": "latest",
-    "@types/nodemailer": "^6.4.16",
-    "@types/pg": "^8.11.10",
-    "drizzle-kit": "^0.23.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.6.3"
-  },
   "dependencies": {
     "@elysiajs/cors": "^1.1.1",
     "@elysiajs/jwt": "^1.1.1",
@@ -32,5 +22,15 @@
     "pg": "^8.13.0",
     "react-email": "^3.0.2",
     "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/bun": "latest",
+    "@types/nodemailer": "^6.4.16",
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.23.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.6.3"
   }
 }
