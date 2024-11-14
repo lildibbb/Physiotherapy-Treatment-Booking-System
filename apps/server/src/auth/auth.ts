@@ -27,6 +27,27 @@ export default function jsonResponse(data: any, status = 200) {
   });
 }
 
+// Helper function to verify JWT from cookie
+export const verifyAuth = async (jwt: any, auth: string | undefined) => {
+  if (!auth) {
+    return { error: "Unauthorized - no token provided", status: 401 };
+  }
+
+  try {
+    const profile = await jwt.verify(auth); // decode dulu
+    if (!profile) {
+      return { error: "Unauthorized - invalid token", status: 401 };
+    }
+    console.log("Decoded token{from verifyAuth : ", profile); // for testing purposes
+    return { profile, status: 200 }; //return  decoded token data directly
+  } catch (error: any) {
+    if (error.name === "TokenExpiredError") {
+      console.error("Token expired:", error);
+      return { error: "Session expired. Please log in again.", status: 401 };
+    }
+    return { error: "Unauthorized - invalid token", status: 401 };
+  }
+};
 // User Registration
 export async function registerUser(reqBody: UserRegistration) {
   // Validate the request body for required fields
@@ -216,16 +237,14 @@ export async function loginUser(reqBody: UserLogin) {
 export async function registerStaff(
   reqBody: StaffRegistration,
   jwt: any,
-  token: string
+  profile: { businessID: number }
 ) {
   if (!reqBody.email || !reqBody.password || !reqBody.name || !reqBody.role) {
     return jsonResponse({ error: "Missing required fields" }, 400);
   }
 
-  // Decode JWT token to get businessID
-  const decodedToken = await jwt.verify(token, "secretKey");
-  console.log("Decoded Token:", decodedToken);
-  const businessID = decodedToken.businessID;
+  // pass the businessID from the decoded token
+  const businessID = profile.businessID;
 
   if (!businessID) {
     console.log(

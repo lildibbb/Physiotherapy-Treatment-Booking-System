@@ -18,6 +18,7 @@ import {
   registerTherapist,
   requestResetPassword,
   updatePasswordResetToken,
+  verifyAuth,
 } from "./auth/auth"; // Import authentication functions
 import {
   type BusinessRegistration,
@@ -52,7 +53,12 @@ await client.connect();
 
 // Set up the Elysia server
 const app = new Elysia()
-  .use(cors()) // Enable CORS for cross-origin requests// Enable JWT for authentication
+  .use(
+    cors({
+      credentials: true,
+      origin: process.env.VITE_BASE_URL,
+    })
+  ) // Enable CORS for cross-origin requests// Enable JWT for authentication
   .use(
     swagger({
       documentation: {
@@ -77,7 +83,7 @@ const app = new Elysia()
     jwt({
       name: "jwt",
       secret: "secretKey",
-      expiresIn: "1h",
+      exp: "1h",
     })
   )
 
@@ -278,14 +284,18 @@ const app = new Elysia()
   )
   .post(
     `${basePath}/register/staff`,
-    async ({ body, headers, jwt }) => {
-      const authHeader = headers.authorization || "";
-      const token = authHeader.replace("Bearer ", "");
-      if (!token) {
-        return { error: "Unauthorized access - token missing", status: 401 };
+    async ({ body, cookie: { auth }, jwt }) => {
+      const authResult = await verifyAuth(jwt, auth?.value);
+      console.log("Auth Result:", authResult);
+      if ("error" in authResult) {
+        return { error: authResult.error, status: authResult.status };
       }
 
-      return await registerStaff(body as StaffRegistration, jwt, token);
+      return await registerStaff(
+        body as StaffRegistration,
+        jwt,
+        authResult.profile
+      );
     },
     {
       body: StaffRegistrationSchema,
@@ -350,7 +360,7 @@ const app = new Elysia()
         id,
         email,
       };
-      console.log(tokenPayload);
+      console.log("TokenPayLoad: ", tokenPayload); //For debugging purposes
       // Only add `businessID` if it's defined (not null)
       if (businessID !== null) {
         tokenPayload.businessID = businessID;
@@ -362,13 +372,15 @@ const app = new Elysia()
       auth.set({
         value: token,
         httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60, // 30 days
-        path: "/auth/profile",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60, // 1 hour
+        path: "/",
       });
-
+      console.log(auth.value);
       return {
         message: "Login successful",
-        token, // Return token for client-side if needed
+        // token, // Return token for client-side if needed (return only for testing purposes)
         email, // Include the email in the response
       };
     },
