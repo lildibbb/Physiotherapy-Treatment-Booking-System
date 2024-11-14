@@ -5,7 +5,7 @@ import { drizzle } from "drizzle-orm/node-postgres"; // Import for Node.js and P
 import { Pool } from "pg";
 
 // Load environment variables from the .env file in the root directory
-dotenv.config({ path: "../.env" }); // Adjust the path based on the relative location
+dotenv.config({ path: "../../../.env" });
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 // export const dbUrl = process.env["DATABASE_URL"];
