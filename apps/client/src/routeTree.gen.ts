@@ -13,14 +13,20 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as SignupImport } from './routes/signup'
-import { Route as PasswordresetImport } from './routes/password_reset'
+import { Route as UserprofileImport } from './routes/user_profile'
+import { Route as ResetpasswordImport } from './routes/reset_password'
+import { Route as RequestresetpasswordImport } from './routes/request_reset_password'
 import { Route as LoginImport } from './routes/login'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as StaffStaffImport } from './routes/staff/_staff'
+import { Route as SignupUserImport } from './routes/signup.user'
+import { Route as SignupBusinessImport } from './routes/signup.business'
 import { Route as UserUserProfileImport } from './routes/user/_user.profile'
 import { Route as UserUserDashboardImport } from './routes/user/_user.dashboard'
 import { Route as StaffStaffDashboardImport } from './routes/staff/_staff.dashboard'
+import { Route as BusinessBusinessTherapistlistImport } from './routes/business/_business.therapist_list'
+import { Route as BusinessBusinessStafflistImport } from './routes/business/_business.staff_list'
+import { Route as BusinessBusinessDashboardImport } from './routes/business/_business.dashboard'
 
 // Create Virtual Routes
 
@@ -34,15 +40,21 @@ const StaffRoute = StaffImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const SignupRoute = SignupImport.update({
-  id: '/signup',
-  path: '/signup',
+const UserprofileRoute = UserprofileImport.update({
+  id: '/user_profile',
+  path: '/user_profile',
   getParentRoute: () => rootRoute,
 } as any)
 
-const PasswordresetRoute = PasswordresetImport.update({
-  id: '/password_reset',
-  path: '/password_reset',
+const ResetpasswordRoute = ResetpasswordImport.update({
+  id: '/reset_password',
+  path: '/reset_password',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const RequestresetpasswordRoute = RequestresetpasswordImport.update({
+  id: '/request_reset_password',
+  path: '/request_reset_password',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -63,6 +75,18 @@ const StaffStaffRoute = StaffStaffImport.update({
   getParentRoute: () => StaffRoute,
 } as any)
 
+const SignupUserRoute = SignupUserImport.update({
+  id: '/signup/user',
+  path: '/signup/user',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const SignupBusinessRoute = SignupBusinessImport.update({
+  id: '/signup/business',
+  path: '/signup/business',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const UserUserProfileRoute = UserUserProfileImport.update({
   id: '/user/_user/profile',
   path: '/user/profile',
@@ -79,6 +103,25 @@ const StaffStaffDashboardRoute = StaffStaffDashboardImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => StaffStaffRoute,
+} as any)
+
+const BusinessBusinessTherapistlistRoute =
+  BusinessBusinessTherapistlistImport.update({
+    id: '/business/_business/therapist_list',
+    path: '/business/therapist_list',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const BusinessBusinessStafflistRoute = BusinessBusinessStafflistImport.update({
+  id: '/business/_business/staff_list',
+  path: '/business/staff_list',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const BusinessBusinessDashboardRoute = BusinessBusinessDashboardImport.update({
+  id: '/business/_business/dashboard',
+  path: '/business/dashboard',
+  getParentRoute: () => rootRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -99,18 +142,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
-    '/password_reset': {
-      id: '/password_reset'
-      path: '/password_reset'
-      fullPath: '/password_reset'
-      preLoaderRoute: typeof PasswordresetImport
+    '/request_reset_password': {
+      id: '/request_reset_password'
+      path: '/request_reset_password'
+      fullPath: '/request_reset_password'
+      preLoaderRoute: typeof RequestresetpasswordImport
       parentRoute: typeof rootRoute
     }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupImport
+    '/reset_password': {
+      id: '/reset_password'
+      path: '/reset_password'
+      fullPath: '/reset_password'
+      preLoaderRoute: typeof ResetpasswordImport
+      parentRoute: typeof rootRoute
+    }
+    '/user_profile': {
+      id: '/user_profile'
+      path: '/user_profile'
+      fullPath: '/user_profile'
+      preLoaderRoute: typeof UserprofileImport
+      parentRoute: typeof rootRoute
+    }
+    '/signup/business': {
+      id: '/signup/business'
+      path: '/signup/business'
+      fullPath: '/signup/business'
+      preLoaderRoute: typeof SignupBusinessImport
+      parentRoute: typeof rootRoute
+    }
+    '/signup/user': {
+      id: '/signup/user'
+      path: '/signup/user'
+      fullPath: '/signup/user'
+      preLoaderRoute: typeof SignupUserImport
       parentRoute: typeof rootRoute
     }
     '/staff': {
@@ -126,6 +190,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/staff'
       preLoaderRoute: typeof StaffStaffImport
       parentRoute: typeof StaffRoute
+    }
+    '/business/_business/dashboard': {
+      id: '/business/_business/dashboard'
+      path: '/business/dashboard'
+      fullPath: '/business/dashboard'
+      preLoaderRoute: typeof BusinessBusinessDashboardImport
+      parentRoute: typeof rootRoute
+    }
+    '/business/_business/staff_list': {
+      id: '/business/_business/staff_list'
+      path: '/business/staff_list'
+      fullPath: '/business/staff_list'
+      preLoaderRoute: typeof BusinessBusinessStafflistImport
+      parentRoute: typeof rootRoute
+    }
+    '/business/_business/therapist_list': {
+      id: '/business/_business/therapist_list'
+      path: '/business/therapist_list'
+      fullPath: '/business/therapist_list'
+      preLoaderRoute: typeof BusinessBusinessTherapistlistImport
+      parentRoute: typeof rootRoute
     }
     '/staff/_staff/dashboard': {
       id: '/staff/_staff/dashboard'
@@ -178,9 +263,15 @@ const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
-  '/password_reset': typeof PasswordresetRoute
-  '/signup': typeof SignupRoute
+  '/request_reset_password': typeof RequestresetpasswordRoute
+  '/reset_password': typeof ResetpasswordRoute
+  '/user_profile': typeof UserprofileRoute
+  '/signup/business': typeof SignupBusinessRoute
+  '/signup/user': typeof SignupUserRoute
   '/staff': typeof StaffStaffRouteWithChildren
+  '/business/dashboard': typeof BusinessBusinessDashboardRoute
+  '/business/staff_list': typeof BusinessBusinessStafflistRoute
+  '/business/therapist_list': typeof BusinessBusinessTherapistlistRoute
   '/staff/dashboard': typeof StaffStaffDashboardRoute
   '/user/dashboard': typeof UserUserDashboardRoute
   '/user/profile': typeof UserUserProfileRoute
@@ -189,9 +280,15 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
-  '/password_reset': typeof PasswordresetRoute
-  '/signup': typeof SignupRoute
+  '/request_reset_password': typeof RequestresetpasswordRoute
+  '/reset_password': typeof ResetpasswordRoute
+  '/user_profile': typeof UserprofileRoute
+  '/signup/business': typeof SignupBusinessRoute
+  '/signup/user': typeof SignupUserRoute
   '/staff': typeof StaffStaffRouteWithChildren
+  '/business/dashboard': typeof BusinessBusinessDashboardRoute
+  '/business/staff_list': typeof BusinessBusinessStafflistRoute
+  '/business/therapist_list': typeof BusinessBusinessTherapistlistRoute
   '/staff/dashboard': typeof StaffStaffDashboardRoute
   '/user/dashboard': typeof UserUserDashboardRoute
   '/user/profile': typeof UserUserProfileRoute
@@ -201,10 +298,16 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
-  '/password_reset': typeof PasswordresetRoute
-  '/signup': typeof SignupRoute
+  '/request_reset_password': typeof RequestresetpasswordRoute
+  '/reset_password': typeof ResetpasswordRoute
+  '/user_profile': typeof UserprofileRoute
+  '/signup/business': typeof SignupBusinessRoute
+  '/signup/user': typeof SignupUserRoute
   '/staff': typeof StaffRouteWithChildren
   '/staff/_staff': typeof StaffStaffRouteWithChildren
+  '/business/_business/dashboard': typeof BusinessBusinessDashboardRoute
+  '/business/_business/staff_list': typeof BusinessBusinessStafflistRoute
+  '/business/_business/therapist_list': typeof BusinessBusinessTherapistlistRoute
   '/staff/_staff/dashboard': typeof StaffStaffDashboardRoute
   '/user/_user/dashboard': typeof UserUserDashboardRoute
   '/user/_user/profile': typeof UserUserProfileRoute
@@ -215,9 +318,15 @@ export interface FileRouteTypes {
   fullPaths:
     | '/dashboard'
     | '/login'
-    | '/password_reset'
-    | '/signup'
+    | '/request_reset_password'
+    | '/reset_password'
+    | '/user_profile'
+    | '/signup/business'
+    | '/signup/user'
     | '/staff'
+    | '/business/dashboard'
+    | '/business/staff_list'
+    | '/business/therapist_list'
     | '/staff/dashboard'
     | '/user/dashboard'
     | '/user/profile'
@@ -225,9 +334,15 @@ export interface FileRouteTypes {
   to:
     | '/dashboard'
     | '/login'
-    | '/password_reset'
-    | '/signup'
+    | '/request_reset_password'
+    | '/reset_password'
+    | '/user_profile'
+    | '/signup/business'
+    | '/signup/user'
     | '/staff'
+    | '/business/dashboard'
+    | '/business/staff_list'
+    | '/business/therapist_list'
     | '/staff/dashboard'
     | '/user/dashboard'
     | '/user/profile'
@@ -235,10 +350,16 @@ export interface FileRouteTypes {
     | '__root__'
     | '/dashboard'
     | '/login'
-    | '/password_reset'
-    | '/signup'
+    | '/request_reset_password'
+    | '/reset_password'
+    | '/user_profile'
+    | '/signup/business'
+    | '/signup/user'
     | '/staff'
     | '/staff/_staff'
+    | '/business/_business/dashboard'
+    | '/business/_business/staff_list'
+    | '/business/_business/therapist_list'
     | '/staff/_staff/dashboard'
     | '/user/_user/dashboard'
     | '/user/_user/profile'
@@ -248,9 +369,15 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
-  PasswordresetRoute: typeof PasswordresetRoute
-  SignupRoute: typeof SignupRoute
+  RequestresetpasswordRoute: typeof RequestresetpasswordRoute
+  ResetpasswordRoute: typeof ResetpasswordRoute
+  UserprofileRoute: typeof UserprofileRoute
+  SignupBusinessRoute: typeof SignupBusinessRoute
+  SignupUserRoute: typeof SignupUserRoute
   StaffRoute: typeof StaffRouteWithChildren
+  BusinessBusinessDashboardRoute: typeof BusinessBusinessDashboardRoute
+  BusinessBusinessStafflistRoute: typeof BusinessBusinessStafflistRoute
+  BusinessBusinessTherapistlistRoute: typeof BusinessBusinessTherapistlistRoute
   UserUserDashboardRoute: typeof UserUserDashboardRoute
   UserUserProfileRoute: typeof UserUserProfileRoute
 }
@@ -258,9 +385,15 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
-  PasswordresetRoute: PasswordresetRoute,
-  SignupRoute: SignupRoute,
+  RequestresetpasswordRoute: RequestresetpasswordRoute,
+  ResetpasswordRoute: ResetpasswordRoute,
+  UserprofileRoute: UserprofileRoute,
+  SignupBusinessRoute: SignupBusinessRoute,
+  SignupUserRoute: SignupUserRoute,
   StaffRoute: StaffRouteWithChildren,
+  BusinessBusinessDashboardRoute: BusinessBusinessDashboardRoute,
+  BusinessBusinessStafflistRoute: BusinessBusinessStafflistRoute,
+  BusinessBusinessTherapistlistRoute: BusinessBusinessTherapistlistRoute,
   UserUserDashboardRoute: UserUserDashboardRoute,
   UserUserProfileRoute: UserUserProfileRoute,
 }
@@ -277,9 +410,15 @@ export const routeTree = rootRoute
       "children": [
         "/dashboard",
         "/login",
-        "/password_reset",
-        "/signup",
+        "/request_reset_password",
+        "/reset_password",
+        "/user_profile",
+        "/signup/business",
+        "/signup/user",
         "/staff",
+        "/business/_business/dashboard",
+        "/business/_business/staff_list",
+        "/business/_business/therapist_list",
         "/user/_user/dashboard",
         "/user/_user/profile"
       ]
@@ -290,11 +429,20 @@ export const routeTree = rootRoute
     "/login": {
       "filePath": "login.tsx"
     },
-    "/password_reset": {
-      "filePath": "password_reset.tsx"
+    "/request_reset_password": {
+      "filePath": "request_reset_password.tsx"
     },
-    "/signup": {
-      "filePath": "signup.tsx"
+    "/reset_password": {
+      "filePath": "reset_password.tsx"
+    },
+    "/user_profile": {
+      "filePath": "user_profile.tsx"
+    },
+    "/signup/business": {
+      "filePath": "signup.business.tsx"
+    },
+    "/signup/user": {
+      "filePath": "signup.user.tsx"
     },
     "/staff": {
       "filePath": "staff",
@@ -308,6 +456,15 @@ export const routeTree = rootRoute
       "children": [
         "/staff/_staff/dashboard"
       ]
+    },
+    "/business/_business/dashboard": {
+      "filePath": "business/_business.dashboard.tsx"
+    },
+    "/business/_business/staff_list": {
+      "filePath": "business/_business.staff_list.tsx"
+    },
+    "/business/_business/therapist_list": {
+      "filePath": "business/_business.therapist_list.tsx"
     },
     "/staff/_staff/dashboard": {
       "filePath": "staff/_staff.dashboard.tsx",
