@@ -10,7 +10,7 @@ import {
 } from "../schema";
 import type { Staff, Therapist } from "../../types";
 import bcrypt from "bcryptjs";
-import jsonResponse from "./auth";
+import jsonResponse from "./auth-services";
 
 //Function to retrieve all staff under business (with Authorization check)
 export async function getAllStaffByBusiness(profile: { businessID: number }) {
