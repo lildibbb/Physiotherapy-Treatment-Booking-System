@@ -236,7 +236,6 @@ export async function loginUser(reqBody: UserLogin) {
 
 export async function registerStaff(
   reqBody: StaffRegistration,
-  jwt: any,
   profile: { businessID: number }
 ) {
   if (!reqBody.email || !reqBody.password || !reqBody.name || !reqBody.role) {
@@ -314,7 +313,6 @@ export async function registerStaff(
 
 export async function registerTherapist(
   reqBody: TherapistRegistration,
-  jwt: any,
   profile: { businessID: number }
 ) {
   if (

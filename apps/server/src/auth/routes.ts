@@ -10,21 +10,12 @@ import {
 } from "../schema";
 import type { Staff, Therapist } from "../../types";
 import bcrypt from "bcryptjs";
-
-// Helper function for consistent response formatting
-export default function jsonResponse(data: any, status = 200) {
-  return new Response(JSON.stringify(data, null, 2), {
-    headers: { "Content-Type": "application/json" },
-    status,
-  });
-}
+import jsonResponse from "./auth";
 
 //Function to retrieve all staff under business (with Authorization check)
-export async function getAllStaffByBusiness(jwt: any, token: string) {
-  // Decode the token and extract the business ID
-  const decodedToken = await jwt.verify(token, "secretKey");
-  const businessID = decodedToken.businessID;
-
+export async function getAllStaffByBusiness(profile: { businessID: number }) {
+  //pass the businessID from th decoded token
+  const businessID = profile.businessID;
   if (!businessID) {
     throw { message: "Only authorized users can access this", status: 403 };
   }
@@ -52,16 +43,14 @@ export async function getAllStaffByBusiness(jwt: any, token: string) {
 // Fixed version of updateStaffDetails function
 export async function updateStaffDetails(
   reqBody: Partial<Staff>,
-  jwt: any,
-  token: string,
+  profile: { businessID: number },
   staffID: string
 ) {
   // Convert staffID to a number
   const staffIDNumber = parseInt(staffID, 10);
 
-  // Decode the token to extract the businessID
-  const decodedToken = await jwt.verify(token, "secretKey");
-  const businessID = decodedToken.businessID;
+  //pass the businessID from decoded token in Endpoint
+  const businessID = profile.businessID;
 
   if (!businessID) {
     return jsonResponse(
@@ -150,9 +139,11 @@ export async function updateStaffDetails(
     return jsonResponse({ message: "Error updating staff", error }, 500);
   }
 }
-export async function getAllTherapistByBusiness(jwt: any, token: string) {
-  const decodedToken = await jwt.verify(token, "secretKey");
-  const businessID = decodedToken.businessID;
+export async function getAllTherapistByBusiness(profile: {
+  businessID: number;
+}) {
+  // pass the businessID from the decoded token
+  const businessID = profile.businessID;
 
   if (!businessID) {
     throw { message: "Only authorized users can access this", status: 403 };
@@ -180,14 +171,13 @@ export async function getAllTherapistByBusiness(jwt: any, token: string) {
 
 export async function updateTherapistDetails(
   reqBody: Partial<Therapist>,
-  jwt: any,
-  token: string,
+  profile: { businessID: number },
   therapistID: string
 ) {
   const therapistIDNumber = parseInt(therapistID, 10);
 
-  const decodedToken = await jwt.verify(token, "secretKey");
-  const businessID = decodedToken.businessID;
+  //pass the businessID from the decoded token in Endpoint
+  const businessID = profile.businessID;
 
   if (!businessID) {
     return jsonResponse(
