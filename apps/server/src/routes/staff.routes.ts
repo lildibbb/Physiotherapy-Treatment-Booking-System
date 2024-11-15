@@ -1,5 +1,8 @@
 import { Elysia } from "elysia";
-import jsonResponse, { registerStaff, verifyAuth } from "../auth/auth-services";
+import jsonResponse, {
+  registerStaff,
+  verifyAuth,
+} from "../services/auth-services";
 import { jwt } from "@elysiajs/jwt";
 import {
   StaffRegistrationSchema,
@@ -7,7 +10,10 @@ import {
   type Staff,
   type StaffRegistration,
 } from "../../types";
-import { getAllStaffByBusiness, updateStaffDetails } from "../auth/services";
+import {
+  getAllStaffByBusiness,
+  updateStaffDetails,
+} from "../services/services";
 
 import { basePath, jwtAccessSetup } from "./setup";
 

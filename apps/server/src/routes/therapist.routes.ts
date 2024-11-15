@@ -2,11 +2,11 @@ import { Elysia } from "elysia";
 import jsonResponse, {
   registerTherapist,
   verifyAuth,
-} from "../auth/auth-services";
+} from "../services/auth-services";
 import {
   getAllTherapistByBusiness,
   updateTherapistDetails,
-} from "../auth/services";
+} from "../services/services";
 import {
   TherapistRegistrationSchema,
   TherapistSchema,

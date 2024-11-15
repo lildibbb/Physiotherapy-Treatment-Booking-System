@@ -1,11 +1,11 @@
 import { Elysia } from "elysia";
-import { registerBusiness, verifyAuth } from "../auth/auth-services";
+import { registerBusiness } from "../services/auth-services";
 import {
   BusinessRegistrationSchema,
   type BusinessRegistration,
 } from "../../types";
 import { basePath, jwtAccessSetup } from "./setup";
-
+``;
 export const businessRoutes = new Elysia()
   .use(jwtAccessSetup)
   .group(`${basePath}/business`, (group) => {
