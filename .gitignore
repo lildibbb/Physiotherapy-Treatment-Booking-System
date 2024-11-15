@@ -167,7 +167,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
+index copy.ts
+/apps/server/drizzle
 # IntelliJ based IDEs
 .idea
 
