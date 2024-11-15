@@ -34,9 +34,11 @@ function RouteComponent() {
     try {
       const response = await loginUser(email, password);
       console.log("Login successful:", response);
-
-      localStorage.setItem("token", response.token);
-
+      toast({
+        variant: "default",
+        title: "Login Succesful",
+        description: "Welcome back!",
+      });
       // Redirect to dashboard upon successful login
       navigate({ to: "/dashboard" });
     } catch (error) {
