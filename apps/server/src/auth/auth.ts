@@ -315,7 +315,7 @@ export async function registerStaff(
 export async function registerTherapist(
   reqBody: TherapistRegistration,
   jwt: any,
-  token: string
+  profile: { businessID: number }
 ) {
   if (
     !reqBody.email ||
@@ -326,10 +326,9 @@ export async function registerTherapist(
   ) {
     return { error: "Missing required fields", status: 400 };
   }
-  // Decode JWT token to get businessID
-  const decodedToken = await jwt.verify(token, "secretkey");
-  console.log("Decoded Token:", decodedToken);
-  const businessID = decodedToken.businessID;
+
+  // pass the businessID from the decoded token
+  const businessID = profile.businessID;
 
   if (!businessID) {
     return {
@@ -456,7 +455,7 @@ export async function requestResetPassword(jwt: any, reqBody: Partial<Email>) {
             userID: existingUser[0].userID, // Access userID directly
             purpose: "password_reset",
           },
-          { expiresIn: "15m" } // Expiry is set here
+          { exp: "15m" } // Expiry is set here
         );
 
         console.log("Generated resetToken:", resetToken); // Verify if it is a string

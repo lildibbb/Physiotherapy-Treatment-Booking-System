@@ -117,9 +117,9 @@ export const registerTherapist = async (
 ) => {
   const response = await fetch(`${apiBaseUrl}/register/physiotherapist`, {
     method: "POST",
+    credentials: "include", // Bagi auth cookie auto included with request
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
     body: JSON.stringify({
       email,
@@ -129,7 +129,11 @@ export const registerTherapist = async (
       contactDetails,
     }),
   });
-
+  //check if token is expired or not
+  if (response.status === 401) {
+    const data = await response.json();
+    handleExpiredSession(data.message);
+  }
   //check if email already exist
   if (response.status === 409) {
     throw new Error("Email is already in use");

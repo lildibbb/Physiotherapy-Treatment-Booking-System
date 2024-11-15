@@ -314,13 +314,18 @@ const app = new Elysia()
 
   .post(
     `${basePath}/register/physiotherapist`,
-    async ({ body, headers, jwt }) => {
-      const authHeader = headers.authorization || "";
-      const token = authHeader.replace("Bearer ", "");
-      if (!token) {
-        return { error: "Unauthorized access - token missing", status: 401 };
+    async ({ body, cookie: { auth }, jwt }) => {
+      const authResult = await verifyAuth(jwt, auth?.value);
+      console.log("Auth Result:", authResult);
+      if ("error" in authResult) {
+        return { error: authResult.error, status: authResult.status };
       }
-      return await registerTherapist(body as TherapistRegistration, jwt, token);
+
+      return await registerTherapist(
+        body as TherapistRegistration,
+        jwt,
+        authResult.profile
+      );
     },
     {
       body: TherapistRegistrationSchema,
