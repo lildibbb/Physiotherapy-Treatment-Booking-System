@@ -165,11 +165,17 @@ export const loginUser = async (email: string, password: string) => {
 export const fetchStaffDetails = async () => {
   const response = await fetch(`${apiBaseUrl}/auth/staff`, {
     method: "GET",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
+
+  //check if token is expired or not
+  if (response.status === 401) {
+    const data = await response.json();
+    handleExpiredSession(data.message);
+  }
   if (!response.ok) {
     throw new Error("Failed to fetch staff details");
   }
@@ -186,13 +192,17 @@ export const updateStaffDetails = async (
   try {
     const response = await fetch(`${apiBaseUrl}/auth/staff/${staffID}`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify({ email, password, name, role }),
     });
-
+    //check if token is expired or not
+    if (response.status === 401) {
+      const data = await response.json();
+      handleExpiredSession(data.message);
+    }
     // Check if the response is successful
     if (!response.ok) {
       const errorData = await response.json();
@@ -210,11 +220,17 @@ export const updateStaffDetails = async (
 export const fetchTherapistDetails = async () => {
   const response = await fetch(`${apiBaseUrl}/auth/therapist`, {
     method: "GET",
+    credentials: "include",
     headers: {
       "Content-type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
+
+  //check if token is expired or not
+  if (response.status === 401) {
+    const data = await response.json();
+    handleExpiredSession(data.message);
+  }
   if (!response.ok) {
     throw new Error("Failed to fetch Therapist details");
   }
@@ -234,9 +250,9 @@ export const updateTherapistDetails = async (
       `${apiBaseUrl}/auth/therapist/${therapistID}`,
       {
         method: "PATCH",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           email,
@@ -247,7 +263,11 @@ export const updateTherapistDetails = async (
         }),
       }
     );
-
+    //check if token is expired or not
+    if (response.status === 401) {
+      const data = await response.json();
+      handleExpiredSession(data.message);
+    }
     // Check if the response is successful
     if (!response.ok) {
       const errorData = await response.json();
