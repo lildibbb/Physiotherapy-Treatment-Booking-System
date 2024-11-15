@@ -41,7 +41,7 @@ const ForgotPassword: React.FC = () => {
     try {
       const response = await requestPasswordReset(data.email);
       if (response) {
-        const resetUrl = `http://localhost:3000/auth/reset-password?token=${response.token}`;
+        const resetUrl = `http://localhost:3000/reset_password?token=${response.token}`;
 
         await sendForgotPasswordEmail({
           name: response.name || "User",
