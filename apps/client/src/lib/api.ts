@@ -43,7 +43,7 @@ export const registerBusinessUser = async (
   city: string,
   postalCode: string
 ) => {
-  const response = await fetch(`${apiBaseUrl}/auth/register/business`, {
+  const response = await fetch(`${apiBaseUrl}/business/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -82,7 +82,7 @@ export const registerStaff = async (
   name: string,
   role: string
 ) => {
-  const response = await fetch(`${apiBaseUrl}/register/staff`, {
+  const response = await fetch(`${apiBaseUrl}/staff/register`, {
     method: "POST",
     credentials: "include", // Bagi auth cookie auto included with request
     headers: {
@@ -115,7 +115,7 @@ export const registerTherapist = async (
   specialization: string,
   contactDetails: string
 ) => {
-  const response = await fetch(`${apiBaseUrl}/register/physiotherapist`, {
+  const response = await fetch(`${apiBaseUrl}/therapist/register`, {
     method: "POST",
     credentials: "include", // Bagi auth cookie auto included with request
     headers: {
@@ -163,7 +163,7 @@ export const loginUser = async (email: string, password: string) => {
 };
 
 export const fetchStaffDetails = async () => {
-  const response = await fetch(`${apiBaseUrl}/auth/staff`, {
+  const response = await fetch(`${apiBaseUrl}/staff/`, {
     method: "GET",
     credentials: "include",
     headers: {
@@ -190,7 +190,7 @@ export const updateStaffDetails = async (
   role: string
 ) => {
   try {
-    const response = await fetch(`${apiBaseUrl}/auth/staff/${staffID}`, {
+    const response = await fetch(`${apiBaseUrl}/staff/${staffID}`, {
       method: "PATCH",
       credentials: "include",
       headers: {
@@ -218,7 +218,7 @@ export const updateStaffDetails = async (
 };
 
 export const fetchTherapistDetails = async () => {
-  const response = await fetch(`${apiBaseUrl}/auth/therapist`, {
+  const response = await fetch(`${apiBaseUrl}/therapist/`, {
     method: "GET",
     credentials: "include",
     headers: {
@@ -246,23 +246,20 @@ export const updateTherapistDetails = async (
   contactDetails: string
 ) => {
   try {
-    const response = await fetch(
-      `${apiBaseUrl}/auth/therapist/${therapistID}`,
-      {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          name,
-          specialization,
-          contactDetails,
-        }),
-      }
-    );
+    const response = await fetch(`${apiBaseUrl}/therapist/${therapistID}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        name,
+        specialization,
+        contactDetails,
+      }),
+    });
     //check if token is expired or not
     if (response.status === 401) {
       const data = await response.json();
@@ -307,7 +304,7 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 
 export const requestPasswordReset = async (email: string) => {
   try {
-    const response = await fetch(`${apiBaseUrl}/auth/request-password-reset`, {
+    const response = await fetch(`${apiBaseUrl}/request-password-reset`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -334,7 +331,7 @@ export const resetPassword = async (
   confirmPassword: string
 ) => {
   try {
-    const url = `${apiBaseUrl}/auth/reset-password`;
+    const url = `${apiBaseUrl}/reset-password`;
     console.log("Attempting to call reset password endpoint:", url);
 
     const response = await fetch(url, {
