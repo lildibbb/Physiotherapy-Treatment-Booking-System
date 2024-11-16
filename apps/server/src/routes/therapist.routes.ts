@@ -5,6 +5,7 @@ import jsonResponse, {
 } from "../services/auth-services";
 import {
   getAllTherapistByBusiness,
+  getAvailableSlot,
   updateTherapistDetails,
 } from "../services/services";
 import {
@@ -158,7 +159,33 @@ export const therapistRoutes = new Elysia()
             },
           },
         }
-      );
+      )
+      .get(
+        "/:therapistID/availability",
+        async ({ jwt, cookie: { auth }, params }) => {
+          const therapistID = Number(params.therapistID);
+          if (isNaN(therapistID)) {
+            return jsonResponse({ error: "Invalid therapist ID" }, 400); // Invalid ID
+          }
+          try {
+            const availableSlots = await getAvailableSlot({ therapistID });
 
+            if (availableSlots.length === 0) {
+              return jsonResponse(
+                { message: "No available slots for this therapist." },
+                404
+              );
+            }
+
+            return jsonResponse({ availableSlots }, 200); // Success
+          } catch (error) {
+            console.error("Error fetching availability slots:", error);
+            return jsonResponse(
+              { error: "Failed to fetch availability slots" },
+              500
+            );
+          }
+        }
+      );
     return group; // Return the group instance to satisfy Elysia type requirements
   });

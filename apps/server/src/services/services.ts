@@ -3,14 +3,21 @@ import db from "../db";
 import { jwt } from "@elysiajs/jwt";
 import {
   appointments,
+  availabilities,
   patients,
   physiotherapists,
   staffs,
   user_authentications,
 } from "../schema";
-import type { Staff, Therapist } from "../../types";
+import type {
+  Availability,
+  AvailableSlot,
+  Staff,
+  Therapist,
+} from "../../types";
 import bcrypt from "bcryptjs";
-import jsonResponse from "./auth-services";
+import jsonResponse from "../services/auth-services";
+import { calculateDateForDay, isMorning, isAfternoon } from "./helpers/helper";
 
 //Function to retrieve all staff under business (with Authorization check)
 export async function getAllStaffByBusiness(profile: { businessID: number }) {
@@ -267,6 +274,50 @@ export async function updateTherapistDetails(
   } catch (error) {
     console.error("Error updating therapist:", error);
     return jsonResponse({ message: "Error updating therapist", error }, 500);
+  }
+}
+
+// Retrieve all availability information for a therapist
+export async function getAvailableSlot(params: {
+  therapistID: number;
+}): Promise<AvailableSlot[]> {
+  const { therapistID } = params;
+
+  try {
+    const availableSlots = await db
+      .select()
+      .from(availabilities)
+      .where(
+        eq(availabilities.therapistID, therapistID) &&
+          eq(availabilities.isAvailable, 1)
+      );
+
+    const slotsByDate = availableSlots.reduce(
+      (acc, slot) => {
+        const dateKey = slot.specialDate ?? calculateDateForDay(slot.dayOfWeek);
+        if (!acc[dateKey]) {
+          acc[dateKey] = {
+            date: dateKey,
+            day: slot.dayOfWeek,
+            morning: [],
+            afternoon: [],
+            evening: [],
+          };
+        }
+        const time = slot.startTime;
+        if (isMorning(time)) acc[dateKey].morning.push(time);
+        else if (isAfternoon(time)) acc[dateKey].afternoon.push(time);
+        else acc[dateKey].evening.push(time);
+
+        return acc;
+      },
+      {} as Record<string, AvailableSlot>
+    );
+
+    return Object.values(slotsByDate);
+  } catch (error) {
+    console.error("Error fetching availability slots:", error);
+    throw new Error("Error fetching availability slots");
   }
 }
 // Function to retrieve all appointments - can add filtering by user if needed
