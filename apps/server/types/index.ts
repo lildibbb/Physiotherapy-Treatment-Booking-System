@@ -64,6 +64,21 @@ export type Email = {
   resetUrl?: string; //
 };
 
+export type Availability = {
+  dayOfWeek: string; // Day of the week
+  startTime: string; // Start time of the availability
+  endTime: string; // End time of the availability
+  isAvailable: boolean; // Availability status
+  specialDate?: string; // Special date for the availability
+};
+export type AvailableSlot = {
+  date: string; // The date of the availability (e.g., "2023-11-19")
+  day: string; // The day of the week (e.g., "Monday")
+  morning: string[]; // Morning time slots (e.g., ["08:00", "08:30"])
+  afternoon: string[]; // Afternoon time slots (e.g., ["13:00", "14:00"])
+  evening: string[]; // Evening time slots (e.g., ["18:00", "19:30"])
+};
+
 // Define the UserRegistration type schema
 export const UserRegistrationSchema = t.Object({
   email: t.String(),
@@ -130,3 +145,23 @@ export const EmailSchema = t.Object({
   html: t.String(),
   resetUrl: t.String(),
 });
+
+export const AvailabilitySchema = t.Object({
+  dayOfWeek: t.String(), // Day of the week
+  startTime: t.String(), // Start time of the availability
+  endTime: t.String(), // End time of the availability
+  isAvailable: t.Boolean(), // Availability status
+  specialDate: t.String(), // Special date for the availability
+});
+
+//Define the AvailableSlot type schema
+export const AvailableSlotSchema = t.Object({
+  date: t.String(), // Date in string format
+  day: t.String(), // Day of the week (e.g., "Monday")
+  morning: t.Array(t.String()), // Array of strings for morning slots
+  afternoon: t.Array(t.String()), // Array of strings for afternoon slots
+  evening: t.Array(t.String()), // Array of strings for evening slots
+});
+
+// Define the AvailableSlotsResponse type schema
+export const AvailableSlotsResponseSchema = t.Array(AvailableSlotSchema);
