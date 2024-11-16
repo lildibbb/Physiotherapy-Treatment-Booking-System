@@ -15,9 +15,8 @@ import type {
   UserLogin,
 } from "../../types";
 import type { UserRegistration } from "../../types";
-import { jwt } from "@elysiajs/jwt";
+
 import { eq } from "drizzle-orm";
-import { sendEmail } from "../services/sendEmail";
 
 // Helper function for consistent response formatting
 export default function jsonResponse(data: any, status = 200) {
