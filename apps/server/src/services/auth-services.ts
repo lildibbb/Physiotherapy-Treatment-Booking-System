@@ -372,10 +372,13 @@ export async function registerTherapist(
         name: reqBody.name,
         specialization: reqBody.specialization,
         contactDetails: reqBody.contactDetails,
+        qualification: reqBody.qualification || null,
+        experience: reqBody.experience || null,
         businessID: businessID, // Use businessID from the token
       })
       .returning()
       .execute();
+    console.log("newTherapist", newTherapist);
     return jsonResponse(
       {
         message: "Physiotherapist registration successful",

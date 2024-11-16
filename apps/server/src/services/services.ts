@@ -19,6 +19,15 @@ import bcrypt from "bcryptjs";
 import jsonResponse from "../services/auth-services";
 import { calculateDateForDay, isMorning, isAfternoon } from "./helpers/helper";
 
+export async function getAllTherapistPublic() {
+  const therapistDetails = await db
+    .select({
+      name: physiotherapists.name,
+      specialization: physiotherapists.specialization,
+    })
+    .from(physiotherapists)
+    .execute();
+}
 //Function to retrieve all staff under business (with Authorization check)
 export async function getAllStaffByBusiness(profile: { businessID: number }) {
   //pass the businessID from th decoded token

@@ -5,6 +5,7 @@ import {
   timestamp,
   date,
   integer,
+  json,
 } from "drizzle-orm/pg-core";
 
 // Define the user authentication table schema
@@ -63,6 +64,8 @@ export const physiotherapists = pgTable("physiotherapists", {
   name: varchar("name", { length: 255 }).notNull(),
   specialization: varchar("specialization", { length: 255 }).notNull(),
   contactDetails: varchar("contactDetails", { length: 255 }).notNull(),
+  qualification: json("qualification"),
+  experience: integer("experrience"),
   businessID: integer("businessID")
     .references(() => business_entities.businessID)
     .notNull(),
