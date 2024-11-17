@@ -5,6 +5,7 @@ import jsonResponse, {
 } from "../services/auth-services";
 import {
   getAllTherapistByBusiness,
+  getAllTherapistPublic,
   getAvailableSlot,
   updateTherapistDetails,
 } from "../services/services";
@@ -22,10 +23,48 @@ export const therapistRoutes = new Elysia()
     // GET: Fetch all therapists by business
     group
       .get(
+        `/public`,
+        async () => {
+          try {
+            const therapists = await getAllTherapistPublic();
+
+            if (therapists.length === 0) {
+              return jsonResponse(
+                { message: "No therapists available to display." },
+                404
+              );
+            }
+
+            return jsonResponse({ data: therapists }, 200);
+          } catch (error) {
+            console.error("Error fetching public therapist data:", error);
+            return jsonResponse(
+              { error: "Failed to fetch therapist data." },
+              500
+            );
+          }
+        },
+        {
+          detail: {
+            description: "Get all publicly visible therapist information",
+            tags: ["Public"],
+            responses: {
+              200: { description: "Therapist data retrieved successfully" },
+              404: { description: "No therapists found" },
+              500: { description: "Internal Server Error" },
+            },
+          },
+        }
+      )
+
+      .get(
         `/`,
         async ({ jwt, cookie: { auth } }) => {
           const authResult = await verifyAuth(jwt, auth?.value);
-          console.log("Auth Result [fromGetAllTherapist] :", authResult);
+          console.log(
+            "Auth Result [fromGetAllTherapistByBusiness] :",
+            authResult
+          );
 
           if ("error" in authResult) {
             return jsonResponse(authResult, 401);
@@ -160,32 +199,29 @@ export const therapistRoutes = new Elysia()
           },
         }
       )
-      .get(
-        "/:therapistID/availability",
-        async ({ jwt, cookie: { auth }, params }) => {
-          const therapistID = Number(params.therapistID);
-          if (isNaN(therapistID)) {
-            return jsonResponse({ error: "Invalid therapist ID" }, 400); // Invalid ID
-          }
-          try {
-            const availableSlots = await getAvailableSlot({ therapistID });
+      .get("/:therapistID/availability", async ({ params }) => {
+        const therapistID = Number(params.therapistID);
+        if (isNaN(therapistID)) {
+          return jsonResponse({ error: "Invalid therapist ID" }, 400); // Invalid ID
+        }
+        try {
+          const availableSlots = await getAvailableSlot({ therapistID });
 
-            if (availableSlots.length === 0) {
-              return jsonResponse(
-                { message: "No available slots for this therapist." },
-                404
-              );
-            }
-
-            return jsonResponse({ availableSlots }, 200); // Success
-          } catch (error) {
-            console.error("Error fetching availability slots:", error);
+          if (availableSlots.length === 0) {
             return jsonResponse(
-              { error: "Failed to fetch availability slots" },
-              500
+              { message: "No available slots for this therapist." },
+              404
             );
           }
+
+          return jsonResponse({ availableSlots }, 200); // Success
+        } catch (error) {
+          console.error("Error fetching availability slots:", error);
+          return jsonResponse(
+            { error: "Failed to fetch availability slots" },
+            500
+          );
         }
-      );
+      });
     return group; // Return the group instance to satisfy Elysia type requirements
   });

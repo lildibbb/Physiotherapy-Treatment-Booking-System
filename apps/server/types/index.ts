@@ -81,6 +81,7 @@ export type AvailableSlot = {
   morning: string[]; // Morning time slots (e.g., ["08:00", "08:30"])
   afternoon: string[]; // Afternoon time slots (e.g., ["13:00", "14:00"])
   evening: string[]; // Evening time slots (e.g., ["18:00", "19:30"])
+  unavailable: boolean; // Availability status
 };
 
 // Define the UserRegistration type schema
@@ -142,8 +143,8 @@ export const TherapistSchema = t.Object({
   name: t.String(),
   specialization: t.String(),
   contactDetails: t.String(),
-  qualification: t.Array(t.String()),
-  experience: t.Number(), // Experience in years (e.g., 3)
+  qualification: t.Optional(t.Array(t.String())),
+  eexperience: t.Optional(t.Number()), // Experience in years (e.g., 3)
 });
 
 export const EmailSchema = t.Object({
@@ -169,6 +170,7 @@ export const AvailableSlotSchema = t.Object({
   morning: t.Array(t.String()), // Array of strings for morning slots
   afternoon: t.Array(t.String()), // Array of strings for afternoon slots
   evening: t.Array(t.String()), // Array of strings for evening slots
+  unavailable: t.Boolean(), // Availability status
 });
 
 // Define the AvailableSlotsResponse type schema

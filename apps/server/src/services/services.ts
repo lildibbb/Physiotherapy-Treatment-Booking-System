@@ -4,6 +4,7 @@ import { jwt } from "@elysiajs/jwt";
 import {
   appointments,
   availabilities,
+  business_entities,
   patients,
   physiotherapists,
   staffs,
@@ -17,17 +18,56 @@ import type {
 } from "../../types";
 import bcrypt from "bcryptjs";
 import jsonResponse from "../services/auth-services";
-import { calculateDateForDay, isMorning, isAfternoon } from "./helpers/helper";
+import {
+  calculateDateForDay,
+  isMorning,
+  isAfternoon,
+  addOneHour,
+} from "./helpers/helper";
 
-export async function getAllTherapistPublic() {
-  const therapistDetails = await db
-    .select({
-      name: physiotherapists.name,
-      specialization: physiotherapists.specialization,
-    })
-    .from(physiotherapists)
-    .execute();
+export async function getAllTherapistPublic(): Promise<
+  Array<{
+    name: string;
+    specialization: string;
+    qualification: string[];
+    experience: number | null;
+    businessName: string;
+    location: string; // Combined city and state
+  }>
+> {
+  try {
+    const therapistDetails = await db
+      .select({
+        name: physiotherapists.name,
+        specialization: physiotherapists.specialization,
+        qualification: physiotherapists.qualification,
+        experience: physiotherapists.experience,
+        businessName: business_entities.companyName,
+        city: business_entities.city,
+        state: business_entities.state,
+      })
+      .from(physiotherapists)
+      .innerJoin(
+        business_entities,
+        eq(physiotherapists.businessID, business_entities.businessID)
+      )
+      .execute();
+
+    const transformedTherapist = therapistDetails.map((therapist) => ({
+      ...therapist,
+      qualification: Array.isArray(therapist.qualification)
+        ? therapist.qualification
+        : [],
+      location: `${String(therapist.city)}, ${String(therapist.state)}`,
+    }));
+
+    return transformedTherapist;
+  } catch (error) {
+    console.error("Error fetching therapists:", error);
+    throw new Error("Error fetching therapists.");
+  }
 }
+
 //Function to retrieve all staff under business (with Authorization check)
 export async function getAllStaffByBusiness(profile: { businessID: number }) {
   //pass the businessID from th decoded token
@@ -304,6 +344,21 @@ export async function getAvailableSlot(params: {
     const slotsByDate = availableSlots.reduce(
       (acc, slot) => {
         const dateKey = slot.specialDate ?? calculateDateForDay(slot.dayOfWeek);
+        // Check if it's a full off day (startTime or endTime missing)
+        if (!slot.startTime || !slot.endTime) {
+          // Mark the day as unavailable
+          acc[dateKey] = {
+            date: dateKey,
+            day: slot.dayOfWeek,
+            morning: [],
+            afternoon: [],
+            evening: [],
+            unavailable: true, // Indicate that the doctor is unavailable
+          };
+          return acc; // Skip further processing for this date
+        }
+
+        // Initialize date key if not already present
         if (!acc[dateKey]) {
           acc[dateKey] = {
             date: dateKey,
@@ -311,12 +366,23 @@ export async function getAvailableSlot(params: {
             morning: [],
             afternoon: [],
             evening: [],
+            unavailable: false, // Default to available
           };
         }
-        const time = slot.startTime;
-        if (isMorning(time)) acc[dateKey].morning.push(time);
-        else if (isAfternoon(time)) acc[dateKey].afternoon.push(time);
-        else acc[dateKey].evening.push(time);
+
+        // Split time intervals if the day is available
+        let currentTime = slot.startTime;
+        while (currentTime < slot.endTime) {
+          if (isMorning(currentTime)) {
+            acc[dateKey].morning.push(currentTime);
+          } else if (isAfternoon(currentTime)) {
+            acc[dateKey].afternoon.push(currentTime);
+          } else {
+            acc[dateKey].evening.push(currentTime);
+          }
+
+          currentTime = addOneHour(currentTime);
+        }
 
         return acc;
       },

@@ -65,7 +65,7 @@ export const physiotherapists = pgTable("physiotherapists", {
   specialization: varchar("specialization", { length: 255 }).notNull(),
   contactDetails: varchar("contactDetails", { length: 255 }).notNull(),
   qualification: json("qualification"),
-  experience: integer("experrience"),
+  experience: integer("experience"),
   businessID: integer("businessID")
     .references(() => business_entities.businessID)
     .notNull(),

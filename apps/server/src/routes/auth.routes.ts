@@ -52,17 +52,30 @@ export const authRoutes = new Elysia()
             return { message: loginResponse.error };
           }
 
-          const { id, email } = loginResponse;
+          const { id, email, businessID } = loginResponse;
+
+          // Validate that email is defined
           if (!email) {
             set.status = 400;
             return { message: "Email is required to generate a token" };
           }
 
-          const tokenPayload = { id, email };
+          // Create JWT token
+          const tokenPayload: {
+            id: number;
+            email: string;
+            businessID?: number;
+          } = {
+            id,
+            email,
+          };
+          console.log("TokenPayLoad: ", tokenPayload); //For debugging purposes
+          // Only add `businessID` if it's defined (not null)
+          if (businessID !== null) {
+            tokenPayload.businessID = businessID;
+          }
 
-          // Access jwt directly from the context and use it to sign the token
           const token = await jwt.sign(tokenPayload);
-
           auth.set({
             value: token,
             httpOnly: true,

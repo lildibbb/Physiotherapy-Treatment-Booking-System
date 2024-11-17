@@ -363,7 +363,13 @@ export async function registerTherapist(
       .execute();
 
     const userId = newTherapistUser[0].userID;
-
+    const fakeData = {
+      qualification: [
+        "Bachelor of Physiotherapy",
+        "Master of Orthopedics",
+        "Certification in Sports Therapy",
+      ],
+    };
     //insert into staffs table using businessID from the decoded token
     const newTherapist = await db
       .insert(physiotherapists)
@@ -372,7 +378,7 @@ export async function registerTherapist(
         name: reqBody.name,
         specialization: reqBody.specialization,
         contactDetails: reqBody.contactDetails,
-        qualification: reqBody.qualification || null,
+        qualification: reqBody.qualification || fakeData.qualification || null,
         experience: reqBody.experience || null,
         businessID: businessID, // Use businessID from the token
       })

@@ -36,3 +36,10 @@ export function isMorning(time: string): boolean {
 export function isAfternoon(time: string): boolean {
   return time >= "12:00" && time < "18:00";
 }
+export function addOneHour(time: string): string {
+  const [hour, minute] = time.split(":").map(Number);
+  const newHour = hour + 1;
+  return `${newHour.toString().padStart(2, "0")}:${minute
+    .toString()
+    .padStart(2, "0")}`;
+}
