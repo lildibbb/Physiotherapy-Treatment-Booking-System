@@ -11,9 +11,9 @@ export const Route = createRootRoute({
   // },
 
   component: () => (
-    <>
+    <div className="min-h-screen place-items-center pt-16">
       <Outlet />
       <TanStackRouterDevtools position="bottom-right" />
-    </>
+    </div>
   ),
 });

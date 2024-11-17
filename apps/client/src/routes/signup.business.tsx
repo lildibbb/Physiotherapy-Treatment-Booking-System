@@ -14,7 +14,7 @@ import { useState } from "react";
 import rawStateCities from "../data/states-cities.json";
 import rawStates from "../data/states.json";
 import { PhoneInput } from "@/components/ui/phone-input";
-import Header from "@/components/ui/header";
+
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/command";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Header } from "@/components/header";
 
 // Typecast JSON data
 const stateCities: { [key: string]: string[] } = rawStateCities as {

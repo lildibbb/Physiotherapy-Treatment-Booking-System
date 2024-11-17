@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,7 +6,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -14,62 +14,63 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import Header from '@/components/ui/header'
-import { Input } from '@/components/ui/input'
-import { useToast } from '@/hooks/use-toast'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { createFileRoute } from '@tanstack/react-router'
-import { Link } from '@tanstack/react-router'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { registerUser } from '../lib/api'
+} from "@/components/ui/form";
+
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { registerUser } from "../lib/api";
+import { Header } from "@/components/header";
 
 // Define Zod schema for form validation
 const formSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email address'),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
   password: z
     .string()
-    .min(6, 'Password must be at least 6 characters')
+    .min(6, "Password must be at least 6 characters")
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
-      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
     ),
-})
+});
 
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof formSchema>;
 
-export const Route = createFileRoute('/signup/user')({
+export const Route = createFileRoute("/signup/user")({
   component: RouteComponent,
-})
+});
 
 function RouteComponent() {
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-  })
+  });
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await registerUser(data.name, data.email, data.password)
-      console.log('Registration successful:', response)
+      const response = await registerUser(data.name, data.email, data.password);
+      console.log("Registration successful:", response);
 
       toast({
-        variant: 'default',
-        title: 'Registration Successful',
-        description: 'Your account has been created. You can now log in.',
-      })
+        variant: "default",
+        title: "Registration Successful",
+        description: "Your account has been created. You can now log in.",
+      });
     } catch (error) {
-      console.error(error)
+      console.error(error);
       toast({
-        variant: 'destructive',
-        title: 'Registration failed',
-        description: 'Email is already in use',
-      })
+        variant: "destructive",
+        title: "Registration failed",
+        description: "Email is already in use",
+      });
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -146,7 +147,7 @@ function RouteComponent() {
 
           <CardFooter className="flex flex-col items-center">
             <p className="text-sm text-center">
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link to="/login" className="text-blue-500 hover:underline">
                 Login
               </Link>
@@ -160,5 +161,5 @@ function RouteComponent() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { registerUser } from "../lib/api";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
-import Header from "@/components/ui/header";
+import Header from "@/components/header";
 import {
   Card,
   CardContent,

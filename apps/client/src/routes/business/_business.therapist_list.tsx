@@ -356,9 +356,10 @@ function RouteComponent() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Password</TableHead>
-                        <TableHead>Name</TableHead>
+
                         <TableHead>Specialization</TableHead>
                         <TableHead>Contact Details</TableHead>
                         <TableHead>Actions</TableHead>
@@ -369,6 +370,13 @@ function RouteComponent() {
                         <TableRow key={index}>
                           {editingIndex === index ? (
                             <>
+                              <TableCell>
+                                <Input
+                                  name="name"
+                                  value={editFormData?.name || ""}
+                                  onChange={handleInputChange}
+                                />
+                              </TableCell>
                               <TableCell>
                                 <Input
                                   name="email"
@@ -384,13 +392,7 @@ function RouteComponent() {
                                   onChange={handleInputChange}
                                 />
                               </TableCell>
-                              <TableCell>
-                                <Input
-                                  name="name"
-                                  value={editFormData?.name || ""}
-                                  onChange={handleInputChange}
-                                />
-                              </TableCell>
+
                               <TableCell>
                                 <Select
                                   value={editFormData?.specialization || ""}
@@ -435,9 +437,10 @@ function RouteComponent() {
                             </>
                           ) : (
                             <>
+                              <TableCell>{therapist.name}</TableCell>
                               <TableCell>{therapist.email}</TableCell>
                               <TableCell>******</TableCell>
-                              <TableCell>{therapist.name}</TableCell>
+
                               <TableCell>
                                 <SpecializationBadge
                                   specialization={therapist.specialization}

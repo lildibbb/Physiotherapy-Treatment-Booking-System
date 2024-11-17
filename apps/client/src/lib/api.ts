@@ -361,6 +361,15 @@ export const resetPassword = async (
   }
 };
 
+export const fetchAllStaffPublic = async () => {
+  const response = await fetch(`${apiBaseUrl}/therapist/public`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return await response.json();
+};
 export const fetchUserAppointments = async (token: string | null) => {
   return await fetch(`${apiBaseUrl}/appointments/user`, {
     headers: {

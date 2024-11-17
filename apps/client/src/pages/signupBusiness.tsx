@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 import rawStateCities from "../data/states-cities.json";
 import rawStates from "../data/states.json";
 import { PhoneInput } from "@/components/ui/phone-input";
-import Header from "@/components/ui/header";
+import Header from "@/components/header";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";

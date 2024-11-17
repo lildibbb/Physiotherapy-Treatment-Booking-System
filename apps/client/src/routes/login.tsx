@@ -14,8 +14,8 @@ import type React from "react";
 import { useState } from "react";
 import { loginUser } from "../lib/api";
 
-import Header from "@/components/ui/header";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { Header } from "@/components/header";
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,
@@ -51,7 +51,7 @@ function RouteComponent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div>
       {/* Include the Header at the top */}
       <Header />
       <div className="flex items-center h-[800px] justify-center pt-8">
