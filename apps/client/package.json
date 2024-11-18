@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
+    "@radix-ui/react-accordion": "^1.2.1",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-collapsible": "^1.1.1",
@@ -35,6 +36,7 @@
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
+    "embla-carousel-react": "^8.3.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.456.0",
     "next-themes": "^0.3.0",

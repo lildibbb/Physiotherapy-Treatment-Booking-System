@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import HeroImage from "../assets/HeroImage.png";
+import HeroImage1 from "../assets/HeroImage1.gif";
 import { Button } from "@/components/ui/button";
 const Hero = () => {
   return (
@@ -23,9 +24,9 @@ const Hero = () => {
           personalized treatments tailored to your needs.
         </p>
         <div className="flex w-full flex-col justify-center gap-2 sm:flex-row lg:justify-start">
-          <Link to="/login">
+          <Link to="/findDoctor">
             {" "}
-            <Button className="sm:w-auto">Find Doctor</Button>
+            <Button className="sm:w-auto">Find My Doctor</Button>
           </Link>
         </div>
         <div className="space-y-4 md:space-y-0 md:space-x-4"></div>
@@ -39,9 +40,6 @@ const Hero = () => {
           className="max-h-96 w-full rounded-md object-cover"
         />
       </div>
-
-      {/* Shadow effect */}
-      <div className="shadow"></div>
     </section>
   );
 };

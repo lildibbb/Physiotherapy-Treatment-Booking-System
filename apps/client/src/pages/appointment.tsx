@@ -71,6 +71,7 @@ export default function Appointment() {
           {/* Filters */}
           <div className="mb-4 flex items-center gap-4">
             <Input
+              type="search"
               placeholder="Filter tasks..."
               className="flex-1"
               // Add your onChange handler here for filtering logic

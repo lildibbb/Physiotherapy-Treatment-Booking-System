@@ -8,3 +8,7 @@ export interface HospitalData {
   distance: number; // Distance from user in km
   coordinates: { lat: number; lng: number }; // Latitude and Longitude
 }
+
+export interface BusinessData {
+  location: string;
+}

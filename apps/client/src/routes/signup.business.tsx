@@ -163,7 +163,7 @@ function RouteComponent() {
     }
   };
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen dark:bg-gray-900">
       <Header />
       <div className="flex items-center justify-center pt-8">
         <Card className="w-full max-w-2xl p-6">

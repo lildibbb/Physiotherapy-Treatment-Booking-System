@@ -73,7 +73,7 @@ function RouteComponent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen py-32 dark:bg-gray-900">
       <Header /> {/* Include the Header at the top */}
       <div className="flex items-center justify-center pt-8">
         <Card className="w-full max-w-md p-4">
