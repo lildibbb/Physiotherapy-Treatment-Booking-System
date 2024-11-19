@@ -7,6 +7,7 @@ import {
   getAllTherapistByBusiness,
   getAllTherapistPublic,
   getAvailableSlot,
+  getTherapistByID,
   updateTherapistDetails,
 } from "../services/services";
 import {
@@ -52,6 +53,36 @@ export const therapistRoutes = new Elysia()
               200: { description: "Therapist data retrieved successfully" },
               404: { description: "No therapists found" },
               500: { description: "Internal Server Error" },
+            },
+          },
+        }
+      )
+      .get(
+        "/:therapistID",
+        async ({ params }) => {
+          const therapistID = Number(params.therapistID);
+
+          // Validate therapist ID
+          if (isNaN(therapistID)) {
+            return jsonResponse({ error: "Invalid therapist ID." }, 400);
+          }
+
+          try {
+            const therapist = await getTherapistByID(therapistID);
+            return jsonResponse(therapist, 200); // Success response with therapist data
+          } catch (error: any) {
+            console.error("Error fetching therapist:", error.message);
+            return jsonResponse({ error: error.message }, 404); // Error response
+          }
+        },
+        {
+          detail: {
+            description: "Get therapist details by ID",
+            tags: ["Public"],
+            responses: {
+              200: { description: "Therapist details retrieved successfully" },
+              400: { description: "Invalid therapist ID" },
+              404: { description: "Therapist not found" },
             },
           },
         }

@@ -1,15 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router'
 
-import { TherapistList } from "@/components/therapistList";
-import { Header } from "@/components/header";
-import Hero from "@/components/hero";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { BusinessData } from "@/types/types";
+import { TherapistList } from '@/components/therapistList'
+import { Header } from '@/components/header'
+import Hero from '@/components/hero'
+import { Input } from '@/components/ui/input'
+import { useState } from 'react'
+import { BusinessData } from '@/types/types'
 
-export const Route = createFileRoute("/findDoctor")({
+export const Route = createFileRoute('/findDoctor/')({
   component: RouteComponent,
-});
+})
 
 function RouteComponent() {
   return (
@@ -40,5 +40,5 @@ function RouteComponent() {
         </div>
       </div>
     </div>
-  );
+  )
 }

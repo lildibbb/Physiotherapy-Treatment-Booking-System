@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { fetchAllStaffPublic } from "../../lib/api"; // Import your API function
+import { fetchAllTherapistPublic } from "../../lib/api"; // Import your API function
 
 export const Route = createFileRoute(
   "/therapist/_therapist/therapist_public_list"
@@ -28,7 +28,7 @@ function RouteComponent() {
   useEffect(() => {
     async function getTherapists() {
       try {
-        const data = await fetchAllStaffPublic(); // Call the API
+        const data = await fetchAllTherapistPublic(); // Call the API
         setTherapists(data.data); // Assuming API response structure includes `data` key
       } catch (err) {
         setError("Failed to fetch therapists."); // Handle errors

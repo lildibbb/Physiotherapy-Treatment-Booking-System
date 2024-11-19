@@ -54,10 +54,14 @@ export type Therapist = {
   email?: string; // Email for the staff account ( Optional )
   password?: string; // Password for the staff account ( Optional )
   name?: string; // Optional name for the staff
+  businessName?: string;
   specialization?: string;
   contactDetails?: string;
   qualification?: string[]; // array for the qualifications
-  experience?: number;
+  experience?: number | null;
+  city?: string;
+  state?: string;
+  location?: string;
 };
 
 export type Email = {
@@ -141,10 +145,14 @@ export const TherapistSchema = t.Object({
   email: t.String(),
   password: t.String(),
   name: t.String(),
+  businessName: t.Optional(t.String()), // Optional field
   specialization: t.String(),
   contactDetails: t.String(),
   qualification: t.Optional(t.Array(t.String())),
-  eexperience: t.Optional(t.Number()), // Experience in years (e.g., 3)
+  eexperience: t.Optional(t.Number()), // Experience in years (e.g., 3)\
+  city: t.Optional(t.String()), // Optional field
+  state: t.Optional(t.String()), // Optional field
+  location: t.Optional(t.String()), // Location for the therapist
 });
 
 export const EmailSchema = t.Object({

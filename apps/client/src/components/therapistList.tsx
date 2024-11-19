@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { fetchAllStaffPublic } from "../lib/api";
+import { fetchAllTherapistPublic } from "../lib/api";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -16,8 +15,10 @@ import {
   MapPinHouse,
   UserRoundMinus,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 type Therapist = {
+  therapistID: number;
   name: string;
   specialization: string;
   qualification: string[];
@@ -36,7 +37,8 @@ export const TherapistList = () => {
   useEffect(() => {
     async function getTherapists() {
       try {
-        const data = await fetchAllStaffPublic();
+        const data = await fetchAllTherapistPublic();
+        console.log("Fetched Data: ", data);
         setTherapists(data.data);
       } catch (err) {
         setError("Failed to fetch therapists.");
@@ -79,7 +81,7 @@ export const TherapistList = () => {
               <CardTitle className="text-xl font-bold mb-1">
                 {therapist.name}
               </CardTitle>
-              <CardDescription className="text-sm font-semibold text-gray-500">
+              <CardDescription className="text-sm font-semibold text-gray-600">
                 <UserRoundMinus className="inline mr-2 mb-1" />
                 {therapist.specialization}
               </CardDescription>
@@ -87,7 +89,7 @@ export const TherapistList = () => {
                 <Hospital className="inline mr-2 mb-1" />
                 {therapist.businessName}
               </CardDescription>
-              <CardDescription className="text-sm font-semibold text-gray-500">
+              <CardDescription className="text-sm font-semibold text-gray-600">
                 <MapPinHouse className="inline mr-2 mb-1" />
                 {therapist.location || "Location not provided"}
               </CardDescription>
@@ -119,9 +121,14 @@ export const TherapistList = () => {
 
           {/* Bottom Section: Book Button */}
           <div className="pt-4 flex justify-center">
-            <button className="w-1/2 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-              Book
-            </button>
+            <Link
+              to="/findDoctor/$therapistID"
+              params={{ therapistID: therapist.therapistID.toString() }}
+            >
+              <button className="w-full px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                Book
+              </button>
+            </Link>
           </div>
         </Card>
       ))}

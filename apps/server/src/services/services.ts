@@ -27,6 +27,7 @@ import {
 
 export async function getAllTherapistPublic(): Promise<
   Array<{
+    therapistID: number;
     name: string;
     specialization: string;
     qualification: string[];
@@ -38,6 +39,7 @@ export async function getAllTherapistPublic(): Promise<
   try {
     const therapistDetails = await db
       .select({
+        therapistID: physiotherapists.therapistID,
         name: physiotherapists.name,
         specialization: physiotherapists.specialization,
         qualification: physiotherapists.qualification,
@@ -393,6 +395,53 @@ export async function getAvailableSlot(params: {
   } catch (error) {
     console.error("Error fetching availability slots:", error);
     throw new Error("Error fetching availability slots");
+  }
+}
+
+export async function getTherapistByID(
+  therapistID: number
+): Promise<Therapist> {
+  try {
+    const therapistDetail = await db
+      .select({
+        name: physiotherapists.name,
+        specialization: physiotherapists.specialization,
+        qualification: physiotherapists.qualification,
+        experience: physiotherapists.experience,
+        businessName: business_entities.companyName,
+        city: business_entities.city,
+        state: business_entities.state,
+      })
+      .from(physiotherapists)
+      .innerJoin(
+        business_entities,
+        eq(physiotherapists.businessID, business_entities.businessID)
+      )
+      .where(eq(physiotherapists.therapistID, therapistID)) // Filter by therapist ID
+      .execute();
+
+    if (!therapistDetail || therapistDetail.length === 0) {
+      throw new Error(`Therapist with ID ${therapistID} not found.`);
+    }
+
+    // Since you expect only one therapist, access the first result (index 0)
+    const therapist = therapistDetail[0];
+
+    const transformedTherapist: Therapist = {
+      name: therapist.name,
+      specialization: therapist.specialization,
+      qualification: Array.isArray(therapist.qualification)
+        ? therapist.qualification
+        : [],
+      experience: therapist.experience,
+      businessName: therapist.businessName, // Include businessName if needed
+      location: `${String(therapist.city)}, ${String(therapist.state)}`,
+    };
+
+    return transformedTherapist;
+  } catch (error) {
+    console.error("Error fetching therapist by ID:", error);
+    throw new Error(`Error fetching therapist with ID ${therapistID}.`);
   }
 }
 // Function to retrieve all appointments - can add filtering by user if needed

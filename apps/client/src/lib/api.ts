@@ -17,7 +17,7 @@ export const registerUser = async (
       name,
       email,
       password,
-      role: "patient", // Set default role
+      role: "patient", // Set default role (POSSIBLE OF ATTACK) //TODO: remove this
       associatedID: "", // Set associatedID as an empty string
     }),
   });
@@ -361,15 +361,52 @@ export const resetPassword = async (
   }
 };
 
-export const fetchAllStaffPublic = async () => {
+export const fetchAllTherapistPublic = async () => {
   const response = await fetch(`${apiBaseUrl}/therapist/public`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
   });
+  if (!response.ok) {
+    throw new Error("Failed to fetch therapist details");
+  }
   return await response.json();
 };
+
+export const fetchTherapistDetailsByID = async (therapistID: number) => {
+  const response = await fetch(`${apiBaseUrl}/therapist/${therapistID}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch therapist details");
+  }
+  return await response.json();
+};
+
+export const fetchTherapistAvailability = async (therapistID: number) => {
+  const response = await fetch(
+    `${apiBaseUrl}/therapist/${therapistID}/availability`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  // Check for 404 or non-JSON responses
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text);
+  }
+
+  const data = await response.json();
+  return data.availableSlots || [];
+};
+
 export const fetchUserAppointments = async (token: string | null) => {
   return await fetch(`${apiBaseUrl}/appointments/user`, {
     headers: {

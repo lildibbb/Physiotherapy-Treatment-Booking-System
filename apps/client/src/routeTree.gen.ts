@@ -16,13 +16,21 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as UserprofileImport } from './routes/user_profile'
 import { Route as ResetpasswordImport } from './routes/reset_password'
 import { Route as RequestresetpasswordImport } from './routes/request_reset_password'
+import { Route as MerchantImport } from './routes/merchant'
 import { Route as LoginImport } from './routes/login'
 import { Route as DashboardImport } from './routes/dashboard'
+import { Route as BookImport } from './routes/book'
+import { Route as R505Import } from './routes/505'
+import { Route as R404Import } from './routes/404'
+import { Route as IndexImport } from './routes/index'
+import { Route as FindDoctorIndexImport } from './routes/findDoctor/index'
 import { Route as StaffStaffImport } from './routes/staff/_staff'
 import { Route as SignupUserImport } from './routes/signup.user'
 import { Route as SignupBusinessImport } from './routes/signup.business'
+import { Route as FindDoctorTherapistIDImport } from './routes/findDoctor/$therapistID'
 import { Route as UserUserProfileImport } from './routes/user/_user.profile'
 import { Route as UserUserDashboardImport } from './routes/user/_user.dashboard'
+import { Route as TherapistTherapistTherapistpubliclistImport } from './routes/therapist/_therapist.therapist_public_list'
 import { Route as StaffStaffDashboardImport } from './routes/staff/_staff.dashboard'
 import { Route as BusinessBusinessTherapistlistImport } from './routes/business/_business.therapist_list'
 import { Route as BusinessBusinessStafflistImport } from './routes/business/_business.staff_list'
@@ -58,6 +66,12 @@ const RequestresetpasswordRoute = RequestresetpasswordImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const MerchantRoute = MerchantImport.update({
+  id: '/merchant',
+  path: '/merchant',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const LoginRoute = LoginImport.update({
   id: '/login',
   path: '/login',
@@ -67,6 +81,36 @@ const LoginRoute = LoginImport.update({
 const DashboardRoute = DashboardImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const BookRoute = BookImport.update({
+  id: '/book',
+  path: '/book',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const R505Route = R505Import.update({
+  id: '/505',
+  path: '/505',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const R404Route = R404Import.update({
+  id: '/404',
+  path: '/404',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const IndexRoute = IndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const FindDoctorIndexRoute = FindDoctorIndexImport.update({
+  id: '/findDoctor/',
+  path: '/findDoctor/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -87,6 +131,12 @@ const SignupBusinessRoute = SignupBusinessImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const FindDoctorTherapistIDRoute = FindDoctorTherapistIDImport.update({
+  id: '/findDoctor/$therapistID',
+  path: '/findDoctor/$therapistID',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const UserUserProfileRoute = UserUserProfileImport.update({
   id: '/user/_user/profile',
   path: '/user/profile',
@@ -98,6 +148,13 @@ const UserUserDashboardRoute = UserUserDashboardImport.update({
   path: '/user/dashboard',
   getParentRoute: () => rootRoute,
 } as any)
+
+const TherapistTherapistTherapistpubliclistRoute =
+  TherapistTherapistTherapistpubliclistImport.update({
+    id: '/therapist/_therapist/therapist_public_list',
+    path: '/therapist/therapist_public_list',
+    getParentRoute: () => rootRoute,
+  } as any)
 
 const StaffStaffDashboardRoute = StaffStaffDashboardImport.update({
   id: '/dashboard',
@@ -128,6 +185,34 @@ const BusinessBusinessDashboardRoute = BusinessBusinessDashboardImport.update({
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/404': {
+      id: '/404'
+      path: '/404'
+      fullPath: '/404'
+      preLoaderRoute: typeof R404Import
+      parentRoute: typeof rootRoute
+    }
+    '/505': {
+      id: '/505'
+      path: '/505'
+      fullPath: '/505'
+      preLoaderRoute: typeof R505Import
+      parentRoute: typeof rootRoute
+    }
+    '/book': {
+      id: '/book'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookImport
+      parentRoute: typeof rootRoute
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -140,6 +225,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginImport
+      parentRoute: typeof rootRoute
+    }
+    '/merchant': {
+      id: '/merchant'
+      path: '/merchant'
+      fullPath: '/merchant'
+      preLoaderRoute: typeof MerchantImport
       parentRoute: typeof rootRoute
     }
     '/request_reset_password': {
@@ -161,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/user_profile'
       fullPath: '/user_profile'
       preLoaderRoute: typeof UserprofileImport
+      parentRoute: typeof rootRoute
+    }
+    '/findDoctor/$therapistID': {
+      id: '/findDoctor/$therapistID'
+      path: '/findDoctor/$therapistID'
+      fullPath: '/findDoctor/$therapistID'
+      preLoaderRoute: typeof FindDoctorTherapistIDImport
       parentRoute: typeof rootRoute
     }
     '/signup/business': {
@@ -191,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffStaffImport
       parentRoute: typeof StaffRoute
     }
+    '/findDoctor/': {
+      id: '/findDoctor/'
+      path: '/findDoctor'
+      fullPath: '/findDoctor'
+      preLoaderRoute: typeof FindDoctorIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/business/_business/dashboard': {
       id: '/business/_business/dashboard'
       path: '/business/dashboard'
@@ -218,6 +324,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/staff/dashboard'
       preLoaderRoute: typeof StaffStaffDashboardImport
       parentRoute: typeof StaffStaffImport
+    }
+    '/therapist/_therapist/therapist_public_list': {
+      id: '/therapist/_therapist/therapist_public_list'
+      path: '/therapist/therapist_public_list'
+      fullPath: '/therapist/therapist_public_list'
+      preLoaderRoute: typeof TherapistTherapistTherapistpubliclistImport
+      parentRoute: typeof rootRoute
     }
     '/user/_user/dashboard': {
       id: '/user/_user/dashboard'
@@ -261,54 +374,78 @@ const StaffRouteChildren: StaffRouteChildren = {
 const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/404': typeof R404Route
+  '/505': typeof R505Route
+  '/book': typeof BookRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/merchant': typeof MerchantRoute
   '/request_reset_password': typeof RequestresetpasswordRoute
   '/reset_password': typeof ResetpasswordRoute
   '/user_profile': typeof UserprofileRoute
+  '/findDoctor/$therapistID': typeof FindDoctorTherapistIDRoute
   '/signup/business': typeof SignupBusinessRoute
   '/signup/user': typeof SignupUserRoute
   '/staff': typeof StaffStaffRouteWithChildren
+  '/findDoctor': typeof FindDoctorIndexRoute
   '/business/dashboard': typeof BusinessBusinessDashboardRoute
   '/business/staff_list': typeof BusinessBusinessStafflistRoute
   '/business/therapist_list': typeof BusinessBusinessTherapistlistRoute
   '/staff/dashboard': typeof StaffStaffDashboardRoute
+  '/therapist/therapist_public_list': typeof TherapistTherapistTherapistpubliclistRoute
   '/user/dashboard': typeof UserUserDashboardRoute
   '/user/profile': typeof UserUserProfileRoute
 }
 
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/404': typeof R404Route
+  '/505': typeof R505Route
+  '/book': typeof BookRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/merchant': typeof MerchantRoute
   '/request_reset_password': typeof RequestresetpasswordRoute
   '/reset_password': typeof ResetpasswordRoute
   '/user_profile': typeof UserprofileRoute
+  '/findDoctor/$therapistID': typeof FindDoctorTherapistIDRoute
   '/signup/business': typeof SignupBusinessRoute
   '/signup/user': typeof SignupUserRoute
   '/staff': typeof StaffStaffRouteWithChildren
+  '/findDoctor': typeof FindDoctorIndexRoute
   '/business/dashboard': typeof BusinessBusinessDashboardRoute
   '/business/staff_list': typeof BusinessBusinessStafflistRoute
   '/business/therapist_list': typeof BusinessBusinessTherapistlistRoute
   '/staff/dashboard': typeof StaffStaffDashboardRoute
+  '/therapist/therapist_public_list': typeof TherapistTherapistTherapistpubliclistRoute
   '/user/dashboard': typeof UserUserDashboardRoute
   '/user/profile': typeof UserUserProfileRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/404': typeof R404Route
+  '/505': typeof R505Route
+  '/book': typeof BookRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/merchant': typeof MerchantRoute
   '/request_reset_password': typeof RequestresetpasswordRoute
   '/reset_password': typeof ResetpasswordRoute
   '/user_profile': typeof UserprofileRoute
+  '/findDoctor/$therapistID': typeof FindDoctorTherapistIDRoute
   '/signup/business': typeof SignupBusinessRoute
   '/signup/user': typeof SignupUserRoute
   '/staff': typeof StaffRouteWithChildren
   '/staff/_staff': typeof StaffStaffRouteWithChildren
+  '/findDoctor/': typeof FindDoctorIndexRoute
   '/business/_business/dashboard': typeof BusinessBusinessDashboardRoute
   '/business/_business/staff_list': typeof BusinessBusinessStafflistRoute
   '/business/_business/therapist_list': typeof BusinessBusinessTherapistlistRoute
   '/staff/_staff/dashboard': typeof StaffStaffDashboardRoute
+  '/therapist/_therapist/therapist_public_list': typeof TherapistTherapistTherapistpubliclistRoute
   '/user/_user/dashboard': typeof UserUserDashboardRoute
   '/user/_user/profile': typeof UserUserProfileRoute
 }
@@ -316,84 +453,125 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
+    | '/404'
+    | '/505'
+    | '/book'
     | '/dashboard'
     | '/login'
+    | '/merchant'
     | '/request_reset_password'
     | '/reset_password'
     | '/user_profile'
+    | '/findDoctor/$therapistID'
     | '/signup/business'
     | '/signup/user'
     | '/staff'
+    | '/findDoctor'
     | '/business/dashboard'
     | '/business/staff_list'
     | '/business/therapist_list'
     | '/staff/dashboard'
+    | '/therapist/therapist_public_list'
     | '/user/dashboard'
     | '/user/profile'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
+    | '/404'
+    | '/505'
+    | '/book'
     | '/dashboard'
     | '/login'
+    | '/merchant'
     | '/request_reset_password'
     | '/reset_password'
     | '/user_profile'
+    | '/findDoctor/$therapistID'
     | '/signup/business'
     | '/signup/user'
     | '/staff'
+    | '/findDoctor'
     | '/business/dashboard'
     | '/business/staff_list'
     | '/business/therapist_list'
     | '/staff/dashboard'
+    | '/therapist/therapist_public_list'
     | '/user/dashboard'
     | '/user/profile'
   id:
     | '__root__'
+    | '/'
+    | '/404'
+    | '/505'
+    | '/book'
     | '/dashboard'
     | '/login'
+    | '/merchant'
     | '/request_reset_password'
     | '/reset_password'
     | '/user_profile'
+    | '/findDoctor/$therapistID'
     | '/signup/business'
     | '/signup/user'
     | '/staff'
     | '/staff/_staff'
+    | '/findDoctor/'
     | '/business/_business/dashboard'
     | '/business/_business/staff_list'
     | '/business/_business/therapist_list'
     | '/staff/_staff/dashboard'
+    | '/therapist/_therapist/therapist_public_list'
     | '/user/_user/dashboard'
     | '/user/_user/profile'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  R404Route: typeof R404Route
+  R505Route: typeof R505Route
+  BookRoute: typeof BookRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  MerchantRoute: typeof MerchantRoute
   RequestresetpasswordRoute: typeof RequestresetpasswordRoute
   ResetpasswordRoute: typeof ResetpasswordRoute
   UserprofileRoute: typeof UserprofileRoute
+  FindDoctorTherapistIDRoute: typeof FindDoctorTherapistIDRoute
   SignupBusinessRoute: typeof SignupBusinessRoute
   SignupUserRoute: typeof SignupUserRoute
   StaffRoute: typeof StaffRouteWithChildren
+  FindDoctorIndexRoute: typeof FindDoctorIndexRoute
   BusinessBusinessDashboardRoute: typeof BusinessBusinessDashboardRoute
   BusinessBusinessStafflistRoute: typeof BusinessBusinessStafflistRoute
   BusinessBusinessTherapistlistRoute: typeof BusinessBusinessTherapistlistRoute
+  TherapistTherapistTherapistpubliclistRoute: typeof TherapistTherapistTherapistpubliclistRoute
   UserUserDashboardRoute: typeof UserUserDashboardRoute
   UserUserProfileRoute: typeof UserUserProfileRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  R404Route: R404Route,
+  R505Route: R505Route,
+  BookRoute: BookRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  MerchantRoute: MerchantRoute,
   RequestresetpasswordRoute: RequestresetpasswordRoute,
   ResetpasswordRoute: ResetpasswordRoute,
   UserprofileRoute: UserprofileRoute,
+  FindDoctorTherapistIDRoute: FindDoctorTherapistIDRoute,
   SignupBusinessRoute: SignupBusinessRoute,
   SignupUserRoute: SignupUserRoute,
   StaffRoute: StaffRouteWithChildren,
+  FindDoctorIndexRoute: FindDoctorIndexRoute,
   BusinessBusinessDashboardRoute: BusinessBusinessDashboardRoute,
   BusinessBusinessStafflistRoute: BusinessBusinessStafflistRoute,
   BusinessBusinessTherapistlistRoute: BusinessBusinessTherapistlistRoute,
+  TherapistTherapistTherapistpubliclistRoute:
+    TherapistTherapistTherapistpubliclistRoute,
   UserUserDashboardRoute: UserUserDashboardRoute,
   UserUserProfileRoute: UserUserProfileRoute,
 }
@@ -408,26 +586,49 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
+        "/",
+        "/404",
+        "/505",
+        "/book",
         "/dashboard",
         "/login",
+        "/merchant",
         "/request_reset_password",
         "/reset_password",
         "/user_profile",
+        "/findDoctor/$therapistID",
         "/signup/business",
         "/signup/user",
         "/staff",
+        "/findDoctor/",
         "/business/_business/dashboard",
         "/business/_business/staff_list",
         "/business/_business/therapist_list",
+        "/therapist/_therapist/therapist_public_list",
         "/user/_user/dashboard",
         "/user/_user/profile"
       ]
+    },
+    "/": {
+      "filePath": "index.tsx"
+    },
+    "/404": {
+      "filePath": "404.tsx"
+    },
+    "/505": {
+      "filePath": "505.tsx"
+    },
+    "/book": {
+      "filePath": "book.tsx"
     },
     "/dashboard": {
       "filePath": "dashboard.tsx"
     },
     "/login": {
       "filePath": "login.tsx"
+    },
+    "/merchant": {
+      "filePath": "merchant.tsx"
     },
     "/request_reset_password": {
       "filePath": "request_reset_password.tsx"
@@ -437,6 +638,9 @@ export const routeTree = rootRoute
     },
     "/user_profile": {
       "filePath": "user_profile.tsx"
+    },
+    "/findDoctor/$therapistID": {
+      "filePath": "findDoctor/$therapistID.tsx"
     },
     "/signup/business": {
       "filePath": "signup.business.tsx"
@@ -457,6 +661,9 @@ export const routeTree = rootRoute
         "/staff/_staff/dashboard"
       ]
     },
+    "/findDoctor/": {
+      "filePath": "findDoctor/index.tsx"
+    },
     "/business/_business/dashboard": {
       "filePath": "business/_business.dashboard.tsx"
     },
@@ -469,6 +676,9 @@ export const routeTree = rootRoute
     "/staff/_staff/dashboard": {
       "filePath": "staff/_staff.dashboard.tsx",
       "parent": "/staff/_staff"
+    },
+    "/therapist/_therapist/therapist_public_list": {
+      "filePath": "therapist/_therapist.therapist_public_list.tsx"
     },
     "/user/_user/dashboard": {
       "filePath": "user/_user.dashboard.tsx"
