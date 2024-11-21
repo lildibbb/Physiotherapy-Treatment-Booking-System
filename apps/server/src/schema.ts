@@ -77,8 +77,8 @@ export const availabilities = pgTable("availabilities", {
     .references(() => physiotherapists.therapistID)
     .notNull(),
   dayOfWeek: varchar("dayOfWeek", { length: 10 }).notNull(), // e.g., "Monday"
-  startTime: varchar("startTime", { length: 5 }).notNull(), // e.g., "08:00"
-  endTime: varchar("endTime", { length: 5 }).notNull(), // e.g., "17:00"
+  startTime: varchar("startTime", { length: 5 }),
+  endTime: varchar("endTime", { length: 5 }),
   isAvailable: integer("isAvailable").default(1).notNull(), // 1 = available, 0 = not available
   specialDate: date("specialDate"), // For specific dates
 });

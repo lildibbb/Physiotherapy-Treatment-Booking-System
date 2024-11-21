@@ -58,7 +58,7 @@ export const Header = () => {
 
   const [isOpen, setOpen] = useState(false);
   return (
-    <header className="w-full z-40 fixed top-0 left-0 bg-background">
+    <header className="w-full z-40 fixed top-0 rounded-b-2xl left-0 bg-background">
       <div className="container relative mx-auto min-h-20 flex gap-4 flex-row lg:grid lg:grid-cols-3 items-center">
         <Link to="/">
           <a className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">

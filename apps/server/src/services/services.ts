@@ -338,11 +338,9 @@ export async function getAvailableSlot(params: {
     const availableSlots = await db
       .select()
       .from(availabilities)
-      .where(
-        eq(availabilities.therapistID, therapistID) &&
-          eq(availabilities.isAvailable, 1)
-      );
+      .where(eq(availabilities.therapistID, therapistID));
 
+    console.log("Therapist ID received:", therapistID);
     const slotsByDate = availableSlots.reduce(
       (acc, slot) => {
         const dateKey = slot.specialDate ?? calculateDateForDay(slot.dayOfWeek);
@@ -390,7 +388,7 @@ export async function getAvailableSlot(params: {
       },
       {} as Record<string, AvailableSlot>
     );
-
+    console.log("Fetched data for therapist:", therapistID, availableSlots);
     return Object.values(slotsByDate);
   } catch (error) {
     console.error("Error fetching availability slots:", error);
