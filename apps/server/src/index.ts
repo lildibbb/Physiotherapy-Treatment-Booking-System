@@ -8,6 +8,8 @@ import { authRoutes } from "./routes/auth.routes";
 import { businessRoutes } from "./routes/business.routes";
 import { staffRoutes } from "./routes/staff.routes";
 import { therapistRoutes } from "./routes/therapist.routes";
+import { paymentRoutes } from "./routes/payment.routes";
+import { bookingRoutes } from "./routes/booking.routes";
 
 // PostgreSQL Client
 const client = new Client({
@@ -47,6 +49,7 @@ const app = new Elysia()
   .use(authRoutes)
   .use(businessRoutes)
   .use(staffRoutes)
-  .use(therapistRoutes);
-
+  .use(therapistRoutes)
+  .use(paymentRoutes)
+  .use(bookingRoutes);
 app.listen(5431, () => console.log("Server running on port 5431"));

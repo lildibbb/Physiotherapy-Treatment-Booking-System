@@ -12,3 +12,12 @@ export interface HospitalData {
 export interface BusinessData {
   location: string;
 }
+
+export interface AppointmentPayload {
+  therapistID: number;
+  appointmentDate: string;
+  time: string;
+  type?: string; // for consultation type
+  status?: string;
+  planID?: number;
+}

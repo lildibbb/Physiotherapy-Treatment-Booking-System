@@ -11,6 +11,7 @@ import {
   user_authentications,
 } from "../schema";
 import type {
+  Appointment,
   Availability,
   AvailableSlot,
   Staff,
@@ -402,6 +403,7 @@ export async function getTherapistByID(
   try {
     const therapistDetail = await db
       .select({
+        therapistID: physiotherapists.therapistID,
         name: physiotherapists.name,
         specialization: physiotherapists.specialization,
         qualification: physiotherapists.qualification,
@@ -426,6 +428,7 @@ export async function getTherapistByID(
     const therapist = therapistDetail[0];
 
     const transformedTherapist: Therapist = {
+      therapistID: therapist.therapistID,
       name: therapist.name,
       specialization: therapist.specialization,
       qualification: Array.isArray(therapist.qualification)
@@ -440,6 +443,97 @@ export async function getTherapistByID(
   } catch (error) {
     console.error("Error fetching therapist by ID:", error);
     throw new Error(`Error fetching therapist with ID ${therapistID}.`);
+  }
+}
+
+// Create appointment and associate it with the logged-in user
+export async function createAppointment(
+  reqBody: Appointment,
+  therapistID: number,
+  profile: {
+    id: number;
+  }
+) {
+  if (!reqBody.appointmentDate || !reqBody.time) {
+    return jsonResponse({ error: "appointmentDate, time are required." }, 400);
+  }
+  // pass the userID from the decoded token
+  const userID = profile.id;
+  console.log("User ID received:", userID);
+  try {
+    //Step 0 : fetch patientID form userID
+    const patientResult = await db
+      .select({ patientID: patients.patientID })
+      .from(patients)
+      .where(eq(patients.userID, userID))
+      .execute();
+
+    if (!patientResult || patientResult.length === 0) {
+      return jsonResponse(
+        { error: "No patient found for the provided userID." },
+        404
+      );
+    }
+
+    const { patientID } = patientResult[0];
+    console.log("Patient ID received:", patientID);
+    //Step 1 : fetch businessID related to the therapist
+    const businessResult = await db
+      .select({ businessID: physiotherapists.businessID })
+      .from(physiotherapists)
+      .where(eq(physiotherapists.therapistID, therapistID))
+      .execute();
+
+    if (!businessResult) {
+      return jsonResponse(
+        { error: "No business found for the selected physiotherapist." },
+        404
+      );
+    }
+
+    const { businessID } = businessResult[0];
+
+    //Step 2 : fetch staffID related to the businessID
+
+    const staffResult = await db
+      .select({ staffID: staffs.staffID })
+      .from(staffs)
+      .where(eq(staffs.businessID, businessID))
+      .execute();
+
+    if (!staffResult) {
+      return jsonResponse(
+        {
+          error:
+            "No staff found for the business associated with this therapist.",
+        },
+        404
+      );
+    }
+
+    const { staffID } = staffResult[0];
+
+    // Step 3: Create the appointment
+    const newAppointment = await db
+      .insert(appointments)
+      .values({
+        ...reqBody,
+        patientID: patientID, // Add patientID
+        therapistID: therapistID, // Add therapistID
+        staffID: staffID, // Add staffID
+        status: "pending", // Default status
+        planID: null, // Default plan ID (can be null if not provided)
+      })
+      .returning() // Return the inserted record
+      .execute();
+
+    console.log(
+      `Successfully created appointment with ID ${newAppointment[0].appointmentID}`
+    );
+    return jsonResponse(newAppointment[0], 201); // Return created appointment
+  } catch (error) {
+    console.error("Error creating appointment:", error);
+    return jsonResponse({ error: "Unable to create appointment" }, 500);
   }
 }
 // Function to retrieve all appointments - can add filtering by user if needed
@@ -502,45 +596,6 @@ export async function getTherapistByID(
 //   } catch (error) {
 //     console.error("Error retrieving appointment by ID:", error);
 //     return jsonResponse({ error: "Unable to retrieve appointment" }, 500);
-//   }
-// }
-
-// Create appointment and associate it with the logged-in user
-// export async function createAppointment(reqBody: Appointment, userId: number) {
-//   if (!reqBody.appointmentDate || !reqBody.time || !reqBody.status) {
-//     return jsonResponse(
-//       { error: "appointmentDate, time, and status are required." },
-//       400
-//     );
-//   }
-
-//   try {
-//     // Check if the staffID exists in the staffs table
-//     const staffExists = await db
-//       .select()
-//       .from(staffs)
-//       .where(eq(staffs.staffID, reqBody.staffID))
-//       .execute();
-
-//     if (staffExists.length === 0) {
-//       return jsonResponse(
-//         { error: `Staff with ID ${reqBody.staffID} does not exist.` },
-//         400
-//       );
-//     }
-//     const newAppointment = await db
-//       .insert(appointments)
-//       .values({ ...reqBody, userID: userId }) // Associate appointment with user
-//       .returning()
-//       .execute();
-
-//     console.log(
-//       `Successfully created appointment with ID ${newAppointment[0].appointmentID}`
-//     );
-//     return jsonResponse(newAppointment[0], 201);
-//   } catch (error) {
-//     console.error("Error creating appointment:", error);
-//     return jsonResponse({ error: "Unable to create appointment" }, 500);
 //   }
 // }
 

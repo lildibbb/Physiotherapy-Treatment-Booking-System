@@ -6,6 +6,8 @@ import {
   date,
   integer,
   json,
+  numeric,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 
 // Define the user authentication table schema
@@ -109,6 +111,37 @@ export const treatment_plans = pgTable("treatment_plans", {
     .references(() => physiotherapists.therapistID)
     .notNull(),
 });
+export const paymentMethodEnum = pgEnum("payment_method", [
+  "credit_card",
+  "debit_card",
+  "bank_transfer",
+  "paypal",
+  "cash",
+  "apple_pay",
+  "google_pay",
+]);
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "pending",
+  "completed",
+  "failed",
+  "refunded",
+  "cancelled",
+]);
+export const payments = pgTable("payments", {
+  paymentID: serial("paymentID").primaryKey(),
+  amount: numeric("amount").notNull(),
+  paymentMethod: paymentMethodEnum("payment_method").notNull(),
+  paymentStatus: paymentStatusEnum("payment_status").notNull(),
+  paymentDate: date("paymentDate").notNull(),
+  transactionReference: varchar("transactionReference", {
+    length: 255,
+  }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  appointmentID: integer("appointmentID")
+    .references(() => appointments.appointmentID)
+    .notNull(),
+});
 
 // Define appointments schema
 export const appointments = pgTable("appointments", {
@@ -125,9 +158,7 @@ export const appointments = pgTable("appointments", {
   staffID: integer("staffID")
     .references(() => staffs.staffID)
     .notNull(),
-  userID: integer("userID")
-    .references(() => user_authentications.userID)
-    .notNull(),
+  planID: integer("planID").references(() => treatment_plans.planID),
 });
 
 // Define exercises schema

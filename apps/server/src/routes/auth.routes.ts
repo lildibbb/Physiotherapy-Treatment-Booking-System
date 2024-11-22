@@ -85,7 +85,7 @@ export const authRoutes = new Elysia()
             path: "/",
           });
 
-          return { message: "Login successful", email };
+          return { message: "Login successful", email, token };
         },
         {
           body: UserLoginSchema,

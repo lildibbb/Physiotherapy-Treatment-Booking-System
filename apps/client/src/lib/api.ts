@@ -1,3 +1,4 @@
+import { AppointmentPayload } from "@/types/types";
 import { handleExpiredSession } from "./helper";
 
 const apiBaseUrl = "http://localhost:5431/api";
@@ -95,6 +96,7 @@ export const registerStaff = async (
   if (response.status === 401) {
     const data = await response.json();
     handleExpiredSession(data.message);
+    return;
   }
   //check if email already exist
   if (response.status === 409) {
@@ -133,6 +135,7 @@ export const registerTherapist = async (
   if (response.status === 401) {
     const data = await response.json();
     handleExpiredSession(data.message);
+    return;
   }
   //check if email already exist
   if (response.status === 409) {
@@ -202,6 +205,7 @@ export const updateStaffDetails = async (
     if (response.status === 401) {
       const data = await response.json();
       handleExpiredSession(data.message);
+      return;
     }
     // Check if the response is successful
     if (!response.ok) {
@@ -230,9 +234,11 @@ export const fetchTherapistDetails = async () => {
   if (response.status === 401) {
     const data = await response.json();
     handleExpiredSession(data.message);
+    return;
   }
   if (!response.ok) {
-    throw new Error("Failed to fetch Therapist details");
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Failed to fetch Therapist details");
   }
   return await response.json();
 };
@@ -264,6 +270,7 @@ export const updateTherapistDetails = async (
     if (response.status === 401) {
       const data = await response.json();
       handleExpiredSession(data.message);
+      return;
     }
     // Check if the response is successful
     if (!response.ok) {
@@ -406,7 +413,57 @@ export const fetchTherapistAvailability = async (therapistID: number) => {
   const data = await response.json();
   return data.availableSlots || [];
 };
+export const createAppointment = async (payLoad: AppointmentPayload) => {
+  const response = await fetch(`${apiBaseUrl}/booking/create`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payLoad),
+  });
+  // check if token is expired or not
+  if (response.status === 401) {
+    const data = await response.json();
+    handleExpiredSession(data.message);
+    console.log("Session expired:", data.message);
+    return;
+  }
+  if (!response.ok) {
+    const contentType = response.headers.get("content-type");
 
+    // Check if the response is JSON
+    if (contentType && contentType.includes("application/json")) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to create appointment");
+    } else {
+      // Handle plain text or unexpected responses
+      const errorText = await response.text();
+      throw new Error(errorText || "Failed to create appointment");
+    }
+  }
+
+  const data = await response.json();
+  console.log("Data from backend:", data);
+  return data;
+};
+
+export const createCheckoutSession = async () => {
+  const response = await fetch(`${apiBaseUrl}/payment/checkout`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to create checkout session");
+  }
+  const data = await response.json();
+  console.log("Data from backend:", data.data.url);
+  return data.data.url;
+};
 export const fetchUserAppointments = async (token: string | null) => {
   return await fetch(`${apiBaseUrl}/appointments/user`, {
     headers: {

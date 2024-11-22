@@ -51,6 +51,7 @@ export type Staff = {
 };
 
 export type Therapist = {
+  therapistID: number; // Unique identifier for the therapist
   email?: string; // Email for the staff account ( Optional )
   password?: string; // Password for the staff account ( Optional )
   name?: string; // Optional name for the staff
@@ -88,6 +89,24 @@ export type AvailableSlot = {
   unavailable: boolean; // Availability status
 };
 
+export type Appointment = {
+  therapistID: number;
+  appointmentDate: string;
+  time: string;
+  type?: string; // for consultation type
+  status?: string;
+  patientID: number;
+  staffID: number;
+  planID?: number;
+};
+
+export const AppointmentSchema = t.Object({
+  therapistID: t.Number(),
+  appointmentDate: t.String(),
+  time: t.String(),
+  type: t.Optional(t.String()), // for consultation type
+  status: t.Optional(t.String()),
+});
 // Define the UserRegistration type schema
 export const UserRegistrationSchema = t.Object({
   email: t.String(),
