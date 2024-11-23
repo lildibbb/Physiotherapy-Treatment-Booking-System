@@ -77,7 +77,7 @@ export async function registerUser(reqBody: UserRegistration) {
       .values({
         email: reqBody.email,
         password: hashedPassword,
-        role: reqBody.role || "patient", // default role for patient
+        role: "patient", // default role for patient
       })
       .returning()
       .execute();

@@ -3,7 +3,7 @@ import { t } from "elysia";
 export type UserRegistration = {
   email: string; // Username for the user account ( Required )
   password: string; // Password for the user account ( Required )
-  role?: string; // Optional role for the user
+
   associatedID?: string; // Reference to the associated user
   name: string; // Optional name for the user
 };
@@ -124,7 +124,7 @@ export const AppointmentSchema = t.Object({
 export const UserRegistrationSchema = t.Object({
   email: t.String(),
   password: t.String(),
-  role: t.String(),
+
   associatedID: t.String(),
   name: t.String(),
 });
