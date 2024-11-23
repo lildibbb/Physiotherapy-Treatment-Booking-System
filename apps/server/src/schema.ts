@@ -8,6 +8,7 @@ import {
   json,
   numeric,
   pgEnum,
+  decimal,
 } from "drizzle-orm/pg-core";
 
 // Define the user authentication table schema
@@ -111,38 +112,22 @@ export const treatment_plans = pgTable("treatment_plans", {
     .references(() => physiotherapists.therapistID)
     .notNull(),
 });
-export const paymentMethodEnum = pgEnum("payment_method", [
-  "credit_card",
-  "debit_card",
-  "bank_transfer",
-  "paypal",
-  "cash",
-  "apple_pay",
-  "google_pay",
-]);
-export const paymentStatusEnum = pgEnum("payment_status", [
-  "pending",
-  "completed",
-  "failed",
-  "refunded",
-  "cancelled",
-]);
+
 export const payments = pgTable("payments", {
   paymentID: serial("paymentID").primaryKey(),
-  amount: numeric("amount").notNull(),
-  paymentMethod: paymentMethodEnum("payment_method").notNull(),
-  paymentStatus: paymentStatusEnum("payment_status").notNull(),
-  paymentDate: date("paymentDate").notNull(),
-  transactionReference: varchar("transactionReference", {
-    length: 255,
-  }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
   appointmentID: integer("appointmentID")
     .references(() => appointments.appointmentID)
     .notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paymentDate: date("paymentDate"),
+  paymentMethod: varchar("paymentMethod", { length: 50 }),
+  paymentStatus: varchar("status", { length: 50 }).notNull(),
+  transactionReference: varchar("transactionReference", { length: 255 }),
+  refundAmount: decimal("refundAmount", { precision: 10, scale: 2 }),
+  refundDate: date("refundDate"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
-
 // Define appointments schema
 export const appointments = pgTable("appointments", {
   appointmentID: serial("appointmentID").primaryKey(),

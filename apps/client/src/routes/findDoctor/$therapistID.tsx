@@ -55,7 +55,7 @@ function RouteComponent() {
   const [therapist, setTherapist] = React.useState<any>(null);
   const [availability, setAvailability] = React.useState<Slot[]>([]);
   const { therapistID } = Route.useParams();
-  const [error, setError] = React.useState<string | null>(null);
+  const [, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [selectedConsultationType, setSelectedConsultationType] = useState<
     string | null
@@ -150,10 +150,11 @@ function RouteComponent() {
         type: selectedConsultationType,
       };
       console.log("Payload:", appointmentPayload);
-      await createAppointment(appointmentPayload);
-
+      const appointment = await createAppointment(appointmentPayload);
+      const { appointmentID } = appointment;
+      console.log("Appointment created with ID:", appointmentID);
       // On successful booking, attempt to create a checkout session
-      const checkoutUrl = await createCheckoutSession();
+      const checkoutUrl = await createCheckoutSession(appointmentID);
       console.log("Redirecting to checkout:", checkoutUrl);
 
       // Redirect to the Stripe checkout URL

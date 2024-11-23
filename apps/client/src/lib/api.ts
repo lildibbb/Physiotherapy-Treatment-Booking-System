@@ -448,13 +448,14 @@ export const createAppointment = async (payLoad: AppointmentPayload) => {
   return data;
 };
 
-export const createCheckoutSession = async () => {
+export const createCheckoutSession = async (appointmentID: number) => {
   const response = await fetch(`${apiBaseUrl}/payment/checkout`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({ appointmentID }),
   });
   if (!response.ok) {
     const errorData = await response.json();
@@ -464,6 +465,26 @@ export const createCheckoutSession = async () => {
   console.log("Data from backend:", data.data.url);
   return data.data.url;
 };
+
+export const fulfillCheckoutRequest = async (sessionID: string) => {
+  const response = await fetch(`${apiBaseUrl}/payment/success`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ sessionID }),
+  });
+  console.log("Response from {api ts}:", response);
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to fulfill checkout request");
+  }
+  const data = await response.json();
+  console.log("Data from {api ts}:", data);
+  return data;
+};
+
 export const fetchUserAppointments = async (token: string | null) => {
   return await fetch(`${apiBaseUrl}/appointments/user`, {
     headers: {

@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 
 import { drizzle } from "drizzle-orm/node-postgres"; // Import for Node.js and Postgres
 import { Pool } from "pg";
-
+import * as schema from "./schema";
 // Load environment variables from the .env file in the root directory
 dotenv.config({ path: "../../../.env" });
 
@@ -19,6 +19,6 @@ const pool = new Pool({
 });
 
 // Initialize Drizzle ORM with the PostgreSQL pool
-const db = drizzle(pool); // Use the pool directly in drizzle
+const db = drizzle(pool, { schema }); // Use the pool directly in drizzle
 
 export default db;

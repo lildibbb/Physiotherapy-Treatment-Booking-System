@@ -99,6 +99,19 @@ export type Appointment = {
   staffID: number;
   planID?: number;
 };
+export type Payment = {
+  paymentID?: number;
+  appointmentID: number;
+  amount: string;
+  paymentDate?: string;
+  paymentMethod?: string;
+  paymentStatus: string;
+  transactionReference: string;
+  refundAmount?: string;
+  refundDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 export const AppointmentSchema = t.Object({
   therapistID: t.Number(),

@@ -40,7 +40,7 @@ function RouteComponent() {
         description: "Welcome back!",
       });
       // Redirect to dashboard upon successful login
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/" });
     } catch (error) {
       toast({
         variant: "destructive",

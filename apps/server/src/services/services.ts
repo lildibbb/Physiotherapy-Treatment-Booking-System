@@ -6,6 +6,7 @@ import {
   availabilities,
   business_entities,
   patients,
+  payments,
   physiotherapists,
   staffs,
   user_authentications,
@@ -14,6 +15,7 @@ import type {
   Appointment,
   Availability,
   AvailableSlot,
+  Payment,
   Staff,
   Therapist,
 } from "../../types";
@@ -536,6 +538,35 @@ export async function createAppointment(
     return jsonResponse({ error: "Unable to create appointment" }, 500);
   }
 }
+
+export async function createPaymentData(reqBody: Payment) {
+  if (!reqBody.amount || !reqBody.paymentStatus) {
+    return jsonResponse({ error: "Missing required fields" }, 400);
+  }
+  try {
+    const paymentData = await db
+      .insert(payments)
+      .values({
+        amount: reqBody.amount,
+        appointmentID: reqBody.appointmentID,
+        paymentStatus: reqBody.paymentStatus,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning()
+      .execute();
+
+    // Check if the insert operation was successful
+    if (paymentData.length === 0) {
+      throw new Error("Insert operation failed");
+    }
+    return paymentData[0]; // Return the inserted payment record
+  } catch (error) {
+    console.error("Error creating payment data:", error);
+    throw new Error("Unable to create payment data");
+  }
+}
+
 // Function to retrieve all appointments - can add filtering by user if needed
 // export async function getAppointments(userId: number) {
 //   try {
