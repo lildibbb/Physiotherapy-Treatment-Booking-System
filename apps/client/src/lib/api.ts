@@ -30,7 +30,19 @@ export const registerUser = async (
 
   return await response.json();
 };
-
+export const checkSession = async () => {
+  const response = await fetch(`${apiBaseUrl}/auth/check-session`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to check session");
+  }
+  return response;
+};
 export const registerBusinessUser = async (
   personInChargeName: string,
   contactEmail: string,

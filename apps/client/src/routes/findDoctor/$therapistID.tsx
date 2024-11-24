@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 import {
   fetchTherapistDetailsByID,
   fetchTherapistAvailability,
@@ -14,14 +13,7 @@ import { Header } from "@/components/header";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+
 import { AppointmentPayload } from "@/types/types";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -35,17 +27,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+import TimeSlotSection from "@/components/timeSlotSelection";
+import { Form } from "@/components/ui/form";
+import {
+  AppointmentFormData,
+  appointmentFormSchema,
+} from "@/components/forms/formSchema";
 type Slot = {
   date: string;
   morning: string[];
   afternoon: string[];
   evening: string[];
 };
-
-const formSchema = z.object({
-  date: z.string().min(1, "Please select a date"),
-  time: z.string().min(1, "Please select a time"),
-});
 
 export const Route = createFileRoute("/findDoctor/$therapistID")({
   component: RouteComponent,
@@ -65,8 +59,8 @@ function RouteComponent() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { toast } = useToast();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<AppointmentFormData>({
+    resolver: zodResolver(appointmentFormSchema),
     defaultValues: {
       date: availability[0]?.date || "",
       time: "",
@@ -132,7 +126,7 @@ function RouteComponent() {
     form.setValue("time", ""); // Reset time when date changes
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: AppointmentFormData) => {
     console.log("Using Therapist ID:", id);
 
     setIsSubmitting(true);
@@ -361,48 +355,12 @@ function RouteComponent() {
                     <div className="space-y-4">
                       {(["morning", "afternoon", "evening"] as const).map(
                         (period) => (
-                          <div key={period}>
-                            <FormField
-                              control={form.control}
-                              name="time"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="font-medium text-gray-600 mb-2">
-                                    {period.charAt(0).toUpperCase() +
-                                      period.slice(1)}{" "}
-                                    Slots
-                                  </FormLabel>
-                                  <FormControl>
-                                    <div className="flex flex-wrap gap-2">
-                                      {selectedSlot[period]?.length > 0 ? (
-                                        selectedSlot[period].map((time) => (
-                                          <Button
-                                            key={time}
-                                            type="button"
-                                            onClick={() => field.onChange(time)}
-                                            variant={
-                                              field.value === time
-                                                ? "default"
-                                                : "outline"
-                                            }
-                                            size="sm"
-                                            className="rounded-md"
-                                          >
-                                            {time}
-                                          </Button>
-                                        ))
-                                      ) : (
-                                        <p className="text-sm text-gray-500">
-                                          No slots available
-                                        </p>
-                                      )}
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                          <TimeSlotSection
+                            key={period}
+                            period={period}
+                            slots={selectedSlot[period]}
+                            form={form}
+                          />
                         )
                       )}
                     </div>
@@ -410,7 +368,6 @@ function RouteComponent() {
                     <p className="text-sm text-gray-500">No slots available</p>
                   )}
                 </CardContent>
-
                 <div className="mt-4 space-y-2">
                   {submitError && (
                     <p className="text-sm text-red-600">{submitError}</p>

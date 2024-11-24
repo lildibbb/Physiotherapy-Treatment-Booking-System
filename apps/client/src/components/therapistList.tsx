@@ -16,6 +16,7 @@ import {
   UserRoundMinus,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { Button } from "./ui/button";
 
 type Therapist = {
   therapistID: number;
@@ -125,9 +126,9 @@ export const TherapistList = () => {
               to="/findDoctor/$therapistID"
               params={{ therapistID: therapist.therapistID.toString() }}
             >
-              <button className="w-full px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+              <Button className=" w-full px-6 py-2" variant="default">
                 Book
-              </button>
+              </Button>
             </Link>
           </div>
         </Card>

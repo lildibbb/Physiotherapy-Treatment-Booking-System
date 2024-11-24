@@ -4,6 +4,7 @@ import jsonResponse, {
   loginUser,
   updatePasswordResetToken,
   requestResetPassword,
+  verifyAuth,
 } from "../services/auth-services";
 import {
   UserRegistrationSchema,
@@ -287,51 +288,60 @@ authRoutes.patch(
 );
 
 // Send Email endpoint
-authRoutes.post(
-  `${basePath}/send-email`,
-  async ({ body }) => {
-    const { to, subject, html } = body as {
-      to: string;
-      subject: string;
-      html: string;
-    };
-    try {
-      await sendEmail({ to, subject, html });
-      return { status: "success", message: "Email sent successfully" };
-    } catch (error) {
-      return { status: "error", message: "Failed to send email" };
-    }
-  },
-  {
-    detail: {
-      description: "Sends an email with specified content",
-      tags: ["Email"],
-      requestBody: {
-        content: {
-          "application/json": {
-            schema: {
-              type: "object",
-              properties: {
-                to: {
-                  type: "string",
-                  description: "Recipient's email address",
+authRoutes
+  .post(
+    `${basePath}/send-email`,
+    async ({ body }) => {
+      const { to, subject, html } = body as {
+        to: string;
+        subject: string;
+        html: string;
+      };
+      try {
+        await sendEmail({ to, subject, html });
+        return { status: "success", message: "Email sent successfully" };
+      } catch (error) {
+        return { status: "error", message: "Failed to send email" };
+      }
+    },
+    {
+      detail: {
+        description: "Sends an email with specified content",
+        tags: ["Email"],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  to: {
+                    type: "string",
+                    description: "Recipient's email address",
+                  },
+                  subject: { type: "string", description: "Email subject" },
+                  html: {
+                    type: "string",
+                    description: "HTML content of the email",
+                  },
                 },
-                subject: { type: "string", description: "Email subject" },
-                html: {
-                  type: "string",
-                  description: "HTML content of the email",
-                },
+                required: ["to", "subject", "html"],
               },
-              required: ["to", "subject", "html"],
             },
           },
         },
+        responses: {
+          200: { description: "Email sent successfully" },
+          400: { description: "Bad Request" },
+          500: { description: "Failed to send email" },
+        },
       },
-      responses: {
-        200: { description: "Email sent successfully" },
-        400: { description: "Bad Request" },
-        500: { description: "Failed to send email" },
-      },
-    },
-  }
-);
+    }
+  )
+  .get("/check-session", async ({ cookie: { auth }, jwt }) => {
+    const authResult = await verifyAuth(jwt, auth?.value);
+    console.log("Auth Result {checkSession} :", authResult);
+    if ("error" in authResult) {
+      return { error: authResult.error, status: authResult.status };
+    }
+    return jsonResponse({ status: "success" }, 200);
+  });
