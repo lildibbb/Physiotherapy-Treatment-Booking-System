@@ -30,6 +30,8 @@ export const registerUser = async (
 
   return await response.json();
 };
+
+//TODO: AuthContext
 export const checkSession = async () => {
   const response = await fetch(`${apiBaseUrl}/auth/check-session`, {
     method: "GET",
@@ -43,6 +45,7 @@ export const checkSession = async () => {
   }
   return response;
 };
+
 export const registerBusinessUser = async (
   personInChargeName: string,
   contactEmail: string,
@@ -480,7 +483,7 @@ export const createCheckoutSession = async (appointmentID: number) => {
 
 export const fulfillCheckoutRequest = async (sessionID: string) => {
   const response = await fetch(`${apiBaseUrl}/payment/success`, {
-    method: "POST",
+    method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
@@ -496,9 +499,54 @@ export const fulfillCheckoutRequest = async (sessionID: string) => {
   console.log("Data from {api ts}:", data);
   return data;
 };
+// TODO : UI FOR STAFF UPDATE AVAILBILITY
+export const updateAvailability = async (
+  dayOfWeek: string,
+  startTime: string,
+  endTime: string,
+  isAvailable: number,
+  specialDate: string
+) => {
+  const response = await fetch(`${apiBaseUrl}/therapist/availability`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      dayOfWeek,
+      startTime,
+      endTime,
+      isAvailable,
+      specialDate,
+    }),
+  });
+  console.log("Response from {api ts}:", response);
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to update availability");
+  }
+  const data = await response.json();
+  console.log("Data from {api ts}:", data);
+  return data;
+};
 
+export const fetchAppointments = async () => {
+  const response = await fetch(`${apiBaseUrl}/booking/appointment`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch appointments");
+  }
+  return await response.json();
+};
 export const fetchUserAppointments = async (token: string | null) => {
-  return await fetch(`${apiBaseUrl}/appointments/user`, {
+  return await fetch(`${apiBaseUrl}/booking/appointments/user`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

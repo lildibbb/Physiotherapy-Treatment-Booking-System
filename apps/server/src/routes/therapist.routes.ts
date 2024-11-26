@@ -8,6 +8,7 @@ import {
   getAllTherapistPublic,
   getAvailableSlot,
   getTherapistByID,
+  updateAvailability,
   updateTherapistDetails,
 } from "../services/services";
 import {
@@ -15,6 +16,7 @@ import {
   TherapistSchema,
   type TherapistRegistration,
   type Therapist,
+  type Availability,
 } from "../../types";
 import { basePath, jwtAccessSetup } from "./setup";
 
@@ -253,6 +255,19 @@ export const therapistRoutes = new Elysia()
             500
           );
         }
+      })
+      .patch("/availability", async ({ body, cookie: { auth }, jwt }) => {
+        const authResult = await verifyAuth(jwt, auth?.value);
+        console.log("Auth Result:", authResult);
+        if ("error" in authResult) {
+          return { error: authResult.error, status: authResult.status };
+        }
+
+        return await updateAvailability(
+          body as Availability,
+          authResult.profile
+        );
       });
+
     return group; // Return the group instance to satisfy Elysia type requirements
   });

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, or, and, asc } from "drizzle-orm";
 import db from "../db";
 import { jwt } from "@elysiajs/jwt";
 import {
@@ -496,7 +496,7 @@ export async function createAppointment(
     const { businessID } = businessResult[0];
 
     //Step 2 : fetch staffID related to the businessID
-
+    //TODO: Implement randomly / assign staff instead of selecting the first staff
     const staffResult = await db
       .select({ staffID: staffs.staffID })
       .from(staffs)
@@ -566,8 +566,98 @@ export async function createPaymentData(reqBody: Payment) {
     throw new Error("Unable to create payment data");
   }
 }
+//TODO : UI for updating availability
+export async function updateAvailability(
+  reqBody: Partial<Availability>,
+  profile: { therapistID: number }
+) {
+  // pass the therapistID from the decoded token
+  const therapistID = profile.therapistID;
+  console.log("Therapist ID received:", therapistID);
+  if (!therapistID) {
+    return jsonResponse(
+      { error: "Only authorised user can update availability" },
+      403
+    );
+  }
 
-// Function to retrieve all appointments - can add filtering by user if needed
+  try {
+    const availbilityUpdateFields: Partial<Availability> = {};
+    if (reqBody.dayOfWeek)
+      availbilityUpdateFields.dayOfWeek = reqBody.dayOfWeek;
+    if (reqBody.startTime)
+      availbilityUpdateFields.startTime = reqBody.startTime;
+    if (reqBody.endTime) availbilityUpdateFields.endTime = reqBody.endTime;
+    if (reqBody.isAvailable !== undefined)
+      availbilityUpdateFields.isAvailable = reqBody.isAvailable ? 1 : 0;
+    if (reqBody.specialDate)
+      availbilityUpdateFields.specialDate = reqBody.specialDate;
+
+    if (Object.keys(availbilityUpdateFields).length > 0) {
+      await db
+        .update(availabilities)
+        .set(availbilityUpdateFields)
+        .where(eq(availabilities.therapistID, therapistID))
+        .execute();
+    }
+    return jsonResponse({ message: "Availability updated successfully" }, 200);
+  } catch (error) {
+    console.error("Error updating availability:", error);
+    return jsonResponse({ message: "Error updating availability", error }, 500);
+  }
+}
+// TODO table UI for get appointment
+export async function getAppointmentByID(profile: {
+  id: number;
+  therapistID: number;
+  staffID: number;
+}) {
+  //pass the decoded userID from the token
+  const { id, therapistID, staffID } = profile;
+  if (!id) {
+    return jsonResponse(
+      { error: "Only authorized users can access this" },
+      403
+    );
+  }
+  try {
+    const appointmentData = await db
+      .select({
+        patientID: appointments.patientID,
+        therapistID: appointments.therapistID,
+        staffID: appointments.staffID,
+        appointmentID: appointments.appointmentID,
+        appointmentDate: appointments.appointmentDate,
+        time: appointments.time,
+        status: appointments.status,
+        patientName: patients.name, // Join to get patient name
+        therapistName: physiotherapists.name, // Join to get therapist name
+        staffName: staffs.name, // Join to get staff name
+      })
+      .from(appointments)
+      .leftJoin(patients, eq(patients.patientID, appointments.patientID)) // Assumes patientID linkage
+      .leftJoin(
+        physiotherapists,
+        eq(physiotherapists.therapistID, appointments.therapistID)
+      )
+      .leftJoin(staffs, eq(staffs.staffID, appointments.staffID))
+      .where(
+        or(
+          eq(patients.userID, id),
+          eq(physiotherapists.therapistID, therapistID),
+          eq(staffs.staffID, staffID)
+        )
+      ) // Filter by userID
+      .execute();
+
+    return appointmentData;
+  } catch (error) {
+    console.error("Error fetching appointment data:", error);
+    return { error: "Unable to fetch appointment data", status: 500 };
+  }
+}
+
+// // Function to retrieve all appointments - can add filtering by user if needed
 // export async function getAppointments(userId: number) {
 //   try {
 //     const appointmentsData = await db

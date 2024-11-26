@@ -228,9 +228,30 @@ export async function loginUser(reqBody: UserLogin) {
       businessID = business[0].businessID;
     }
   }
-
+  let therapistID = null;
+  if (role === "therapist") {
+    const therapist = await db
+      .select()
+      .from(physiotherapists)
+      .where(eq(physiotherapists.userID, userID))
+      .execute();
+    if (therapist.length > 0) {
+      therapistID = therapist[0].therapistID;
+    }
+  }
+  let staffID = null;
+  if (role === "staff") {
+    const staff = await db
+      .select()
+      .from(staffs)
+      .where(eq(staffs.userID, userID))
+      .execute();
+    if (staff.length > 0) {
+      staffID = staff[0].staffID;
+    }
+  }
   // Return user details without the token (token will be generated in the login route)
-  return { id: userID, email, businessID, status: 200 };
+  return { id: userID, email, businessID, therapistID, staffID, status: 200 };
 }
 
 export async function registerStaff(

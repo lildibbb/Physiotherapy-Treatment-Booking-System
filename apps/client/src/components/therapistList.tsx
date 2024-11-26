@@ -63,12 +63,12 @@ export const TherapistList = () => {
   return (
     <div className="space-y-6">
       {therapists.map((therapist, index) => (
-        <Card key={index} className="flex flex-col bg-white  rounded-lg p-4">
+        <Card key={index} className="flex flex-col  rounded-lg p-4">
           {/* Top Section: Two Columns */}
           <div className="flex flex-row space-x-6">
             {/* Left Column: Therapist Image */}
             <CardHeader>
-              <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+              <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden  flex-shrink-0">
                 <img
                   src={therapist.image || "https://via.placeholder.com/150"}
                   alt={therapist.name}

@@ -207,7 +207,7 @@ function RouteComponent() {
         {/* Therapist Details Section */}
         <div className="flex-1 h-auto md:mr-4">
           <div className="space-y-6">
-            <div className="border rounded-lg p-6 shadow-sm bg-white">
+            <div className="border rounded-lg p-6 shadow-sm">
               <CardHeader>
                 <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
                   <img
@@ -240,7 +240,7 @@ function RouteComponent() {
             </div>
 
             {/* About Section */}
-            <div className="border rounded-lg p-6 shadow-sm bg-white">
+            <div className="border rounded-lg p-6 shadow-sm ">
               <h2 className="text-2xl font-bold">{therapist.about}</h2>
 
               <h3 className="mt-6 text-lg font-semibold">About Doctor</h3>
@@ -256,7 +256,7 @@ function RouteComponent() {
         {/* Booking Section */}
         <div className="md:w-1/3 flex flex-col gap-4 h-auto">
           {/* Consultation Type */}
-          <div className="border rounded-lg p-6 shadow-sm bg-white">
+          <div className="border rounded-lg p-6 shadow-sm ">
             <h3 className="text-lg font-semibold">
               Step 1: Choose Consultation Type
             </h3>
@@ -298,7 +298,7 @@ function RouteComponent() {
                     &lt; Prev
                   </Button>
 
-                  <div className="flex space-x-2 overflow-x-auto">
+                  <div className="flex space-x-2 overflow-x-auto date-container">
                     {visibleDates.map((slot: Slot) => {
                       const actualIndex = availability.findIndex(
                         (s) => s.date === slot.date

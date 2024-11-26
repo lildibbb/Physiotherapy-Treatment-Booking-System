@@ -77,7 +77,7 @@ export type Availability = {
   dayOfWeek: string; // Day of the week
   startTime: string; // Start time of the availability
   endTime: string; // End time of the availability
-  isAvailable: boolean; // Availability status
+  isAvailable: number; // Availability status
   specialDate?: string; // Special date for the availability
 };
 export type AvailableSlot = {

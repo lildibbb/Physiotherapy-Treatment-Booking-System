@@ -53,7 +53,7 @@ export const authRoutes = new Elysia()
             return { message: loginResponse.error };
           }
 
-          const { id, email, businessID } = loginResponse;
+          const { id, email, businessID, therapistID, staffID } = loginResponse;
 
           // Validate that email is defined
           if (!email) {
@@ -66,6 +66,8 @@ export const authRoutes = new Elysia()
             id: number;
             email: string;
             businessID?: number;
+            therapistID?: number;
+            staffID?: number;
           } = {
             id,
             email,
@@ -74,6 +76,12 @@ export const authRoutes = new Elysia()
           // Only add `businessID` if it's defined (not null)
           if (businessID !== null) {
             tokenPayload.businessID = businessID;
+          }
+          if (therapistID !== null) {
+            tokenPayload.therapistID = therapistID;
+          }
+          if (staffID !== null) {
+            tokenPayload.staffID = staffID;
           }
 
           const token = await jwt.sign(tokenPayload);

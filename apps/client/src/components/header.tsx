@@ -10,6 +10,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { Menu, MoveRight, X } from "lucide-react";
 import { useState } from "react";
+import { ModeToggle } from "./ui/mode-toggle";
 
 export const Header = () => {
   const navigationItems = [
@@ -209,6 +210,7 @@ c-46 -33 -148 -35 -201 -5 -81 47 -110 159 -62 242 35 63 67 80 152 84 63 4
         </Link>
 
         <div className="justify-start items-center gap-4 lg:flex hidden flex-row">
+          <ModeToggle />
           <NavigationMenu className="flex justify-start items-start">
             <NavigationMenuList className="flex justify-start gap-4 flex-row">
               {navigationItems.map((item) => (

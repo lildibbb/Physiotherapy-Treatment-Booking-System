@@ -29,19 +29,42 @@ export const paymentRoutes = new Elysia()
           };
         }
       })
-      .post(`/success`, async (req) => {
-        const { sessionID } = req.body as { sessionID: string };
-        console.log("Session Id in success endpoint: ", sessionID);
+      .patch(
+        `/success`,
+        async (req) => {
+          const { sessionID } = req.body as { sessionID: string };
+          console.log("Session Id in success endpoint: ", sessionID);
 
-        if (!sessionID) {
-          return jsonResponse({ error: "Session ID is required" }, 400);
+          if (!sessionID) {
+            return jsonResponse({ error: "Session ID is required" }, 400);
+          }
+          try {
+            const fulfillCheckout = await fulfillCheckoutRequest(sessionID);
+            return jsonResponse({ message: "Payment updated" }, 200);
+          } catch (error) {
+            return jsonResponse(
+              { error: "Failed to update payment due to server error" },
+              500
+            );
+          }
+        },
+        {
+          detail: {
+            description: "Update payment status",
+            tags: ["Payment"],
+            responses: {
+              200: {
+                description:
+                  "Payment status updated successfully or payment has been cancelled.",
+              },
+              400: { description: "Bad request - Session ID is required." },
+              500: {
+                description:
+                  "Internal Server Error - Failed to update payment.",
+              },
+            },
+          },
         }
-        try {
-          const fulfillCheckout = await fulfillCheckoutRequest(sessionID);
-          return jsonResponse({ message: "Payment updated" }, 200);
-        } catch (error) {
-          return jsonResponse({ error: "Payment not updated" }, 400);
-        }
-      });
+      );
     return group;
   });
