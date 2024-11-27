@@ -539,31 +539,14 @@ export const fetchAppointments = async () => {
       "Content-Type": "application/json",
     },
   });
-
+  //check if token is expired or not
+  if (response.status === 401) {
+    const data = await response.json();
+    handleExpiredSession(data.message);
+    return;
+  }
   if (!response.ok) {
     throw new Error("Failed to fetch appointments");
-  }
-  return await response.json();
-};
-export const fetchUserAppointments = async (token: string | null) => {
-  return await fetch(`${apiBaseUrl}/booking/appointments/user`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-};
-export const fetchHospitals = async () => {
-  const response = await fetch(`${apiBaseUrl}/hospitals`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch hospitals");
-  }
-  return await response.json();
-};
-
-export const fetchDoctor = async (hospitalId: number) => {
-  const response = await fetch(`${apiBaseUrl}/hospitals/${hospitalId}/doctors`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch doctor");
   }
   return await response.json();
 };
