@@ -13,7 +13,7 @@ export const Route = createFileRoute("/")({
 
 function RouteComponent() {
   return (
-    <>
+    <div className="place-items-center">
       <Header />
       <Hero />
       <Testimonial />
@@ -21,6 +21,6 @@ function RouteComponent() {
       <FAQ />
 
       <Footer />
-    </>
+    </div>
   );
 }

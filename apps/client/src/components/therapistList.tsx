@@ -70,7 +70,10 @@ export const TherapistList = () => {
             <CardHeader>
               <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden  flex-shrink-0">
                 <img
-                  src={therapist.image || "https://via.placeholder.com/150"}
+                  src={
+                    therapist.image ||
+                    "https://static.vecteezy.com/system/resources/previews/009/749/645/non_2x/teacher-avatar-man-icon-cartoon-male-profile-mascot-illustration-head-face-business-user-logo-free-vector.jpg"
+                  }
                   alt={therapist.name}
                   className="w-full h-full object-cover"
                 />

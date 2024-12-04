@@ -32,8 +32,8 @@ function RouteComponent() {
         </div>
         <div className="md:w-1/3 flex flex-col gap-4">
           <div className="mb-8"></div>
-          <div className="bg-teal-100 h-40"></div>
-          <div className="bg-teal-100 h-40"></div>
+          <div className="bg-teal-50 h-40"></div>
+          <div className="bg-teal-50 h-40"></div>
         </div>
       </div>
     </div>
