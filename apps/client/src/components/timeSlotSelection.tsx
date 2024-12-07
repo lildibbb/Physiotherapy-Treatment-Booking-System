@@ -1,4 +1,4 @@
-import { Sun, Sunrise, Sunset } from "lucide-react";
+import { Sun, Sunrise } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   FormField,
@@ -12,7 +12,7 @@ import { UseFormReturn } from "react-hook-form";
 import { AppointmentFormData } from "./forms/formSchema";
 
 // Define allowed period values
-type PeriodType = "morning" | "afternoon" | "evening";
+type PeriodType = "morning" | "afternoon";
 
 // Define props interface
 interface TimeSlotSectionProps {
@@ -30,8 +30,7 @@ const TimeSlotSection = ({ period, slots, form }: TimeSlotSectionProps) => {
         return <Sun {...iconProps} />;
       case "afternoon":
         return <Sunrise {...iconProps} />;
-      case "evening":
-        return <Sunset {...iconProps} />;
+
       default:
         return null;
     }

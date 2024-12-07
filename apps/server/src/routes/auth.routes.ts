@@ -22,7 +22,7 @@ export const authRoutes = new Elysia()
       .post(
         `/register/user`,
         async ({ body }) => {
-          return await registerUser(body as UserRegistration); // Cast body to UserRegistration type
+          return await registerUser(body as UserRegistration);
         },
         {
           body: UserRegistrationSchema,
@@ -35,6 +35,9 @@ export const authRoutes = new Elysia()
               },
               400: {
                 description: "Bad Request",
+              },
+              409: {
+                description: "Email or Contact Details is already in use",
               },
               500: {
                 description: "Internal Server Error",

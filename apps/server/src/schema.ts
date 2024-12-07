@@ -17,7 +17,7 @@ export const user_authentications = pgTable("user_authentications", {
   email: varchar("email", { length: 100 }).notNull(), // Add length and notNull
   password: varchar("password", { length: 255 }).notNull(), // Add length and notNull
   role: varchar("role", { length: 50 }).notNull(), // Add length and notNull
-  associatedID: varchar("associatedID", { length: 100 }), // FK to Patient or Staff, keep nullable
+  contactDetails: varchar("contactDetails", { length: 255 }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -30,7 +30,6 @@ export const business_entities = pgTable("business_entities", {
     .notNull(),
   personInChargeName: varchar("personInChargeName", { length: 255 }).notNull(),
   contactEmail: varchar("contactEmail", { length: 100 }).notNull(),
-  contactPhone: varchar("contactPhone", { length: 20 }).notNull(),
   companyName: varchar("companyName", { length: 255 }).notNull(),
   businessRegistrationNumber: varchar("businessRegistrationNumber", {
     length: 50,
@@ -52,7 +51,6 @@ export const patients = pgTable("patients", {
     .references(() => user_authentications.userID)
     .notNull(),
   name: varchar("name", { length: 255 }).notNull(),
-  contactDetails: varchar("contactDetails", { length: 255 }),
   dob: date("dob"),
   gender: varchar("gender", { length: 10 }),
   address: varchar("address", { length: 255 }),
@@ -66,15 +64,14 @@ export const physiotherapists = pgTable("physiotherapists", {
     .notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   specialization: varchar("specialization", { length: 255 }).notNull(),
-  contactDetails: varchar("contactDetails", { length: 255 }).notNull(),
   qualification: json("qualification"),
   experience: integer("experience"),
-
+  language: json("language"),
   businessID: integer("businessID")
     .references(() => business_entities.businessID)
     .notNull(),
 });
-// Define availabilities schema
+// Define availabilities schem
 export const availabilities = pgTable("availabilities", {
   availabilityID: serial("availabilityID").primaryKey(),
   therapistID: integer("therapistID")

@@ -144,17 +144,32 @@ export async function updateStaffDetails(
   // Extract the userID from the staffData
   const userID = staffData[0].userID;
 
-  // Step 3: Check if a user with the same email already exists to avoid conflicts
-  if (reqBody.email) {
+  // Step 3: Check if a user with the same email  & contact details already exists to avoid conflicts
+
+  if (reqBody.email || reqBody.contactDetails) {
+    const conditions = [];
+    if (reqBody.email)
+      conditions.push(eq(user_authentications.email, reqBody.email));
+    if (reqBody.contactDetails)
+      conditions.push(
+        eq(user_authentications.contactDetails, reqBody.contactDetails)
+      );
+
     const existingUser = await db
       .select()
       .from(user_authentications)
-      .where(eq(user_authentications.email, reqBody.email))
+      .where(or(...conditions))
       .execute();
 
     if (existingUser.length > 0 && existingUser[0].userID !== userID) {
+      const conflictField =
+        existingUser[0].contactDetails === reqBody.contactDetails
+          ? "Contact details"
+          : "Email";
       return jsonResponse(
-        { error: "Email is already in use. Please use a different email." },
+        {
+          error: `${conflictField} is already in use. Please use a different one.`,
+        },
         409
       );
     }
@@ -220,7 +235,7 @@ export async function getAllTherapistByBusiness(profile: {
       email: user_authentications.email,
       password: user_authentications.password,
       specialization: physiotherapists.specialization,
-      contactDetails: physiotherapists.contactDetails,
+      contactDetails: user_authentications.contactDetails,
     })
     .from(physiotherapists)
     .innerJoin(
@@ -271,17 +286,33 @@ export async function updateTherapistDetails(
 
   const userID = therapistData[0].userID;
 
-  // Check for existing email in user_authentications if provided
-  if (reqBody.email) {
+  // Check for existing contact details or email in user_authentications if provided
+  if (reqBody.contactDetails || reqBody.email) {
+    const conditions = [];
+    if (reqBody.contactDetails) {
+      conditions.push(
+        eq(user_authentications.contactDetails, reqBody.contactDetails)
+      );
+    }
+    if (reqBody.email) {
+      conditions.push(eq(user_authentications.email, reqBody.email));
+    }
+
     const existingUser = await db
       .select()
       .from(user_authentications)
-      .where(eq(user_authentications.email, reqBody.email))
+      .where(or(...conditions))
       .execute();
 
     if (existingUser.length > 0 && existingUser[0].userID !== userID) {
+      const conflictField =
+        existingUser[0].contactDetails === reqBody.contactDetails
+          ? "Contact details"
+          : "Email";
       return jsonResponse(
-        { error: "Email is already in use. Please use a different email." },
+        {
+          error: `${conflictField} is already in use. Please use a different one.`,
+        },
         409
       );
     }
@@ -295,6 +326,8 @@ export async function updateTherapistDetails(
       const hashedPassword = await bcrypt.hash(reqBody.password, 10);
       authUpdateFields.password = hashedPassword;
     }
+    if (reqBody.contactDetails)
+      authUpdateFields.contactDetails = reqBody.contactDetails;
 
     // Update user_authentications table if email or password is provided
     if (Object.keys(authUpdateFields).length > 0) {
@@ -309,8 +342,6 @@ export async function updateTherapistDetails(
     if (reqBody.name) therapistUpdateFields.name = reqBody.name;
     if (reqBody.specialization)
       therapistUpdateFields.specialization = reqBody.specialization;
-    if (reqBody.contactDetails)
-      therapistUpdateFields.contactDetails = reqBody.contactDetails;
 
     // Update physiotherapists table if specialization, name, or contactDetails is provided
     if (Object.keys(therapistUpdateFields).length > 0) {

@@ -128,40 +128,52 @@ function RouteComponent() {
         title: "Registration Successful",
         description: "Your business account has been created.",
       });
-    } catch (error: unknown) {
-      // Ensure that the error is of type Error
-      if (error instanceof Error) {
-        // Handle specific email error
-        if (error.message === "Email is already in use") {
-          form.setError("contactEmail", {
-            type: "manual",
-            message:
-              "This email is already in use. Please use a different one.",
-          });
-          // Generic error message
-          toast({
-            variant: "destructive",
-            title: "Registration failed",
-            description: "There was an error creating your business account.",
-          });
-        } else {
-          // Generic error message
-          toast({
-            variant: "destructive",
-            title: "Registration failed",
-            description: "There was an error creating your business account.",
-          });
-        }
-      } else {
-        // In case the error is not an instance of Error
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      // Show a specific toast for each error
+      if (typeof error === "object" && error !== null && "email" in error) {
+        form.setError("contactEmail", {
+          type: "manual",
+          message: (error as { email: string }).email,
+        });
         toast({
           variant: "destructive",
           title: "Registration failed",
+          description: (error as { email: string }).email,
+        });
+      }
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "contactDetails" in error
+      ) {
+        form.setError("contactPhone", {
+          type: "manual",
+          message: (error as { contactDetails: string }).contactDetails,
+        });
+        toast({
+          variant: "destructive",
+          title: "Registration failed",
+          description: (error as { contactDetails: string }).contactDetails,
+        });
+      }
+
+      // Generic toast for other errors
+      if (
+        typeof error !== "object" ||
+        error === null ||
+        (!("email" in error) && !("contactDetails" in error))
+      ) {
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
           description: "An unknown error occurred. Please try again.",
         });
       }
     }
   };
+
   return (
     <div className="min-h-screen dark:bg-gray-900">
       <Header />

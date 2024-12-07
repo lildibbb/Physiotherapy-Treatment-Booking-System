@@ -38,7 +38,6 @@ type Slot = {
   date: string;
   morning: string[];
   afternoon: string[];
-  evening: string[];
 };
 
 export const Route = createFileRoute("/findDoctor/$therapistID")({
@@ -356,16 +355,14 @@ function RouteComponent() {
                 <CardContent className="mt-6">
                   {selectedSlot ? (
                     <div className="space-y-4">
-                      {(["morning", "afternoon", "evening"] as const).map(
-                        (period) => (
-                          <TimeSlotSection
-                            key={period}
-                            period={period}
-                            slots={selectedSlot[period]}
-                            form={form}
-                          />
-                        )
-                      )}
+                      {(["morning", "afternoon"] as const).map((period) => (
+                        <TimeSlotSection
+                          key={period}
+                          period={period}
+                          slots={selectedSlot[period]}
+                          form={form}
+                        />
+                      ))}
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500">No slots available</p>

@@ -25,6 +25,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { registerUser } from "../lib/api";
 import { Header } from "@/components/header";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 // Define Zod schema for form validation
 const formSchema = z.object({
@@ -37,6 +38,10 @@ const formSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
       "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
     ),
+  contactDetails: z
+    .string()
+    .min(12, "Phone number must be at least 10 digits")
+    .max(12, "Phone number cannot exceed 11 digits"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -50,11 +55,22 @@ function RouteComponent() {
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      contactDetails: "",
+    },
   });
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await registerUser(data.name, data.email, data.password);
+      const response = await registerUser(
+        data.name,
+        data.email,
+        data.password,
+        data.contactDetails
+      );
       console.log("Registration successful:", response);
 
       toast({
@@ -63,12 +79,48 @@ function RouteComponent() {
         description: "Your account has been created. You can now log in.",
       });
     } catch (error) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Registration failed",
-        description: "Email is already in use",
-      });
+      console.error("Registration error:", error);
+
+      // Show a specific toast for each error
+      if (typeof error === "object" && error !== null && "email" in error) {
+        form.setError("email", {
+          type: "manual",
+          message: (error as { email: string }).email,
+        });
+        toast({
+          variant: "destructive",
+          title: "Registration failed",
+          description: (error as { email: string }).email,
+        });
+      }
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "contactDetails" in error
+      ) {
+        form.setError("contactDetails", {
+          type: "manual",
+          message: (error as { contactDetails: string }).contactDetails,
+        });
+        toast({
+          variant: "destructive",
+          title: "Registration failed",
+          description: (error as { contactDetails: string }).contactDetails,
+        });
+      }
+
+      // Generic toast for other errors
+      if (
+        typeof error !== "object" ||
+        error === null ||
+        (!("email" in error) && !("contactDetails" in error))
+      ) {
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description: "An unknown error occurred. Please try again.",
+        });
+      }
     }
   };
 
@@ -131,6 +183,23 @@ function RouteComponent() {
                           placeholder="Password"
                           type="password"
                           {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="contactDetails"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Contact Phone</FormLabel>
+                      <FormControl>
+                        <PhoneInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Contact phone number"
                         />
                       </FormControl>
                       <FormMessage />

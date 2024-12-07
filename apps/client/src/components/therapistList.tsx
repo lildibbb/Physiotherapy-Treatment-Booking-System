@@ -113,14 +113,16 @@ export const TherapistList = () => {
                 <GraduationCap className="h-4 w-4 text-muted-foreground" />
                 <span>
                   {therapist.qualification.length > 0
-                    ? therapist.qualification[0]
+                    ? therapist.qualification.join(", ")
                     : "N/A"}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
                 <Globe className="h-4 w-4 text-muted-foreground" />
                 <span>
-                  {therapist.languages?.length ? therapist.languages[0] : "N/A"}
+                  {therapist.languages?.length
+                    ? therapist.languages.join(", ")
+                    : "N/A"}
                 </span>
               </div>
             </div>

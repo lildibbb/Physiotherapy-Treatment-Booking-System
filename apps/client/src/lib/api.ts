@@ -7,7 +7,8 @@ const apiBaseUrl = "http://localhost:5431/api";
 export const registerUser = async (
   name: string,
   email: string,
-  password: string
+  password: string,
+  contactDetails: string
 ) => {
   const response = await fetch(`${apiBaseUrl}/auth/register/user`, {
     method: "POST",
@@ -18,10 +19,24 @@ export const registerUser = async (
       name,
       email,
       password,
-      role: "patient", // Set default role (POSSIBLE OF ATTACK) //TODO: remove this
-      associatedID: "", // Set associatedID as an empty string
+      contactDetails,
     }),
   });
+  if (response.status === 409) {
+    const errorData = await response.json();
+    const fieldConflicts = errorData.field || [];
+
+    // Build an object of field-specific errors
+    const errorDetails: Record<string, string> = {};
+    if (fieldConflicts.includes("Contact details")) {
+      errorDetails.contactDetails = "Contact details are already in use.";
+    }
+    if (fieldConflicts.includes("Email")) {
+      errorDetails.email = "Email is already in use.";
+    }
+
+    throw errorDetails; // Throw an object containing field-specific errors
+  }
   if (!response.ok) {
     const errorMessage = await response.text();
     console.error("Error response:", errorMessage);
@@ -78,10 +93,20 @@ export const registerBusinessUser = async (
       postalCode,
     }),
   });
-  // Check if email already exists
   if (response.status === 409) {
-    // Assuming 409 means conflict (email exists)
-    throw new Error("Email is already in use");
+    const errorData = await response.json();
+    const fieldConflicts = errorData.field || [];
+
+    // Build an object of field-specific errors
+    const errorDetails: Record<string, string> = {};
+    if (fieldConflicts.includes("Contact details")) {
+      errorDetails.contactDetails = "Contact details are already in use.";
+    }
+    if (fieldConflicts.includes("Email")) {
+      errorDetails.email = "Email is already in use.";
+    }
+
+    throw errorDetails; // Throw an object containing field-specific errors
   }
   if (!response.ok) {
     const errorMessage = await response.text();

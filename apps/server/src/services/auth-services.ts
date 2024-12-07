@@ -16,7 +16,7 @@ import type {
 } from "../../types";
 import type { UserRegistration } from "../../types";
 
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 // Helper function for consistent response formatting
 export default function jsonResponse(data: any, status = 200) {
@@ -50,22 +50,54 @@ export const verifyAuth = async (jwt: any, auth: string | undefined) => {
 // User Registration
 export async function registerUser(reqBody: UserRegistration) {
   // Validate the request body for required fields
-  if (!reqBody.email || !reqBody.password || !reqBody.name) {
+  if (
+    !reqBody.email ||
+    !reqBody.password ||
+    !reqBody.name ||
+    !reqBody.contactDetails
+  ) {
     return jsonResponse({ error: "Missing required fields" }, 400);
   }
 
-  // Check if a user with the same email already exists
-  const existingUser = await db
-    .select()
-    .from(user_authentications)
-    .where(eq(user_authentications.email, reqBody.email))
-    .execute();
+  // Check for existing contact details or email in user_authentications if provided
+  if (reqBody.contactDetails || reqBody.email) {
+    const conditions = [];
+    if (reqBody.contactDetails) {
+      conditions.push(
+        eq(user_authentications.contactDetails, reqBody.contactDetails)
+      );
+    }
+    if (reqBody.email) {
+      conditions.push(eq(user_authentications.email, reqBody.email));
+    }
 
-  if (existingUser.length > 0) {
-    return jsonResponse(
-      { error: "Email is already in use. Please use a different email." },
-      409 // 409 Conflict
-    );
+    const existingUsers = await db
+      .select()
+      .from(user_authentications)
+      .where(or(...conditions))
+      .execute();
+
+    const conflicts = [];
+    if (
+      existingUsers.some(
+        (user) => user.contactDetails === reqBody.contactDetails
+      )
+    ) {
+      conflicts.push("Contact details");
+    }
+    if (existingUsers.some((user) => user.email === reqBody.email)) {
+      conflicts.push("Email");
+    }
+
+    if (conflicts.length > 0) {
+      return jsonResponse(
+        {
+          error: "Some fields are already in use.",
+          field: conflicts, // Return an array of conflicting fields
+        },
+        409
+      );
+    }
   }
 
   const hashedPassword = await bcrypt.hash(reqBody.password, 10); // Hash the password with bcrypt
@@ -78,6 +110,7 @@ export async function registerUser(reqBody: UserRegistration) {
         email: reqBody.email,
         password: hashedPassword,
         role: "patient", // default role for patient
+        contactDetails: reqBody.contactDetails,
       })
       .returning()
       .execute();
@@ -90,7 +123,6 @@ export async function registerUser(reqBody: UserRegistration) {
       .values({
         userID: userId, // link patient to the user_authentications entry
         name: reqBody.name,
-        contactDetails: null, // set optional fields to null or default values
         dob: null,
         gender: null,
         address: null,
@@ -126,18 +158,43 @@ export async function registerBusiness(reqBody: BusinessRegistration) {
     return { error: "Missing required fields", status: 400 };
   }
 
-  // Check if a user with the same email already exists
-  const existingUser = await db
-    .select()
-    .from(user_authentications)
-    .where(eq(user_authentications.email, reqBody.contactEmail))
-    .execute();
+  // Check for existing contact details or email in user_authentications if provided
+  if (reqBody.contactPhone || reqBody.contactEmail) {
+    const conditions = [];
+    if (reqBody.contactPhone) {
+      conditions.push(
+        eq(user_authentications.contactDetails, reqBody.contactPhone)
+      );
+    }
+    if (reqBody.contactEmail) {
+      conditions.push(eq(user_authentications.email, reqBody.contactEmail));
+    }
 
-  if (existingUser.length > 0) {
-    return jsonResponse(
-      { error: "Email is already in use. Please use a different email." },
-      409 // 409 Conflict
-    );
+    const existingUsers = await db
+      .select()
+      .from(user_authentications)
+      .where(or(...conditions))
+      .execute();
+
+    const conflicts = [];
+    if (
+      existingUsers.some((user) => user.contactDetails === reqBody.contactPhone)
+    ) {
+      conflicts.push("Contact details");
+    }
+    if (existingUsers.some((user) => user.email === reqBody.contactEmail)) {
+      conflicts.push("Email");
+    }
+
+    if (conflicts.length > 0) {
+      return jsonResponse(
+        {
+          error: "Some fields are already in use.",
+          field: conflicts, // Return an array of conflicting fields
+        },
+        409
+      );
+    }
   }
 
   try {
@@ -150,6 +207,7 @@ export async function registerBusiness(reqBody: BusinessRegistration) {
       .values({
         email: reqBody.contactEmail,
         password: hashedPassword,
+        contactDetails: reqBody.contactPhone,
         role: "business",
       })
       .returning()
@@ -164,7 +222,6 @@ export async function registerBusiness(reqBody: BusinessRegistration) {
         userID: userId,
         personInChargeName: reqBody.personInChargeName,
         contactEmail: reqBody.contactEmail,
-        contactPhone: reqBody.contactPhone,
         companyName: reqBody.companyName,
         businessRegistrationNumber: reqBody.businessRegistrationNumber,
         contractSigneeName: reqBody.contractSigneeName,
@@ -258,7 +315,13 @@ export async function registerStaff(
   reqBody: StaffRegistration,
   profile: { businessID: number }
 ) {
-  if (!reqBody.email || !reqBody.password || !reqBody.name || !reqBody.role) {
+  if (
+    !reqBody.email ||
+    !reqBody.password ||
+    !reqBody.contactDetails ||
+    !reqBody.name ||
+    !reqBody.role
+  ) {
     return jsonResponse({ error: "Missing required fields" }, 400);
   }
 
@@ -275,18 +338,35 @@ export async function registerStaff(
     );
   }
 
-  // Check if a user with the same email already exists
-  const existingUser = await db
-    .select()
-    .from(user_authentications)
-    .where(eq(user_authentications.email, reqBody.email))
-    .execute();
+  //check for existing contact details or email in user_authentication if provided
+  if (reqBody.contactDetails || reqBody.email) {
+    const conditions = [];
+    if (reqBody.contactDetails) {
+      conditions.push(
+        eq(user_authentications.contactDetails, reqBody.contactDetails)
+      );
+    }
+    if (reqBody.email) {
+      conditions.push(eq(user_authentications.email, reqBody.email));
+    }
+    const existingUser = await db
+      .select()
+      .from(user_authentications)
+      .where(or(...conditions))
+      .execute();
 
-  if (existingUser.length > 0) {
-    return jsonResponse(
-      { error: "Email is already in use. Please use a different email." },
-      409 // 409 Conflict
-    );
+    if (existingUser.length > 0) {
+      const conflictField =
+        existingUser[0].contactDetails === reqBody.contactDetails
+          ? "Contact details"
+          : "Email";
+      return jsonResponse(
+        {
+          error: `${conflictField} is already in use. Please use a different one.`,
+        },
+        409
+      );
+    }
   }
 
   try {
@@ -299,6 +379,7 @@ export async function registerStaff(
       .values({
         email: reqBody.email,
         password: hashedPassword,
+        contactDetails: reqBody.contactDetails,
         role: "staff",
       })
       .returning()
@@ -354,18 +435,36 @@ export async function registerTherapist(
       status: 403,
     };
   }
-  // Check if a user with the same email already exists
-  const existingUser = await db
-    .select()
-    .from(user_authentications)
-    .where(eq(user_authentications.email, reqBody.email))
-    .execute();
+  // Check for existing contact details or email in user_authentications if provided
+  if (reqBody.contactDetails || reqBody.email) {
+    const conditions = [];
+    if (reqBody.contactDetails) {
+      conditions.push(
+        eq(user_authentications.contactDetails, reqBody.contactDetails)
+      );
+    }
+    if (reqBody.email) {
+      conditions.push(eq(user_authentications.email, reqBody.email));
+    }
 
-  if (existingUser.length > 0) {
-    return jsonResponse(
-      { error: "Email is already in use. Please use a different email." },
-      409
-    ); // 409 Conflict
+    const existingUser = await db
+      .select()
+      .from(user_authentications)
+      .where(or(...conditions))
+      .execute();
+
+    if (existingUser.length > 0) {
+      const conflictField =
+        existingUser[0].contactDetails === reqBody.contactDetails
+          ? "Contact details"
+          : "Email";
+      return jsonResponse(
+        {
+          error: `${conflictField} is already in use. Please use a different one.`,
+        },
+        409
+      );
+    }
   }
 
   try {
@@ -378,6 +477,7 @@ export async function registerTherapist(
       .values({
         email: reqBody.email,
         password: hashedPassword,
+        contactDetails: reqBody.contactDetails,
         role: "therapist",
       })
       .returning()
@@ -390,6 +490,8 @@ export async function registerTherapist(
         "Master of Orthopedics",
         "Certification in Sports Therapy",
       ],
+      experience: 10,
+      languages: ["English", "Mandarin"],
     };
     //insert into staffs table using businessID from the decoded token
     const newTherapist = await db
@@ -398,9 +500,9 @@ export async function registerTherapist(
         userID: userId,
         name: reqBody.name,
         specialization: reqBody.specialization,
-        contactDetails: reqBody.contactDetails,
         qualification: reqBody.qualification || fakeData.qualification || null,
         experience: reqBody.experience || null,
+        language: reqBody.languages || fakeData.languages || null,
         businessID: businessID, // Use businessID from the token
       })
       .returning()

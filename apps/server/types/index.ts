@@ -3,10 +3,10 @@ import { t } from "elysia";
 export type UserRegistration = {
   email: string; // Username for the user account ( Required )
   password: string; // Password for the user account ( Required )
-
-  associatedID?: string; // Reference to the associated user
+  contactDetails: string; // Contact details for the user account ( Required )
   name: string; // Optional name for the user
 };
+
 export type UserLogin = {
   email: string; // Username for the user account ( Required )
   password: string; //password for the user account ( Required )
@@ -30,6 +30,7 @@ export type StaffRegistration = {
   email: string; // Email for the staff account ( Required )
   password: string; // Password for the staff account ( Required )
   name: string;
+  contactDetails: string; // Contact details for the staff account ( Required )
   role?: string;
 };
 
@@ -41,12 +42,14 @@ export type TherapistRegistration = {
   contactDetails: string;
   qualification?: string[]; // array for the qualifications
   experience?: number; // Experience in years (e.g., 3)
+  languages?: string[]; // Languages spoken by the therapist
 };
 
 export type Staff = {
   email?: string; // Email for the staff account ( Optional )
   password?: string; // Password for the staff account ( Optional )
   name?: string; // Optional name for the staff
+  contactDetails?: string; // Contact details for the staff account ( Optional )
   role?: string;
 };
 
@@ -125,7 +128,7 @@ export const UserRegistrationSchema = t.Object({
   email: t.String(),
   password: t.String(),
 
-  associatedID: t.String(),
+  contactDetails: t.String(),
   name: t.String(),
 });
 
