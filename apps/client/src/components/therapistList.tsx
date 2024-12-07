@@ -3,20 +3,15 @@ import { fetchAllTherapistPublic } from "../lib/api";
 import {
   Card,
   CardContent,
-  CardDescription,
+  CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import {
-  GraduationCap,
-  Hospital,
-  Hourglass,
-  Languages,
-  MapPinHouse,
-  UserRoundMinus,
-} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { GraduationCap, Briefcase, MapPin, Globe, User } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { Button } from "./ui/button";
 
 type Therapist = {
   therapistID: number;
@@ -39,7 +34,6 @@ export const TherapistList = () => {
     async function getTherapists() {
       try {
         const data = await fetchAllTherapistPublic();
-        console.log("Fetched Data: ", data);
         setTherapists(data.data);
       } catch (err) {
         setError("Failed to fetch therapists.");
@@ -53,7 +47,21 @@ export const TherapistList = () => {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-4">Loading...</div>;
+    return (
+      <div className="space-y-4">
+        {[...Array(3)].map((_, index) => (
+          <Card key={index} className="p-4">
+            <div className="flex items-center space-x-4">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    );
   }
 
   if (error) {
@@ -61,79 +69,74 @@ export const TherapistList = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {therapists.map((therapist, index) => (
-        <Card key={index} className="flex flex-col  rounded-lg p-4">
-          {/* Top Section: Two Columns */}
-          <div className="flex flex-row space-x-6">
-            {/* Left Column: Therapist Image */}
-            <CardHeader>
-              <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden  flex-shrink-0">
-                <img
-                  src={
-                    therapist.image ||
-                    "https://static.vecteezy.com/system/resources/previews/009/749/645/non_2x/teacher-avatar-man-icon-cartoon-male-profile-mascot-illustration-head-face-business-user-logo-free-vector.jpg"
-                  }
-                  alt={therapist.name}
-                  className="w-full h-full object-cover"
-                />
+    <div className="space-y-4">
+      {therapists.map((therapist) => (
+        <Card key={therapist.therapistID} className="overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage
+                    src={
+                      therapist.image ||
+                      "https://static.vecteezy.com/system/resources/previews/009/749/645/non_2x/teacher-avatar-man-icon-cartoon-male-profile-mascot-illustration-head-face-business-user-logo-free-vector.jpg"
+                    }
+                    alt={therapist.name}
+                  />
+                  <AvatarFallback>{therapist.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-lg font-semibold">{therapist.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {therapist.specialization}
+                  </p>
+                </div>
               </div>
-            </CardHeader>
-
-            {/* Middle Column: Name, Specialization, Business Name */}
-            <CardContent className="flex-1 space-y-2">
-              <CardTitle className="text-xl font-bold mb-1">
-                {therapist.name}
-              </CardTitle>
-              <CardDescription className="text-sm font-semibold text-gray-600">
-                <UserRoundMinus className="inline mr-2 mb-1" />
-                {therapist.specialization}
-              </CardDescription>
-              <CardDescription className="text-sm font-semibold text-gray-700">
-                <Hospital className="inline mr-2 mb-1" />
-                {therapist.businessName}
-              </CardDescription>
-              <CardDescription className="text-sm font-semibold text-gray-600">
-                <MapPinHouse className="inline mr-2 mb-1" />
-                {therapist.location || "Location not provided"}
-              </CardDescription>
-            </CardContent>
-
-            {/* Right Column: Location, Experience, Language, Qualification */}
-            <CardContent className="flex-1 space-y-2 py-7">
-              <CardDescription className="text-sm text-gray-600">
-                <Hourglass className="inline mr-2 mb-1" />
-                <span className="font-semibold">Experience:</span>{" "}
-                {therapist.experience
-                  ? `${therapist.experience} years`
-                  : "Not provided"}
-              </CardDescription>
-              <CardDescription className="text-sm text-gray-600">
-                <Languages className="inline mr-2 mb-1 " />
-                <span className="font-semibold">Languages:</span>{" "}
-                {therapist.languages?.join(", ") || "Not provided"}
-              </CardDescription>
-              <CardDescription className="text-sm text-gray-600">
-                <GraduationCap className="inline mr-2 mb-1" />
-                <span className="font-semibold">Qualifications:</span>{" "}
-                {therapist.qualification.length > 0
-                  ? therapist.qualification.join(", ")
-                  : "Not provided"}
-              </CardDescription>
-            </CardContent>
-          </div>
-
-          {/* Bottom Section: Book Button */}
-          <div className="pt-4 flex justify-center">
+              <Badge variant="secondary">{therapist.businessName}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="pb-2">
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                <span>
+                  {therapist.experience
+                    ? `${therapist.experience} years`
+                    : "N/A"}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <span>{therapist.location || "N/A"}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                <span>
+                  {therapist.qualification.length > 0
+                    ? therapist.qualification[0]
+                    : "N/A"}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <span>
+                  {therapist.languages?.length ? therapist.languages[0] : "N/A"}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between items-center pt-2">
+            <Button variant="link" className="p-0">
+              <User className="h-4 w-4 mr-2" />
+              View Profile
+            </Button>
             <Link
               to="/findDoctor/$therapistID"
               params={{ therapistID: therapist.therapistID.toString() }}
             >
-              <Button className=" w-full px-6 py-2" variant="default">
-                Book
-              </Button>
+              <Button>Book Appointment</Button>
             </Link>
-          </div>
+          </CardFooter>
         </Card>
       ))}
     </div>

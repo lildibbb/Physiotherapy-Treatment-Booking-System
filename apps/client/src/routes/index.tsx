@@ -19,7 +19,6 @@ function RouteComponent() {
       <Testimonial />
       <FeatureBusiness />
       <FAQ />
-
       <Footer />
     </div>
   );

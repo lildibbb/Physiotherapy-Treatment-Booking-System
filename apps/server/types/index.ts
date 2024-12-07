@@ -85,7 +85,7 @@ export type AvailableSlot = {
   day: string; // The day of the week (e.g., "Monday")
   morning: string[]; // Morning time slots (e.g., ["08:00", "08:30"])
   afternoon: string[]; // Afternoon time slots (e.g., ["13:00", "14:00"])
-  evening: string[]; // Evening time slots (e.g., ["18:00", "19:30"])
+
   unavailable: boolean; // Availability status
 };
 
