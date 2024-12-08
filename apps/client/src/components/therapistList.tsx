@@ -12,6 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GraduationCap, Briefcase, MapPin, Globe, User } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 
 type Therapist = {
   therapistID: number;
@@ -128,10 +136,23 @@ export const TherapistList = () => {
             </div>
           </CardContent>
           <CardFooter className="flex justify-between items-center pt-2">
-            <Button variant="link" className="p-0">
-              <User className="h-4 w-4 mr-2" />
-              View Profile
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="link" className="p-0">
+                  <User className="h-4 w-4 mr-2" />
+                  View Profile
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{therapist.name}</DialogTitle>
+                  <DialogDescription>
+                    Fill out the form below to add a new therapist.
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
+
             <Link
               to="/findDoctor/$therapistID"
               params={{ therapistID: therapist.therapistID.toString() }}

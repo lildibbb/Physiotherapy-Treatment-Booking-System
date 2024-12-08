@@ -126,6 +126,8 @@ export const staffRoutes = new Elysia()
             return { error: authResult.error, status: authResult.status };
           }
 
+          console.log("body:", body);
+
           return await registerStaff(
             body as StaffRegistration,
             authResult.profile

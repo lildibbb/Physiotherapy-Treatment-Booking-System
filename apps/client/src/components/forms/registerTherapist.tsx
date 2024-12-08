@@ -20,6 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import specialization from "../../data/specialization.json";
+import { PhoneInput } from "../ui/phone-input";
+import { toast } from "@/hooks/use-toast";
 
 // Define Zod schema for form validation
 const therapistSchema = z.object({
@@ -33,13 +35,18 @@ const therapistSchema = z.object({
     ),
   name: z.string().min(1, "Name is required"),
   specialization: z.string().min(1, "Specialization is required"),
-  contactDetails: z.string().min(1, "Contact details are required"),
+  contactDetails: z
+    .string()
+    .min(12, "Phone number must be at least 10 digits")
+    .max(12, "Phone number cannot exceed 11 digits"),
 });
 
 type TherapistFormData = z.infer<typeof therapistSchema>;
 
 interface RegisterTherapistFormProps {
-  onSubmit: (data: TherapistFormData) => void;
+  onSubmit: (
+    data: TherapistFormData
+  ) => Promise<Partial<TherapistFormData> | null>;
 }
 
 const RegisterTherapistForm: React.FC<RegisterTherapistFormProps> = ({
@@ -55,10 +62,32 @@ const RegisterTherapistForm: React.FC<RegisterTherapistFormProps> = ({
       contactDetails: "",
     },
   });
+  const handleSubmit = async (data: TherapistFormData) => {
+    const errors = await onSubmit(data);
+    if (errors) {
+      if (errors.email) {
+        form.setError("email", { type: "manual", message: errors.email });
+      }
+      if (errors.contactDetails) {
+        form.setError("contactDetails", {
+          type: "manual",
+          message: errors.contactDetails,
+        });
+      }
+      // Optionally, handle other errors or display a generic toast
+      if (errors.name || errors.password || errors.specialization) {
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description: "Please fix the errors in the form.",
+        });
+      }
+    }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="flex space-x-4">
           <FormField
             control={form.control}
@@ -143,11 +172,12 @@ const RegisterTherapistForm: React.FC<RegisterTherapistFormProps> = ({
           name="contactDetails"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contact Details</FormLabel>
+              <FormLabel>Contact Phone</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Phone number or contact details"
-                  {...field}
+                <PhoneInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Contact phone number"
                 />
               </FormControl>
               <FormMessage />

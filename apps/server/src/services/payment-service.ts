@@ -120,7 +120,7 @@ export async function fulfillCheckoutRequest(sessionID: string) {
           const { appointmentID } = paymentData[0]; // Access the first item
           const appointmentData = await db
             .update(appointments)
-            .set({ status: session.payment_status })
+            .set({ status: "ongoing" })
             .where(eq(appointments.appointmentID, appointmentID)) // Use the first item's appointmentID
             .returning()
             .execute();

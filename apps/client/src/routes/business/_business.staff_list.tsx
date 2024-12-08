@@ -55,6 +55,7 @@ interface StaffData {
   password: string;
   name: string;
   role: string;
+  contactDetails: string;
 }
 
 export const Route = createFileRoute("/business/_business/staff_list")({
@@ -90,12 +91,16 @@ function RouteComponent() {
 
   const handleRegisterStaff = async (data: Omit<StaffData, "id">) => {
     try {
+      console.log(data.contactDetails);
       const newStaff = await registerStaff(
         data.email,
         data.password,
         data.name,
-        data.role
+        data.role,
+        data.contactDetails
       );
+      console.log(newStaff.message);
+      console.log("New staff registered:", newStaff);
       // Add the `id` returned by the API to the new staff data
       setStaff((prevStaff) => [...prevStaff, { ...data, id: newStaff.id }]);
       setIsSheetOpen(false);

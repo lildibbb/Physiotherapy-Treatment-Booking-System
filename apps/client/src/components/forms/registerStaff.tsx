@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { roles } from "../../data/roles.json";
+import { PhoneInput } from "../ui/phone-input";
 
 // Define Zod schema for form validation
 const staffSchema = z.object({
@@ -33,6 +34,10 @@ const staffSchema = z.object({
     ),
   name: z.string().min(1, "Name is required"),
   role: z.string().min(1, "Role is required"),
+  contactDetails: z
+    .string()
+    .min(12, "Phone number must be at least 10 digits")
+    .max(12, "Phone number cannot exceed 11 digits"),
 });
 
 type StaffFormData = z.infer<typeof staffSchema>;
@@ -49,6 +54,7 @@ const RegisterStaffForm: React.FC<RegisterStaffFormProps> = ({ onSubmit }) => {
       password: "",
       name: "",
       role: "",
+      contactDetails: "",
     },
   });
 
@@ -133,7 +139,23 @@ const RegisterStaffForm: React.FC<RegisterStaffFormProps> = ({ onSubmit }) => {
             </FormItem>
           )}
         />
-
+        <FormField
+          control={form.control}
+          name="contactDetails"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Contact Phone</FormLabel>
+              <FormControl>
+                <PhoneInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Contact phone number"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button type="submit" className="w-full">
           Register Staff
         </Button>

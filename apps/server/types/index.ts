@@ -30,8 +30,8 @@ export type StaffRegistration = {
   email: string; // Email for the staff account ( Required )
   password: string; // Password for the staff account ( Required )
   name: string;
+  role: string;
   contactDetails: string; // Contact details for the staff account ( Required )
-  role?: string;
 };
 
 export type TherapistRegistration = {
@@ -157,6 +157,7 @@ export const StaffRegistrationSchema = t.Object({
   password: t.String(),
   name: t.String(),
   role: t.String(),
+  contactDetails: t.String(),
 });
 
 export const TherapistRegistrationSchema = t.Object({

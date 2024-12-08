@@ -14,9 +14,9 @@ import {
 // Define the user authentication table schema
 export const user_authentications = pgTable("user_authentications", {
   userID: serial("userID").primaryKey(),
-  email: varchar("email", { length: 100 }).notNull(), // Add length and notNull
-  password: varchar("password", { length: 255 }).notNull(), // Add length and notNull
-  role: varchar("role", { length: 50 }).notNull(), // Add length and notNull
+  email: varchar("email", { length: 100 }).notNull(),
+  password: varchar("password", { length: 255 }).notNull(),
+  role: varchar("role", { length: 50 }).notNull(),
   contactDetails: varchar("contactDetails", { length: 255 }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

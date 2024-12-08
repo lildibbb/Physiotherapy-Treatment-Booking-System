@@ -315,6 +315,7 @@ export async function registerStaff(
   reqBody: StaffRegistration,
   profile: { businessID: number }
 ) {
+  console.log("contactdetails: ", reqBody.contactDetails);
   if (
     !reqBody.email ||
     !reqBody.password ||
@@ -447,20 +448,29 @@ export async function registerTherapist(
       conditions.push(eq(user_authentications.email, reqBody.email));
     }
 
-    const existingUser = await db
+    const existingUsers = await db
       .select()
       .from(user_authentications)
       .where(or(...conditions))
       .execute();
 
-    if (existingUser.length > 0) {
-      const conflictField =
-        existingUser[0].contactDetails === reqBody.contactDetails
-          ? "Contact details"
-          : "Email";
+    const conflicts = [];
+    if (
+      existingUsers.some(
+        (user) => user.contactDetails === reqBody.contactDetails
+      )
+    ) {
+      conflicts.push("Contact details");
+    }
+    if (existingUsers.some((user) => user.email === reqBody.email)) {
+      conflicts.push("Email");
+    }
+
+    if (conflicts.length > 0) {
       return jsonResponse(
         {
-          error: `${conflictField} is already in use. Please use a different one.`,
+          error: "Some fields are already in use.",
+          field: conflicts, // Return an array of conflicting fields
         },
         409
       );

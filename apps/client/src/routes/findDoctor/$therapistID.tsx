@@ -183,32 +183,31 @@ function RouteComponent() {
   const consultationTypes = ["Online Consultation", "In-Person Consultation"];
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-4 py-6 pt-20">
       <Header />
 
       {/* Search Section */}
-      <div className="mb-4 py-4">
-        <div className="flex flex-col border-gray-400 md:flex-row gap-2">
+      <div className="mb-6 ">
+        <div className="flex flex-col md:flex-row gap-4">
           <Input
             type="search"
             placeholder="Location"
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <Input
             type="text"
             placeholder="Search for therapists..."
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
-
-      <div className="flex flex-col md:flex-row">
+      <div className="flex flex-col md:flex-row  gap-6">
         {/* Therapist Details Section */}
         <div className="flex-1 h-auto md:mr-4">
           <div className="space-y-6">
             <div className="border rounded-lg p-6 shadow-sm">
               <CardHeader>
-                <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 mx-auto md:mx-0">
                   <img
                     src={
                       therapist.image ||
@@ -219,13 +218,15 @@ function RouteComponent() {
                   />
                 </div>
               </CardHeader>
-              <h2 className="text-2xl font-bold">{therapist.name}</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold">
+                {therapist.name}
+              </h2>
               <p className="text-gray-600">{therapist.specialization}</p>
               <p className="text-sm text-gray-500">
                 {therapist.experience} Years Experience
               </p>
               <p className="text-sm text-gray-500">{therapist.location}</p>
-              <div className="flex gap-2 mt-4">
+              <div className="flex flex-wrap gap-2 mt-4">
                 <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
                   Highly recommended
                 </span>
@@ -233,10 +234,7 @@ function RouteComponent() {
                   Excellent wait time
                 </span>
               </div>
-              <h3 className="mt-6 text-lg font-semibold">About Doctor</h3>
-              <p className="text-gray-600">
-                {therapist.description || "No description available"}
-              </p>
+
               <h3 className="mt-4 text-lg font-semibold">Practices</h3>
               <p className="text-blue-600">{therapist.businessName}</p>
             </div>
@@ -256,13 +254,13 @@ function RouteComponent() {
         </div>
 
         {/* Booking Section */}
-        <div className="md:w-1/3 flex flex-col gap-4 h-auto">
+        <div className="w-full md:w-1/3 flex flex-col gap-6">
           {/* Consultation Type */}
           <div className="border rounded-lg p-6 shadow-sm ">
             <h3 className="text-lg font-semibold">
               Step 1: Choose Consultation Type
             </h3>
-            <div className="mt-4 flex flex-col gap-2">
+            <div className="mt-4 flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
               {consultationTypes.map((type) => (
                 <Button
                   key={type}
@@ -289,18 +287,21 @@ function RouteComponent() {
                 </CardHeader>
 
                 {/* Date Navigation */}
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center justify-between mt-4 space-x-2">
+                  {/* Previous Button */}
                   <Button
                     type="button"
                     onClick={() => handleDateNavigation("prev")}
                     variant="outline"
                     size="sm"
                     disabled={selectedDateIndex === 0}
+                    className="px-2 py-1 text-sm flex-shrink-0"
                   >
                     &lt; Prev
                   </Button>
 
-                  <div className="flex space-x-2 overflow-x-auto date-container">
+                  {/* Date Container */}
+                  <div className="flex space-x-2 overflow-x-auto flex-grow">
                     {visibleDates.map((slot: Slot) => {
                       const actualIndex = availability.findIndex(
                         (s) => s.date === slot.date
@@ -320,9 +321,9 @@ function RouteComponent() {
                           size="sm"
                           className={`flex flex-col items-center ${
                             actualIndex === selectedDateIndex
-                              ? "bg-pink-600"
+                              ? "bg-pink-600 text-white"
                               : ""
-                          }`}
+                          } px-3 py-2 rounded-md min-w-[60px] sm:min-w-[80px]`}
                         >
                           <span className="text-xs font-medium">
                             {date.toLocaleDateString("en-US", {
@@ -340,12 +341,14 @@ function RouteComponent() {
                     })}
                   </div>
 
+                  {/* Next Button */}
                   <Button
                     type="button"
                     onClick={() => handleDateNavigation("next")}
                     variant="outline"
                     size="sm"
                     disabled={selectedDateIndex === availability.length - 1}
+                    className="px-2 py-1 text-sm flex-shrink-0"
                   >
                     Next &gt;
                   </Button>
@@ -391,7 +394,7 @@ function RouteComponent() {
                       </AlertDialogTrigger>
                       {/* AlertDialog for confirmation */}
 
-                      <AlertDialogContent>
+                      <AlertDialogContent className="sm:max-w-md">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Confirm Booking</AlertDialogTitle>
                           <AlertDialogDescription>

@@ -87,7 +87,9 @@ function RouteComponent() {
     fetchTherapists();
   }, []);
 
-  const handleRegisterTherapist = async (data: TherapistData) => {
+  const handleRegisterTherapist = async (
+    data: TherapistData
+  ): Promise<Partial<TherapistData> | null> => {
     try {
       const newTherapist = await registerTherapist(
         data.email,
@@ -98,7 +100,7 @@ function RouteComponent() {
       );
       setTherapists((prevTherapists) => [
         ...prevTherapists,
-        { ...data, id: newTherapist.id },
+        { ...data, therapistID: newTherapist.id }, // Ensure correct ID assignment
       ]);
       setIsSheetOpen(false);
 
@@ -107,12 +109,30 @@ function RouteComponent() {
         role: data.specialization,
         email: data.email,
         tempPassword: data.password,
-        loginUrl: "http://localhost:3000/login", // Update this to your actual login URL
+        loginUrl: "http://localhost:3000/login", // Update to actual login URL
         to: data.email,
       });
-    } catch (error) {
-      console.error("Failed to register therapist:", error);
+
+      return null; // Indicate success
+    } catch (error: any) {
+      console.error("Registration error:", error);
+
+      const formErrors: Partial<TherapistData> = {};
+      if (error?.email) {
+        formErrors.email = error.email;
+      }
+      if (error?.contactDetails) {
+        formErrors.contactDetails = error.contactDetails;
+      }
+
+      // Optionally, handle other error fields
+
+      return formErrors; // Return the errors to the form
     }
+    // Adding this return ensures all code paths return a value
+    // Even though it's unreachable, TypeScript requires it
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    return null as Partial<TherapistData> | null;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,7 +195,7 @@ function RouteComponent() {
     therapist: TherapistData;
     index: number;
   }) => (
-    <div className="mb-4 p-4 bg-white rounded-lg shadow border">
+    <div className="mb-4 p-4  rounded-lg shadow border">
       {editingIndex === index ? (
         <div className="space-y-3">
           <div>

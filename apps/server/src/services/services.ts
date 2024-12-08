@@ -583,33 +583,6 @@ export async function createAppointment(
   }
 }
 
-export async function createPaymentData(reqBody: Payment) {
-  if (!reqBody.amount || !reqBody.paymentStatus) {
-    return jsonResponse({ error: "Missing required fields" }, 400);
-  }
-  try {
-    const paymentData = await db
-      .insert(payments)
-      .values({
-        amount: reqBody.amount,
-        appointmentID: reqBody.appointmentID,
-        paymentStatus: reqBody.paymentStatus,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .returning()
-      .execute();
-
-    // Check if the insert operation was successful
-    if (paymentData.length === 0) {
-      throw new Error("Insert operation failed");
-    }
-    return paymentData[0]; // Return the inserted payment record
-  } catch (error) {
-    console.error("Error creating payment data:", error);
-    throw new Error("Unable to create payment data");
-  }
-}
 //TODO : UI for updating availability
 export async function updateAvailability(
   reqBody: Partial<Availability>,

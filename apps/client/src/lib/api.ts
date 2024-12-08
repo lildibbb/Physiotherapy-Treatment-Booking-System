@@ -121,15 +121,18 @@ export const registerStaff = async (
   email: string,
   password: string,
   name: string,
-  role: string
+  role: string,
+  contactDetails: string
 ) => {
+  const requestBody = { email, password, name, role, contactDetails };
+  console.log("API Request Body:", requestBody); // New Log
   const response = await fetch(`${apiBaseUrl}/staff/register`, {
     method: "POST",
     credentials: "include", // Bagi auth cookie auto included with request
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ email, password, name, role }),
+    body: JSON.stringify(requestBody),
   });
 
   //check if token is expired or not
@@ -147,7 +150,9 @@ export const registerStaff = async (
     console.error("Error response:", errorMessage);
     throw new Error("Failed to register");
   }
-  return await response.json();
+  const data = await response.json();
+  console.log("data:", data);
+  return data;
 };
 
 export const registerTherapist = async (
@@ -177,9 +182,20 @@ export const registerTherapist = async (
     handleExpiredSession(data.message);
     return;
   }
-  //check if email already exist
   if (response.status === 409) {
-    throw new Error("Email is already in use");
+    const errorData = await response.json();
+    const fieldConflicts = errorData.field || [];
+
+    // Build an object of field-specific errors
+    const errorDetails: Record<string, string> = {};
+    if (fieldConflicts.includes("Contact details")) {
+      errorDetails.contactDetails = "Contact details are already in use.";
+    }
+    if (fieldConflicts.includes("Email")) {
+      errorDetails.email = "Email is already in use.";
+    }
+
+    throw errorDetails; // Throw an object containing field-specific errors
   }
   if (!response.ok) {
     const errorMessage = await response.text();
