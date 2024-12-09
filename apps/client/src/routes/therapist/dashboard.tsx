@@ -8,13 +8,14 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
-import { MainNav } from "@/components/dashboard/components/main-nav";
-import { UserNav } from "@/components/dashboard/components/user-nav";
+
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Stats } from "@/components/dashboard/components/stats";
-import { PatientCard } from "@/components/dashboard/components/patientCard";
+import { AppSidebar } from "@/components/app-sidebar-therapist";
+import { Stats } from "@/components/dashboard/components/therapist/stats";
+import { PatientCard } from "@/components/dashboard/components/therapist/patientCard";
 import { Input } from "@/components/ui/input";
+import { MainNav } from "@/components/dashboard/components/therapist/main-nav";
+import { UserNav } from "@/components/dashboard/components/therapist/user-nav";
 
 export const Route = createFileRoute("/therapist/dashboard")({
   component: RouteComponent,

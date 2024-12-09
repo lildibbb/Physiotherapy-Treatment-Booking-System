@@ -2,7 +2,7 @@ import type * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/app-sidebar-therapist";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,

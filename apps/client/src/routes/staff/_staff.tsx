@@ -1,10 +1,10 @@
-import { AppSidebar } from '@/components/app-sidebar'
-import { SidebarProvider } from '@/components/ui/sidebar'
-import { Outlet, createFileRoute } from '@tanstack/react-router'
+import { AppSidebar } from "@/components/app-sidebar-therapist";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/staff/_staff')({
+export const Route = createFileRoute("/staff/_staff")({
   component: AuthLayout,
-})
+});
 
 function AuthLayout() {
   return (
@@ -12,5 +12,5 @@ function AuthLayout() {
       <AppSidebar />
       <Outlet />
     </SidebarProvider>
-  )
+  );
 }

@@ -1,7 +1,7 @@
 // src/pages/dashboard/DashboardLayout.tsx
 
 import React from "react";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/app-sidebar-therapist";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
   PageActions,

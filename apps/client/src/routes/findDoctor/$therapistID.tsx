@@ -241,14 +241,10 @@ function RouteComponent() {
 
             {/* About Section */}
             <div className="border rounded-lg p-6 shadow-sm ">
-              <h2 className="text-2xl font-bold">{therapist.about}</h2>
-
               <h3 className="mt-6 text-lg font-semibold">About Doctor</h3>
               <p className="text-gray-600">
                 {therapist.description || "No description available"}
               </p>
-              <h3 className="mt-4 text-lg font-semibold">Practices</h3>
-              <p className="text-blue-600">{therapist.businessName}</p>
             </div>
           </div>
         </div>
