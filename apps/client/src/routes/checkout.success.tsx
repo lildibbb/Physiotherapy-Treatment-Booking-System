@@ -40,6 +40,6 @@ function RouteComponent() {
   if (success) {
     return <div>{success}</div>;
   }
-  window.location.href = "/";
+  window.location.href = "/user/dashboard";
   return <div>Hello /checkout/success! Processing your payment...</div>;
 }

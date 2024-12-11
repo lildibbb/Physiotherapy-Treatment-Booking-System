@@ -31,20 +31,20 @@ export const AppointmentTable = ({ data }: AppointmentTableProps) => {
   const columns = React.useMemo<ColumnDef<AppointmentData>[]>(
     () => [
       {
-        accessorKey: "appointmentDate",
-        header: () => "Date",
-      },
-      {
         accessorKey: "time",
         header: () => "Time",
       },
       {
         accessorKey: "patientName",
-        header: () => "Patient Name",
+        header: () => "Patient",
       },
       {
         accessorKey: "therapistName",
-        header: () => "Therapist Name",
+        header: () => "Therapist",
+      },
+      {
+        accessorKey: "appointmentDate",
+        header: () => "Date",
       },
       {
         accessorKey: "status",
@@ -52,10 +52,15 @@ export const AppointmentTable = ({ data }: AppointmentTableProps) => {
         cell: (info) => {
           // Use badges for status display
           const status = info.getValue<string>();
-          let badgeColor = "default";
-          if (status === "Confirmed") badgeColor = "green";
-          else if (status === "Pending") badgeColor = "yellow";
-          else if (status === "Cancelled") badgeColor = "red";
+          let badgeColor:
+            | "default"
+            | "secondary"
+            | "destructive"
+            | "outline"
+            | undefined = "default";
+          if (status === "Ongoing") badgeColor = "secondary";
+          else if (status === "Pending") badgeColor = "outline";
+          else if (status === "Cancelled") badgeColor = "destructive";
 
           return <Badge variant={badgeColor}>{status}</Badge>;
         },

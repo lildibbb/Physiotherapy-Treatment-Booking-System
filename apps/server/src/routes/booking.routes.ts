@@ -40,10 +40,12 @@ export const bookingRoutes = new Elysia()
         const authResult = await verifyAuth(jwt, auth?.value);
         console.log("Auth Result:", authResult);
         if ("error" in authResult) {
-          return { error: authResult.error, status: authResult.status };
+          console.log("Error in authResult:", authResult);
+          return jsonResponse(authResult, 401);
         }
         try {
-          return await getAppointmentByID(authResult.profile);
+          const appointmentData = await getAppointmentByID(authResult.profile);
+          return jsonResponse(appointmentData);
         } catch (error) {
           return jsonResponse(
             { error: "Failed to fetch appointment data" },

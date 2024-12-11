@@ -580,6 +580,7 @@ export const fetchAppointments = async () => {
       "Content-Type": "application/json",
     },
   });
+  console.log(response.status);
   //check if token is expired or not
   if (response.status === 401) {
     const data = await response.json();
@@ -589,5 +590,6 @@ export const fetchAppointments = async () => {
   if (!response.ok) {
     throw new Error("Failed to fetch appointments");
   }
+
   return await response.json();
 };

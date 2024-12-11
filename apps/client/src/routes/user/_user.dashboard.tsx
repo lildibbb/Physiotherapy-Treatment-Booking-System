@@ -1,7 +1,7 @@
-import { MainNav } from "@/components/dashboard/components/therapist/main-nav";
-import { PatientCard } from "@/components/dashboard/components/therapist/patientCard";
-import { Stats } from "@/components/dashboard/components/therapist/stats";
-import { UserNav } from "@/components/dashboard/components/therapist/user-nav";
+import { MainNav } from "@/components/dashboard/patient/main-nav";
+import { Stats } from "@/components/dashboard/patient/stats";
+import { UserNav } from "@/components/dashboard/patient/user-nav";
+import PatientCard from "@/components/dashboard/therapist/patientCard";
 import {
   Card,
   CardContent,

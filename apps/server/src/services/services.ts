@@ -634,7 +634,7 @@ export async function getAppointmentByID(profile: {
   if (!id) {
     return jsonResponse(
       { error: "Only authorized users can access this" },
-      403
+      401
     );
   }
   try {

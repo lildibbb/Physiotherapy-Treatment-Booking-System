@@ -38,6 +38,6 @@ function RouteComponent() {
 
     processCheckoutSession();
   }, [session_id]);
-  window.location.href = "/";
+  window.location.href = "/user/dashboard";
   return <div>{error ? <div>Error: {error}</div> : <div>{message}</div>}</div>;
 }

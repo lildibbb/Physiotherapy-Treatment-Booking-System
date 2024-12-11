@@ -11,11 +11,12 @@ import {
 
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar-therapist";
-import { Stats } from "@/components/dashboard/components/therapist/stats";
-import { PatientCard } from "@/components/dashboard/components/therapist/patientCard";
+
 import { Input } from "@/components/ui/input";
-import { MainNav } from "@/components/dashboard/components/therapist/main-nav";
-import { UserNav } from "@/components/dashboard/components/therapist/user-nav";
+import { MainNav } from "@/components/dashboard/therapist/main-nav";
+import { UserNav } from "@/components/dashboard/therapist/user-nav";
+import { Stats } from "@/components/dashboard/therapist/stats";
+import { PatientCard } from "@/components/dashboard/therapist/patientCard";
 
 export const Route = createFileRoute("/therapist/dashboard")({
   component: RouteComponent,
