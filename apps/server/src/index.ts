@@ -15,7 +15,9 @@ import { bookingRoutes } from "./routes/booking.routes";
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
 });
-
+const host = "0.0.0.0";
+const port = "5431";
+console.log("VITE_API_BASE_URL:", process.env.VITE_API_BASE_URL); // Add this line
 await client.connect();
 
 // Set up the Elysia server
@@ -23,7 +25,7 @@ const app = new Elysia()
   .use(
     cors({
       credentials: true,
-      origin: process.env.VITE_BASE_URL,
+      origin: process.env.VITE_API_BASE_URL,
     })
   ) // Enable CORS for cross-origin requests// Enable JWT for authentication
   .use(
@@ -52,4 +54,10 @@ const app = new Elysia()
   .use(therapistRoutes)
   .use(paymentRoutes)
   .use(bookingRoutes);
-app.listen(5431, () => console.log("Server running on port 5431"));
+app.listen(
+  {
+    hostname: host,
+    port,
+  },
+  () => console.log(`Server running at http://${host}:${port}`)
+);
