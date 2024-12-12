@@ -52,7 +52,7 @@ export function generateWeekDates(): string[] {
   for (let i = 0; i < 7; i++) {
     const weekDay = new Date(today);
     weekDay.setDate(today.getDate() + i); // Move to the next day in the week
-    weekDates.push(weekDay.toISOString().split("T")[0]); // Convert to YYYY-MM-DD format
+    weekDates.push(weekDay.toLocaleString().split("T")[0]); // Convert to YYYY-MM-DD format
   }
   console.log("weekdat =e:", weekDates);
   return weekDates;
