@@ -5,7 +5,7 @@ import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
-const apiBaseUrl = "/api"; // Updated to proxy path
+const apiBaseUrl = "http://localhost:5431/api"; // Updated to proxy path
 
 export default defineConfig({
   plugins: [
