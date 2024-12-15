@@ -38,9 +38,9 @@ export const Route = createFileRoute("/user/_user/appointment_/$appointmentID")(
   }
 );
 
-function RouteComponent({ params }: { params: { appointmentID: string } }) {
-  // const { appointmentID } = params;
-
+function RouteComponent() {
+  const { appointmentID } = Route.useParams();
+  console.log("appointmentID from params: ", appointmentID);
   // Mock appointment data tailored for Physiotherapy
   const appointment = {
     id: "000003",

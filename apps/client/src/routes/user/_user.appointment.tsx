@@ -97,7 +97,7 @@ function RouteComponent() {
         </div>
 
         {/* Appointments Section */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className=" rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="flex flex-col md:flex-row">
             {/* Calendar for Large Screens */}
             {!isSmallScreen && (

@@ -64,7 +64,7 @@ export const Header = () => {
 
   const [isOpen, setOpen] = useState(false);
   return (
-    <header className="w-full z-40 fixed top-0 rounded-b-2xl left-0 bg-background">
+    <header className="w-full z-40  fixed top-0 rounded-b-2xl left-0 bg-background">
       <div className="container relative mx-auto min-h-20 flex gap-4 flex-row lg:grid lg:grid-cols-3 items-center">
         <Link to="/">
           <a className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
@@ -279,7 +279,7 @@ c-46 -33 -148 -35 -201 -5 -81 47 -110 159 -62 242 35 63 67 80 152 84 63 4
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
           {isOpen && (
-            <div className="absolute top-20 border-t flex flex-col w-full right-0 bg-background shadow-lg py-4 container gap-8">
+            <div className="absolute px-3 top-20 border-t flex flex-col w-full right-0 bg-background shadow-lg py-4 container gap-8">
               {navigationItems.map((item) => (
                 <div key={item.title}>
                   <div className="flex flex-col gap-2">
