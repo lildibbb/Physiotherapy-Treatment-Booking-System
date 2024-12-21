@@ -17,7 +17,9 @@ export const user_authentications = pgTable("user_authentications", {
   email: varchar("email", { length: 100 }).notNull(),
   password: varchar("password", { length: 255 }).notNull(),
   role: varchar("role", { length: 50 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
   contactDetails: varchar("contactDetails", { length: 255 }).notNull(),
+  avatar: varchar("avatar", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -50,7 +52,7 @@ export const patients = pgTable("patients", {
   userID: integer("userID")
     .references(() => user_authentications.userID)
     .notNull(),
-  name: varchar("name", { length: 255 }).notNull(),
+
   dob: date("dob"),
   gender: varchar("gender", { length: 10 }),
   address: varchar("address", { length: 255 }),
@@ -62,7 +64,7 @@ export const physiotherapists = pgTable("physiotherapists", {
   userID: integer("userID")
     .references(() => user_authentications.userID)
     .notNull(),
-  name: varchar("name", { length: 255 }).notNull(),
+
   specialization: varchar("specialization", { length: 255 }).notNull(),
   qualification: json("qualification"),
   experience: integer("experience"),
@@ -90,7 +92,7 @@ export const staffs = pgTable("staffs", {
   userID: integer("userID")
     .references(() => user_authentications.userID)
     .notNull(),
-  name: varchar("name", { length: 255 }).notNull(),
+
   role: varchar("role", { length: 50 }).notNull(),
   businessID: integer("businessID")
     .references(() => business_entities.businessID)

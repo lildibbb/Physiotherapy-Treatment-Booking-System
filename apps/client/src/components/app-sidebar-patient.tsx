@@ -45,7 +45,7 @@ const navItems = [
 export const navUserItems = [
   {
     title: "Account",
-    url: "/auth/user_profile",
+    url: "/user_profile",
     icon: BadgeCheck,
   },
   {

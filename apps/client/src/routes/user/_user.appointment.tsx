@@ -12,6 +12,8 @@ import { MainNav } from "@/components/dashboard/patient/main-nav";
 import { UserNav } from "@/components/dashboard/patient/user-nav";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { DatePicker } from "@/components/ui/date-picker";
+import { DataTable } from "@/components/data-table";
+import { columns } from "@/components/columns";
 
 interface AppointmentData {
   appointmentID: string;

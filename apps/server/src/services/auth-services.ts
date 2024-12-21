@@ -107,6 +107,7 @@ export async function registerUser(reqBody: UserRegistration) {
     const newUser = await db
       .insert(user_authentications)
       .values({
+        name: reqBody.name,
         email: reqBody.email,
         password: hashedPassword,
         role: "patient", // default role for patient
@@ -122,7 +123,7 @@ export async function registerUser(reqBody: UserRegistration) {
       .insert(patients)
       .values({
         userID: userId, // link patient to the user_authentications entry
-        name: reqBody.name,
+
         dob: null,
         gender: null,
         address: null,
@@ -205,6 +206,7 @@ export async function registerBusiness(reqBody: BusinessRegistration) {
     const newBusinessUser = await db
       .insert(user_authentications)
       .values({
+        name: reqBody.companyName,
         email: reqBody.contactEmail,
         password: hashedPassword,
         contactDetails: reqBody.contactPhone,
@@ -378,6 +380,7 @@ export async function registerStaff(
     const newStaffUser = await db
       .insert(user_authentications)
       .values({
+        name: reqBody.name,
         email: reqBody.email,
         password: hashedPassword,
         contactDetails: reqBody.contactDetails,
@@ -393,7 +396,7 @@ export async function registerStaff(
       .insert(staffs)
       .values({
         userID: userId,
-        name: reqBody.name,
+
         role: reqBody.role,
         businessID: businessID, // Use businessID from the token
       })
@@ -485,6 +488,7 @@ export async function registerTherapist(
     const newTherapistUser = await db
       .insert(user_authentications)
       .values({
+        name: reqBody.name,
         email: reqBody.email,
         password: hashedPassword,
         contactDetails: reqBody.contactDetails,
@@ -508,7 +512,7 @@ export async function registerTherapist(
       .insert(physiotherapists)
       .values({
         userID: userId,
-        name: reqBody.name,
+
         specialization: reqBody.specialization,
         qualification: reqBody.qualification || fakeData.qualification || null,
         experience: reqBody.experience || null,
@@ -540,6 +544,7 @@ export async function requestResetPassword(jwt: any, reqBody: Partial<Email>) {
       const existingUser = await db
         .select({
           userID: user_authentications.userID,
+          name: user_authentications.name,
           role: user_authentications.role,
         })
         .from(user_authentications)
@@ -549,45 +554,45 @@ export async function requestResetPassword(jwt: any, reqBody: Partial<Email>) {
       console.log("Existing user: ", existingUser);
 
       if (existingUser.length > 0) {
-        const { userID, role } = existingUser[0];
-        let name;
+        const { userID, name, role } = existingUser[0];
+        // let name;
 
-        // Fetch the name from the relevant table based on the role
-        if (role === "patient") {
-          const patient = await db
-            .select({ name: patients.name })
-            .from(patients)
-            .where(eq(patients.userID, userID))
-            .execute();
-          name = patient.length > 0 ? patient[0].name : null;
-        } else if (role === "business") {
-          const business = await db
-            .select({
-              name: business_entities.personInChargeName,
-            })
-            .from(business_entities)
-            .where(eq(business_entities.userID, userID))
-            .execute();
-          name = business.length > 0 ? business[0].name : null;
-        } else if (role === "staff") {
-          const staff = await db
-            .select({ name: staffs.name })
-            .from(staffs)
-            .where(eq(staffs.userID, userID))
-            .execute();
-          name = staff.length > 0 ? staff[0].name : null;
-        } else if (role === "therapist") {
-          const therapist = await db
-            .select({ name: physiotherapists.name })
-            .from(physiotherapists)
-            .where(eq(physiotherapists.userID, userID))
-            .execute();
-          name = therapist.length > 0 ? therapist[0].name : null;
-        }
+        // // Fetch the name from the relevant table based on the role
+        // if (role === "patient") {
+        //   const patient = await db
+        //     .select({ name: patients.name })
+        //     .from(patients)
+        //     .where(eq(patients.userID, userID))
+        //     .execute();
+        //   name = patient.length > 0 ? patient[0].name : null;
+        // } else if (role === "business") {
+        //   const business = await db
+        //     .select({
+        //       name: business_entities.personInChargeName,
+        //     })
+        //     .from(business_entities)
+        //     .where(eq(business_entities.userID, userID))
+        //     .execute();
+        //   name = business.length > 0 ? business[0].name : null;
+        // } else if (role === "staff") {
+        //   const staff = await db
+        //     .select({ name: staffs.name })
+        //     .from(staffs)
+        //     .where(eq(staffs.userID, userID))
+        //     .execute();
+        //   name = staff.length > 0 ? staff[0].name : null;
+        // } else if (role === "therapist") {
+        //   const therapist = await db
+        //     .select({ name: physiotherapists.name })
+        //     .from(physiotherapists)
+        //     .where(eq(physiotherapists.userID, userID))
+        //     .execute();
+        //   name = therapist.length > 0 ? therapist[0].name : null;
+        // }
 
-        if (!name) {
-          return jsonResponse({ error: "Name not found for user" }, 404);
-        }
+        // if (!name) {
+        //   return jsonResponse({ error: "Name not found for user" }, 404);
+        // }
         // Generate a token with userID and purpose as payload
         const resetToken = await jwt.sign(
           {
@@ -668,6 +673,7 @@ export async function updatePasswordResetToken(
 
     const userEmail = await db
       .select({
+        name: user_authentications.name,
         email: user_authentications.email,
         role: user_authentications.role,
       })
@@ -676,45 +682,45 @@ export async function updatePasswordResetToken(
       .execute();
 
     if (userEmail.length > 0) {
-      const { email, role } = userEmail[0];
-      let name;
+      const { email, name, role } = userEmail[0];
+      // let name;
 
-      // Fetch the name from the relevant table based on the role
-      if (role === "patient") {
-        const patient = await db
-          .select({ name: patients.name })
-          .from(patients)
-          .where(eq(patients.userID, userID))
-          .execute();
-        name = patient.length > 0 ? patient[0].name : null;
-      } else if (role === "business") {
-        const business = await db
-          .select({
-            name: business_entities.personInChargeName,
-          })
-          .from(business_entities)
-          .where(eq(business_entities.userID, userID))
-          .execute();
-        name = business.length > 0 ? business[0].name : null;
-      } else if (role === "staff") {
-        const staff = await db
-          .select({ name: staffs.name })
-          .from(staffs)
-          .where(eq(staffs.userID, userID))
-          .execute();
-        name = staff.length > 0 ? staff[0].name : null;
-      } else if (role === "therapist") {
-        const therapist = await db
-          .select({ name: physiotherapists.name })
-          .from(physiotherapists)
-          .where(eq(physiotherapists.userID, userID))
-          .execute();
-        name = therapist.length > 0 ? therapist[0].name : null;
-      }
+      // // Fetch the name from the relevant table based on the role
+      // if (role === "patient") {
+      //   const patient = await db
+      //     .select({ name: patients.name })
+      //     .from(patients)
+      //     .where(eq(patients.userID, userID))
+      //     .execute();
+      //   name = patient.length > 0 ? patient[0].name : null;
+      // } else if (role === "business") {
+      //   const business = await db
+      //     .select({
+      //       name: business_entities.personInChargeName,
+      //     })
+      //     .from(business_entities)
+      //     .where(eq(business_entities.userID, userID))
+      //     .execute();
+      //   name = business.length > 0 ? business[0].name : null;
+      // } else if (role === "staff") {
+      //   const staff = await db
+      //     .select({ name: staffs.name })
+      //     .from(staffs)
+      //     .where(eq(staffs.userID, userID))
+      //     .execute();
+      //   name = staff.length > 0 ? staff[0].name : null;
+      // } else if (role === "therapist") {
+      //   const therapist = await db
+      //     .select({ name: physiotherapists.name })
+      //     .from(physiotherapists)
+      //     .where(eq(physiotherapists.userID, userID))
+      //     .execute();
+      //   name = therapist.length > 0 ? therapist[0].name : null;
+      // }
 
-      if (!name) {
-        return jsonResponse({ error: "Name not found for user" }, 404);
-      }
+      // if (!name) {
+      //   return jsonResponse({ error: "Name not found for user" }, 404);
+      // }
 
       console.log("Email:", email);
       console.log("Name:", name);

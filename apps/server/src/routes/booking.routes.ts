@@ -1,8 +1,12 @@
 import Elysia from "elysia";
 import { basePath, jwtAccessSetup } from "./setup";
-import { createAppointment, getAppointmentByID } from "../services/services";
+
 import jsonResponse, { verifyAuth } from "../services/auth-services";
 import { AppointmentSchema, type Appointment } from "../../types";
+import {
+  createAppointment,
+  getAppointmentByID,
+} from "../services/appointment-services";
 
 export const bookingRoutes = new Elysia()
   .use(jwtAccessSetup)

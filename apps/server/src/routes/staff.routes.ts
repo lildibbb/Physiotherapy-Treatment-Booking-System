@@ -10,12 +10,12 @@ import {
   type Staff,
   type StaffRegistration,
 } from "../../types";
+
+import { basePath, jwtAccessSetup } from "./setup";
 import {
   getAllStaffByBusiness,
   updateStaffDetails,
-} from "../services/services";
-
-import { basePath, jwtAccessSetup } from "./setup";
+} from "../services/staff-services";
 
 export const staffRoutes = new Elysia()
   .use(jwtAccessSetup)

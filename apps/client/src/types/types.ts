@@ -18,6 +18,7 @@ export interface AppointmentPayload {
   appointmentDate: string;
   time: string;
   type?: string; // for consultation type
+  price?: number;
   status?: string;
   planID?: number;
 }

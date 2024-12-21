@@ -11,9 +11,12 @@ import {
   UserLoginSchema,
   type UserRegistration,
   type UserLogin,
+  type UserProfile,
+  UserProfileSchema,
 } from "../../types";
 import { basePath, jwtAccessSetup } from "./setup";
 import { sendEmail } from "../services/sendEmail";
+import { getUserProfile } from "../services/profile-services";
 
 export const authRoutes = new Elysia()
   .use(jwtAccessSetup)
@@ -108,6 +111,61 @@ export const authRoutes = new Elysia()
               200: { description: "Login successful, JWT returned" },
               401: { description: "Unauthorized" },
               500: { description: "Internal Server Error" },
+            },
+          },
+        }
+      )
+      .get("/profile", async ({ jwt, cookie: { auth } }) => {
+        const authResult = await verifyAuth(jwt, auth?.value);
+
+        if ("error" in authResult) {
+          return jsonResponse(authResult, 401);
+        }
+        const data = await getUserProfile(authResult.profile);
+        console.log("data", data);
+        // Directly return the result of updateUserProfile
+        return data;
+      })
+      .patch(
+        "/profile",
+        async ({ body, jwt, cookie: { auth } }) => {
+          const authResult = await verifyAuth(jwt, auth?.value);
+
+          if ("error" in authResult) {
+            return jsonResponse(authResult, 401);
+          }
+
+          //Type assertion for body to ensure it's an object
+          const bodyObj = body as Partial<UserProfile>;
+          //validate fields to ensure only valid fields are updated
+
+          const validFields = ["name", "avatar", "password", "confirmPassword"];
+          for (const key of Object.keys(bodyObj)) {
+            if (!validFields.includes(key)) {
+              return jsonResponse({ error: `Invalid field: ${key}` }, 400);
+            }
+          }
+          // Directly return the result of updateUserProfile
+          return await updateUserProfile(bodyObj, authResult.profile);
+        },
+        {
+          body: UserProfileSchema,
+          detail: {
+            description: "Update user profile",
+            tags: ["User"],
+            responses: {
+              200: {
+                description: "User profile updated successfully",
+              },
+              400: {
+                description: "Bad Request",
+              },
+              401: {
+                description: "Unauthorized",
+              },
+              500: {
+                description: "Internal Server Error",
+              },
             },
           },
         }
@@ -356,3 +414,6 @@ authRoutes
     }
     return jsonResponse({ status: "success" }, 200);
   });
+function updateUserProfile(bodyObj: Partial<UserProfile>, profile: any): any {
+  throw new Error("Function not implemented.");
+}

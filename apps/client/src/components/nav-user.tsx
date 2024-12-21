@@ -17,6 +17,8 @@ import { LogOut } from "lucide-react";
 // src/components/nav-user.tsx
 import { useEffect, useState } from "react";
 import { navUserItems } from "./app-sidebar-therapist"; // Import navUserItems
+import { fetchUserProfile } from "@/lib/api";
+import { Link } from "@tanstack/react-router";
 
 interface User {
   name: string;
@@ -31,25 +33,12 @@ export function NavUser() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:5431/api/auth/profile", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (response.ok) {
-          const contentType = response.headers.get("content-type");
-          if (contentType?.includes("application/json")) {
-            const data = await response.json();
-            setUser(data);
-          } else {
-            setError("Unexpected response format");
-          }
-        } else {
-          setError(`Failed to fetch user: ${response.statusText}`);
-        }
-      } catch (error) {
-        setError("Error fetching user profile.");
+        const data = await fetchUserProfile();
+        console.log("data fetched: ", data);
+        setUser(data);
+      } catch (err: any) {
+        console.error("Failed to fetch user profile", err);
+        setError(err.message);
       }
     };
 
@@ -80,9 +69,11 @@ export function NavUser() {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               {navUserItems.map((item) => (
-                <DropdownMenuItem key={item.title}>
-                  <item.icon />
-                  {item.title}
+                <DropdownMenuItem asChild key={item.title}>
+                  <Link to={item.url} className="flex items-center gap-2">
+                    <item.icon className="w-4 h-4" />
+                    {item.title}
+                  </Link>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>

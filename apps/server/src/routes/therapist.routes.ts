@@ -3,14 +3,7 @@ import jsonResponse, {
   registerTherapist,
   verifyAuth,
 } from "../services/auth-services";
-import {
-  getAllTherapistByBusiness,
-  getAllTherapistPublic,
-  getAvailableSlot,
-  getTherapistByID,
-  updateAvailability,
-  updateTherapistDetails,
-} from "../services/services";
+
 import {
   TherapistRegistrationSchema,
   TherapistSchema,
@@ -19,6 +12,16 @@ import {
   type Availability,
 } from "../../types";
 import { basePath, jwtAccessSetup } from "./setup";
+import {
+  getAllTherapistByBusiness,
+  getAllTherapistPublic,
+  getTherapistByID,
+  updateTherapistDetails,
+} from "../services/therapist-services";
+import {
+  getAvailableSlot,
+  updateAvailability,
+} from "../services/slot-services";
 
 export const therapistRoutes = new Elysia()
   .use(jwtAccessSetup)

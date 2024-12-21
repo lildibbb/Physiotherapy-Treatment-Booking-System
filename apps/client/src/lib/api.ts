@@ -593,3 +593,23 @@ export const fetchAppointments = async () => {
 
   return await response.json();
 };
+
+export const fetchUserProfile = async () => {
+  const response = await fetch(`${apiBaseUrl}/auth/profile`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }); //check if token is expired or not
+  if (response.status === 401) {
+    const data = await response.json();
+    handleExpiredSession(data.message);
+    return;
+  }
+  if (!response.ok) {
+    throw new Error("Failed to fetch user profile");
+  }
+
+  return await response.json();
+};

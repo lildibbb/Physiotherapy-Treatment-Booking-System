@@ -116,6 +116,21 @@ export type Payment = {
   updatedAt?: string;
 };
 
+export type UserProfile = {
+  name?: string;
+  avatar?: string;
+  password?: string;
+  confirmPassword?: string;
+  contactDetails?: string;
+};
+
+export const UserProfileSchema = t.Object({
+  name: t.Optional(t.String()),
+  avatar: t.Optional(t.String()),
+  password: t.Optional(t.String()),
+  confirmPassword: t.Optional(t.String()),
+  contactDetails: t.Optional(t.String()),
+});
 export const AppointmentSchema = t.Object({
   therapistID: t.Number(),
   appointmentDate: t.String(),
