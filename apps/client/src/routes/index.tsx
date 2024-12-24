@@ -4,7 +4,7 @@ import Footer from "@/components/footer";
 import { Header } from "@/components/header";
 import Hero from "@/components/hero";
 import { Testimonial } from "@/components/testimonial";
-import TherapistCard from "@/components/therapistCard";
+
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({

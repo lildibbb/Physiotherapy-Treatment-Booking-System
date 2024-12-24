@@ -7,12 +7,74 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Menu, MoveRight, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ModeToggle } from "./ui/mode-toggle";
+import { checkSession, logoutUser } from "@/lib/api";
+import { toast } from "@/hooks/use-toast";
+import { Spinner } from "./spinner";
 
 export const Header = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const getAuthUser = async () => {
+      try {
+        const data = await checkSession();
+        console.log("data {checkSession}", data.body);
+        if (data) {
+          // Adjust based on your API response structure
+          setIsAuthenticated(true);
+          console.log("User is authenticated");
+        } else {
+          setIsAuthenticated(false);
+          console.log("User is not authenticated");
+        }
+      } catch (error) {
+        console.log("Error in checkSession:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    getAuthUser();
+  }, []); // Empty dependency array ensures this runs once on mount
+
+  // Logout handler
+  const handleLogout = async () => {
+    setIsLoggingOut(true); // Start loading
+    try {
+      const response = await logoutUser(); // Define logoutUser in your API functions
+      console.log("response: ", response);
+      if (response.status === 200) {
+        setIsAuthenticated(false);
+        toast({
+          title: "Logged out",
+          description: "You have been successfully logged out.",
+        });
+        navigate({ to: "/" }); // Redirect to login page after logout
+        console.log("User logged out successfully");
+      } else {
+        toast({
+          title: "Logout Failed",
+          description: "Unable to logout. Please try again.",
+          variant: "destructive",
+        });
+        console.log("Failed to logout");
+      }
+    } catch (error) {
+      console.log("Error during logout:", error);
+      toast({
+        title: "Logout Error",
+        description: "An error occurred while trying to logout.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingOut(false); // End loading
+    }
+  };
+
   const navigationItems = [
     {
       title: "Home",
@@ -265,15 +327,37 @@ c-46 -33 -148 -35 -201 -5 -81 47 -110 159 -62 242 35 63 67 80 152 84 63 4
           </NavigationMenu>
         </div>
 
+        {/* Authentication Buttons */}
         <div className="flex justify-end w-full gap-4">
-          <Link to="/login">
-            <Button variant="outline">Sign in</Button>
-          </Link>
-          <Link to="/signup/user">
-            <Button>Register</Button>
-          </Link>
-          <ModeToggle />
+          {!isAuthenticated ? (
+            <>
+              <Link to="/login">
+                <Button variant="outline">Sign in</Button>
+              </Link>
+              <Link to="/signup/user">
+                <Button variant="gooeyRight">Register</Button>
+              </Link>
+              <ModeToggle />
+            </>
+          ) : (
+            <>
+              <Button
+                variant="gooeyRight"
+                onClick={handleLogout}
+                disabled={isLoggingOut} // Disable button during logout
+                className="flex items-center gap-2" // Optional: to align spinner and text
+              >
+                {isLoggingOut ? (
+                  <Spinner className="w-4 h-4 mr-2" /> // Spinner size and margin
+                ) : null}
+                Logout
+              </Button>
+              {/* Optionally include ModeToggle */}
+              <ModeToggle />
+            </>
+          )}
         </div>
+
         <div className="flex w-12 shrink lg:hidden items-end justify-end">
           <Button variant="ghost" onClick={() => setOpen(!isOpen)}>
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

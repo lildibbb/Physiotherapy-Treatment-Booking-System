@@ -46,7 +46,8 @@ export async function getUserProfile(profile: {
         .where(eq(user_authentications.userID, userID))
         .execute();
 
-      return userProfile[0];
+      const result = { ...userProfile[0], User: { userID } };
+      return result;
     }
 
     if (
@@ -71,7 +72,7 @@ export async function getUserProfile(profile: {
         .where(eq(user_authentications.userID, userID))
         .execute();
 
-      return userProfile[0];
+      return { ...userProfile[0], User: { userID, therapistID } };
     }
   } catch (error) {
     console.error("Failed to fetch user profile", error);
@@ -193,8 +194,11 @@ export async function userProfileUpdate(
         updatedUserProfile.specialization = reqBody.specialization;
       if (reqBody.qualification)
         updatedUserProfile.qualification = reqBody.qualification;
-      if (reqBody.experience)
-        updatedUserProfile.experience = reqBody.experience;
+      if (reqBody.experience) {
+        const parsedExperience = parseInt(reqBody.experience.toString(), 10);
+        console.log("parsedExperience", parsedExperience);
+        updatedUserProfile.experience = parsedExperience;
+      }
 
       if (Object.keys(updatedUserProfile).length > 0) {
         await db

@@ -16,7 +16,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { AlertCircle, Check, Upload, User, CalendarIcon } from "lucide-react";
+import {
+  AlertCircle,
+  Upload,
+  User,
+  CalendarIcon,
+  Turtle,
+  Cat,
+  Dog,
+  Rabbit,
+} from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Form,
@@ -46,35 +55,41 @@ import { MainNav } from "@/components/dashboard/patient/main-nav";
 import { UserNav } from "@/components/dashboard/patient/user-nav";
 
 import { fetchUserProfile, updateUserProfile } from "@/lib/api"; // Import API functions
+import { toast } from "@/hooks/use-toast";
+import specialization from "../../data/specialization.json"; // Import the specialization JSON
+import { MultiSelect } from "@/components/ui/multi-seletc";
+import { InputTags } from "@/components/ui/input-tags";
 
-interface UpdateProfileResponse {
-  name: string;
-  contactDetails: string;
-  dateOfBirth?: string;
-  gender?: string;
-  avatarUrl?: string;
-  // Add other fields as needed
-}
+const frameworksList = [
+  { value: "Malay", label: "Malay", icon: Turtle },
+  { value: "English", label: "English", icon: Cat },
+  { value: "Mandarin", label: "Mandarin", icon: Dog },
+  { value: "Tamil", label: "Tamil", icon: Rabbit },
+];
+// Base schema with common fields
+const baseSchema = {
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters.",
+  }),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    )
+    .optional()
+    .or(z.literal("")),
+  confirmPassword: z.string().optional().or(z.literal("")),
+  contactDetails: z.string().min(10, {
+    message: "Please enter a valid phone number.",
+  }),
+};
 
-// Update the form schema to make fields optional as needed
-const formSchema = z
+// Patient-specific schema
+const patientSchema = z
   .object({
-    name: z.string().min(2, {
-      message: "Name must be at least 2 characters.",
-    }),
-    password: z
-      .string()
-      .min(6, "Password must be at least 6 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
-        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-      )
-      .optional()
-      .or(z.literal("")),
-    confirmPassword: z.string().optional().or(z.literal("")),
-    contactDetails: z.string().min(10, {
-      message: "Please enter a valid phone number.",
-    }),
+    ...baseSchema,
     dob: z.date({
       required_error: "Date of birth is required.",
     }),
@@ -94,29 +109,68 @@ const formSchema = z
       path: ["confirmPassword"],
     }
   );
-type FormData = z.infer<typeof formSchema>;
+
+// Therapist-specific schema
+const therapistSchema = z
+  .object({
+    ...baseSchema,
+    specialization: z.string().min(1, "Specialization is required").optional(),
+    qualification: z.array(z.string()).default([]), // Default to empty array
+    experience: z.preprocess(
+      (val) => Number(val),
+      z.number().min(0).optional()
+    ),
+    language: z.array(z.string()).default([]), // Default to empty array
+  })
+  .refine(
+    (data) => {
+      if (data.password || data.confirmPassword) {
+        return data.password === data.confirmPassword;
+      }
+      return true;
+    },
+    {
+      message: "Passwords don't match",
+      path: ["confirmPassword"],
+    }
+  );
+type PatientData = z.infer<typeof patientSchema>;
+type TherapistData = z.infer<typeof therapistSchema>;
+type FormData = PatientData | TherapistData;
 
 export const Route = createFileRoute("/user/_user/profile")({
   component: ProfilePage,
 });
 
 function ProfilePage() {
+  const [isTherapist, setIsTherapist] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true); // Loading state
   const [fetchError, setFetchError] = useState<string | null>(null); // Fetch error state
-  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Success message state
+  const [successMessage] = useState<string | null>(null); // Success message state
 
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      password: "",
-      confirmPassword: "",
-      contactDetails: "",
-      dob: undefined,
-      gender: undefined,
-    },
+    resolver: zodResolver(isTherapist ? therapistSchema : patientSchema),
+    defaultValues: isTherapist
+      ? {
+          name: "",
+          password: "",
+          confirmPassword: "",
+          contactDetails: "",
+          specialization: "",
+          qualification: [],
+          experience: 0,
+          language: [],
+        }
+      : {
+          name: "",
+          password: "",
+          confirmPassword: "",
+          contactDetails: "",
+          dob: undefined as Date | undefined,
+          gender: undefined,
+        },
   });
 
   // Fetch user profile data on component mount
@@ -124,25 +178,38 @@ function ProfilePage() {
     const getUserProfile = async () => {
       try {
         const data = await fetchUserProfile();
-        if (data) {
-          // Convert the date string to a Date object
-          const dobDate = data.dob ? new Date(data.dob) : undefined;
+        setIsTherapist(!!data.User?.therapistID);
 
-          form.reset({
+        if (data) {
+          const commonFields = {
             name: data.name || "",
             contactDetails: data.contactDetails || "",
-            dob: dobDate, // Use the converted date
-            gender: data.gender || undefined,
             password: "",
             confirmPassword: "",
-          });
+          };
 
-          // Update avatar state
+          if (data.User?.therapistID) {
+            form.reset({
+              ...commonFields,
+              specialization: data.specialization || "",
+              qualification: data.qualification || [],
+              experience: data.experience || 0,
+              language: data.language || [],
+            } as TherapistData);
+          } else {
+            const dobDate = data.dob ? new Date(data.dob) : undefined;
+            form.reset({
+              ...commonFields,
+              dob: dobDate,
+              gender: data.gender || undefined,
+            } as PatientData);
+          }
+
           if (data.avatar) {
             const apiBaseUrl = "http://localhost:5431";
-            // The avatar path will be relative to your API URL
             const avatarUrl = `${apiBaseUrl}/${data.avatar}`;
             console.log("Avatar URL:", avatarUrl);
+
             setAvatar(avatarUrl);
           }
         }
@@ -177,59 +244,84 @@ function ProfilePage() {
     }
   };
 
-  /**
-   * Handles form submission to update the user profile.
-   * @param values The form values.
-   */
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (formData: FormData) => {
     try {
       const fileInput = document.getElementById(
         "avatar-upload"
       ) as HTMLInputElement;
       const avatarFile = fileInput?.files?.[0];
 
-      // Prepare the data for update
+      // Prepare the data for update based on user type
       const updateData = {
-        name: data.name,
-        contactDetails: data.contactDetails,
-        dob: data.dob,
-        gender: data.gender,
-        password: data.password || undefined,
+        name: formData.name,
+        contactDetails: formData.contactDetails,
+        password: formData.password || undefined,
         avatarFile: avatarFile,
+        ...(isTherapist
+          ? {
+              specialization: (formData as TherapistData).specialization,
+              qualification: Array.isArray(
+                (formData as TherapistData).qualification
+              )
+                ? (formData as TherapistData).qualification
+                : [(formData as TherapistData).qualification].filter(Boolean),
+              experience: (formData as TherapistData).experience,
+              language: Array.isArray((formData as TherapistData).language)
+                ? (formData as TherapistData).language
+                : [(formData as TherapistData).language].filter(Boolean),
+            }
+          : {
+              dob: (formData as PatientData).dob,
+              gender: (formData as PatientData).gender,
+            }),
       };
 
-      // Filter out undefined values
       const cleanedData = Object.fromEntries(
         Object.entries(updateData).filter(([_, value]) => value !== undefined)
       );
-
+      console.log("cleaner  data", cleanedData);
       const updatedProfile = await updateUserProfile(cleanedData);
 
       if (updatedProfile) {
-        form.reset({
+        const updatedFormData = {
           name: updatedProfile.name,
           contactDetails: updatedProfile.contactDetails,
-          dob: updatedProfile.dateOfBirth
-            ? new Date(updatedProfile.dateOfBirth)
-            : undefined,
-          gender: updatedProfile.gender,
           password: "",
           confirmPassword: "",
-        });
+          ...(isTherapist
+            ? {
+                specialization: updatedProfile.specialization,
+                qualification: updatedProfile.qualification,
+                experience: updatedProfile.experience,
+                language: updatedProfile.language,
+              }
+            : {
+                dob: updatedProfile.dob
+                  ? new Date(updatedProfile.dob)
+                  : undefined,
+                gender: updatedProfile.gender || undefined,
+              }),
+        };
 
-        // Update avatar state if new avatar URL is returned
+        form.reset(updatedFormData);
+
         if (updatedProfile.avatarUrl) {
           setAvatar(updatedProfile.avatarUrl);
         }
 
-        setSuccessMessage("Profile updated successfully!");
-
-        // Clear any existing errors
-        setError(null);
+        toast({
+          variant: "default",
+          title: "Success",
+          description: "Profile updated successfully",
+        });
       }
     } catch (err: any) {
       console.error("Error updating profile:", err);
-      setError(err.message || "Failed to update profile");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err.message || "Failed to update profile",
+      });
     }
   };
   // Conditional Rendering Based on Loading and Error States
@@ -265,7 +357,7 @@ function ProfilePage() {
           <CardHeader>
             <CardTitle>Edit Profile</CardTitle>
             <CardDescription>
-              Update your personal information and password
+              Update your {isTherapist ? "therapist" : "personal"} information
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -274,14 +366,7 @@ function ProfilePage() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
               >
-                {/* Success Message */}
-                {successMessage && (
-                  <Alert variant="default">
-                    <Check className="h-4 w-4 mr-2" />
-                    <AlertDescription>{successMessage}</AlertDescription>
-                  </Alert>
-                )}
-
+                {/* Common Fields */}
                 {/* Avatar Upload Section */}
                 <div className="flex flex-col items-center space-y-4">
                   <Avatar className="h-24 w-24">
@@ -334,81 +419,7 @@ function ProfilePage() {
                   )}
                 />
 
-                {/* Date of Birth and Gender Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Date of Birth */}
-                  <FormField
-                    control={form.control}
-                    name="dob"
-                    render={({ field }) => (
-                      <FormItem className="">
-                        <FormLabel>Date of birth</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "PPP")
-                                ) : (
-                                  <span>Pick a date</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) =>
-                                date > new Date() ||
-                                date < new Date("1900-01-01")
-                              }
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Gender */}
-                  <FormField
-                    control={form.control}
-                    name="gender"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Gender</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select your gender" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="male">Male</SelectItem>
-                            <SelectItem value="female">Female</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Contact Phone */}
+                {/* Contact Details */}
                 <FormField
                   control={form.control}
                   name="contactDetails"
@@ -416,21 +427,202 @@ function ProfilePage() {
                     <FormItem>
                       <FormLabel>Contact Phone</FormLabel>
                       <FormControl>
-                        <PhoneInput
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="Contact phone number"
-                          className="w-full"
-                        />
+                        <PhoneInput {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
+                {/* Conditional Fields based on user type */}
+                {isTherapist ? (
+                  // Therapist-specific fields
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="specialization"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Specialization</FormLabel>
+                          <FormControl>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a specialization" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {specialization.specializations.map((name) => (
+                                  <SelectItem key={name} value={name}>
+                                    {name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="experience"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Years of Experience</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="qualification"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Qualification</FormLabel>
+                          <FormControl>
+                            <InputTags
+                              {...field}
+                              placeholder="Enter qualifications "
+                              onChange={field.onChange}
+                              value={field.value}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="language"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Language</FormLabel>
+                          <FormControl>
+                            <MultiSelect
+                              options={frameworksList}
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              placeholder="Select Languages.."
+                              variant="inverted"
+                              animation={2}
+                              maxCount={3}
+                            />
+                            {/* <Input
+                              {...field}
+                              placeholder="Enter languages separated by commas"
+                              onChange={(e) => {
+                                const languages = e.target.value
+                                  .split(",")
+                                  .map((l) => l.trim());
+                                field.onChange(languages);
+                              }}
+                              value={
+                                Array.isArray(field.value)
+                                  ? field.value.join(", ")
+                                  : ""
+                              }
+                            /> */}
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                ) : (
+                  // Patient-specific fields
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Date of Birth */}
+                    <FormField
+                      control={form.control}
+                      name="dob"
+                      render={({ field }) => (
+                        <FormItem className="">
+                          <FormLabel>Date of birth</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date > new Date() ||
+                                  date < new Date("1900-01-01")
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Gender */}
+                    <FormField
+                      control={form.control}
+                      name="gender"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Gender</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select your gender" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="male">Male</SelectItem>
+                              <SelectItem value="female">Female</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+
                 {/* Password Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* New Password */}
                   <FormField
                     control={form.control}
                     name="password"
@@ -438,32 +630,20 @@ function ProfilePage() {
                       <FormItem>
                         <FormLabel>New Password (optional)</FormLabel>
                         <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="Enter new password"
-                            {...field}
-                            className="w-full"
-                          />
+                          <Input type="password" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  {/* Confirm Password */}
                   <FormField
                     control={form.control}
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirm Password (optional)</FormLabel>
+                        <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="Confirm new password"
-                            {...field}
-                            className="w-full"
-                          />
+                          <Input type="password" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -471,15 +651,6 @@ function ProfilePage() {
                   />
                 </div>
 
-                {/* Error Alert */}
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4 mr-2" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Submit Button */}
                 <Button type="submit" className="w-full">
                   Save Changes
                 </Button>

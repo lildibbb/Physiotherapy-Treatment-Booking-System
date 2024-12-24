@@ -47,6 +47,7 @@ export const verifyAuth = async (jwt: any, auth: string | undefined) => {
     return { error: "Unauthorized - invalid token", status: 401 };
   }
 };
+
 // User Registration
 export async function registerUser(reqBody: UserRegistration) {
   // Validate the request body for required fields

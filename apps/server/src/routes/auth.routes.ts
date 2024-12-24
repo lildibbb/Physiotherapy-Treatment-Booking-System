@@ -105,7 +105,7 @@ export const authRoutes = new Elysia()
             path: "/",
           });
 
-          return { message: "Login successful", email, token };
+          return { message: "Login successful", email };
         },
         {
           body: UserLoginSchema,
@@ -146,7 +146,7 @@ export const authRoutes = new Elysia()
           //Type assertion for body to ensure it's an object
           const bodyObj = body as Partial<UserProfile>;
           //validate fields to ensure only valid fields are updated
-
+          console.log("BodyObj:", bodyObj.experience);
           // const validFields = [
           //   "name",
           //   "contactDetails",
@@ -434,14 +434,27 @@ authRoutes
       },
     }
   )
-  .get("/check-session", async ({ cookie: { auth }, jwt }) => {
+  .get(`${basePath}/check-session`, async ({ cookie: { auth }, jwt }) => {
     const authResult = await verifyAuth(jwt, auth?.value);
     console.log("Auth Result {checkSession} :", authResult);
     if ("error" in authResult) {
       return { error: authResult.error, status: authResult.status };
     }
     return jsonResponse({ status: "success" }, 200);
+  })
+
+  .post(`${basePath}/logout`, async ({ cookie: { auth } }) => {
+    console.log("auth: ", auth?.value);
+    if (!auth) {
+      return jsonResponse({ status: "No active session" }, 200);
+    }
+    auth.set({
+      value: auth?.value,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+    return jsonResponse({ status: "Logout success" }, 200);
   });
-function updateUserProfile(bodyObj: Partial<UserProfile>, profile: any): any {
-  throw new Error("Function not implemented.");
-}

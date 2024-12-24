@@ -46,21 +46,6 @@ export const registerUser = async (
   return await response.json();
 };
 
-//TODO: AuthContext
-export const checkSession = async () => {
-  const response = await fetch(`${apiBaseUrl}/auth/check-session`, {
-    method: "GET",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok) {
-    throw new Error("Failed to check session");
-  }
-  return response;
-};
-
 export const registerBusinessUser = async (
   personInChargeName: string,
   contactEmail: string,
@@ -434,6 +419,7 @@ export const fetchAllTherapistPublic = async () => {
       "Content-Type": "application/json",
     },
   });
+
   if (!response.ok) {
     throw new Error("Failed to fetch therapist details");
   }
@@ -626,6 +612,10 @@ interface UpdateUserProfileParams {
   gender?: string;
   password?: string;
   avatarFile?: File;
+  specialization?: string;
+  qualification?: string[];
+  experience?: number;
+  language?: string[];
 }
 
 export const updateUserProfile = async ({
@@ -635,6 +625,10 @@ export const updateUserProfile = async ({
   gender,
   password,
   avatarFile,
+  specialization,
+  qualification,
+  experience,
+  language,
 }: UpdateUserProfileParams) => {
   const formData = new FormData();
 
@@ -644,6 +638,26 @@ export const updateUserProfile = async ({
   if (gender) formData.append("gender", gender);
   if (password) formData.append("password", password);
   if (avatarFile) formData.append("avatarFile", avatarFile);
+  if (specialization) formData.append("specialization", specialization);
+  // Append each qualification individually
+  if (qualification && qualification.length > 0) {
+    qualification.forEach((q) => formData.append("qualification", q));
+  }
+
+  // if (experience) {
+  //   formData.append("experience", experience.toString());
+  // }
+
+  if (experience !== undefined) {
+    formData.append("experience", experience.toString()); // "0", "5", etc.
+  } else {
+    // Optionally handle invalid or missing 'experience'
+    formData.append("experience", "0"); // Default to "0" if undefined or invalid
+  }
+  // Append each language individually
+  if (language && language.length > 0) {
+    language.forEach((lang) => formData.append("language", lang));
+  }
 
   const response = await fetch(`${apiBaseUrl}/auth/profile`, {
     method: "PATCH",
@@ -665,4 +679,34 @@ export const updateUserProfile = async ({
   }
 
   return response.json();
+};
+
+//TODO: AuthContext
+export const checkSession = async () => {
+  const response = await fetch(`${apiBaseUrl}/check-session`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to check session");
+  }
+  return response;
+};
+
+export const logoutUser = async () => {
+  const response = await fetch(`${apiBaseUrl}/logout`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to log out");
+  }
+  return response;
 };

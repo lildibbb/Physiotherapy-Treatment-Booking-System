@@ -148,7 +148,7 @@ export const UserProfileSchema = t.Object({
   address: t.Optional(t.String()),
   specialization: t.Optional(t.String()),
   qualification: t.Optional(t.Array(t.String())),
-  experience: t.Optional(t.Number()),
+  experience: t.Optional(t.Union([t.Number(), t.String()])),
 });
 export const AppointmentSchema = t.Object({
   therapistID: t.Number(),
