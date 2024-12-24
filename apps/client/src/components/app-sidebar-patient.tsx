@@ -1,5 +1,5 @@
 import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
+
 import {
   Sidebar,
   SidebarContent,
@@ -11,14 +11,13 @@ import {
   BadgeCheck,
   Bell,
   Calendar,
-  CreditCard,
   Home,
   NotebookPen,
   Sparkles,
-  UserPlus,
 } from "lucide-react";
 import type * as React from "react";
 import { ModeToggle } from "./ui/mode-toggle";
+import { NavUser } from "./nav-user";
 
 // Main navigation items
 const navItems = [
@@ -45,14 +44,10 @@ const navItems = [
 export const navUserItems = [
   {
     title: "Account",
-    url: "/user_profile",
+    url: "/user/profile",
     icon: BadgeCheck,
   },
-  {
-    title: "Billing",
-    url: "/billing",
-    icon: CreditCard,
-  },
+
   {
     title: "Notifications",
     url: "/notifications",

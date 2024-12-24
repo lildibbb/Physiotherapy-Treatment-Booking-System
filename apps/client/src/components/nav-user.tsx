@@ -16,9 +16,10 @@ import {
 import { LogOut } from "lucide-react";
 // src/components/nav-user.tsx
 import { useEffect, useState } from "react";
-import { navUserItems } from "./app-sidebar-therapist"; // Import navUserItems
+
 import { fetchUserProfile } from "@/lib/api";
 import { Link } from "@tanstack/react-router";
+import { navUserItems } from "./app-sidebar-patient";
 
 interface User {
   name: string;
@@ -34,7 +35,7 @@ export function NavUser() {
     const fetchUser = async () => {
       try {
         const data = await fetchUserProfile();
-        console.log("data fetched: ", data);
+        console.log("data fetched {sidebar}:  ", data);
         setUser(data);
       } catch (err: any) {
         console.error("Failed to fetch user profile", err);

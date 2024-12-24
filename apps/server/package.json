@@ -12,6 +12,7 @@
   "dependencies": {
     "@elysiajs/cors": "^1.1.1",
     "@elysiajs/jwt": "^1.1.1",
+    "@elysiajs/static": "^1.1.2",
     "@elysiajs/swagger": "^1.1.5",
     "bcryptjs": "^2.4.3",
     "drizzle-orm": "^0.32.0",
@@ -21,12 +22,14 @@
     "pg": "^8.13.0",
     "react-email": "^3.0.2",
     "stripe": "^17.4.0",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/nodemailer": "^6.4.16",
     "@types/pg": "^8.11.10",
+    "@types/uuid": "^10.0.0",
     "drizzle-kit": "^0.23.0"
   }
 }

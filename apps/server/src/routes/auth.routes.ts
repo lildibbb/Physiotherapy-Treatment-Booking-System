@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import jsonResponse, {
   registerUser,
   loginUser,
@@ -16,10 +16,15 @@ import {
 } from "../../types";
 import { basePath, jwtAccessSetup } from "./setup";
 import { sendEmail } from "../services/sendEmail";
-import { getUserProfile } from "../services/profile-services";
+import {
+  getUserProfile,
+  userProfileUpdate,
+} from "../services/profile-services";
+import { handleFileUpload } from "./handleFileUpload";
 
 export const authRoutes = new Elysia()
   .use(jwtAccessSetup)
+
   .group(`${basePath}/auth`, (group) => {
     group
       .post(
@@ -126,33 +131,56 @@ export const authRoutes = new Elysia()
         // Directly return the result of updateUserProfile
         return data;
       })
+
       .patch(
         "/profile",
         async ({ body, jwt, cookie: { auth } }) => {
           const authResult = await verifyAuth(jwt, auth?.value);
-
+          console.log("Auth result:", authResult);
           if ("error" in authResult) {
             return jsonResponse(authResult, 401);
           }
+
+          console.log("Form fields received:", body);
 
           //Type assertion for body to ensure it's an object
           const bodyObj = body as Partial<UserProfile>;
           //validate fields to ensure only valid fields are updated
 
-          const validFields = ["name", "avatar", "password", "confirmPassword"];
-          for (const key of Object.keys(bodyObj)) {
-            if (!validFields.includes(key)) {
-              return jsonResponse({ error: `Invalid field: ${key}` }, 400);
-            }
-          }
+          // const validFields = [
+          //   "name",
+          //   "contactDetails",
+          //   "avatar",
+          //   "avatarFile",
+          //   "password",
+          //   "confirmPassword",
+          //   "gender",
+          //   "dob",
+          //   "address",
+          //   "specialization",
+          //   "qualification",
+          //   "experience",
+          // ];
+          // // Log all received fields
+          // console.log("Fields in body:", Object.keys(bodyObj));
+          // for (const key of Object.keys(bodyObj)) {
+          //   if (!validFields.includes(key)) {
+          //     return jsonResponse({ error: `Invalid field: ${key}` }, 400);
+          //   }
+          // }
+
+          const data = await userProfileUpdate(bodyObj, authResult.profile);
+          console.log("data {profileUpdate}", data);
           // Directly return the result of updateUserProfile
-          return await updateUserProfile(bodyObj, authResult.profile);
+          return data;
         },
         {
           body: UserProfileSchema,
+          type: "multipart/form-data",
           detail: {
             description: "Update user profile",
             tags: ["User"],
+
             responses: {
               200: {
                 description: "User profile updated successfully",

@@ -10,7 +10,7 @@ import { staffRoutes } from "./routes/staff.routes";
 import { therapistRoutes } from "./routes/therapist.routes";
 import { paymentRoutes } from "./routes/payment.routes";
 import { bookingRoutes } from "./routes/booking.routes";
-
+import { staticPlugin } from "@elysiajs/static";
 // PostgreSQL Client
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
@@ -53,7 +53,13 @@ const app = new Elysia()
   .use(staffRoutes)
   .use(therapistRoutes)
   .use(paymentRoutes)
-  .use(bookingRoutes);
+  .use(bookingRoutes)
+  .use(
+    staticPlugin({
+      prefix: "/uploads/avatars", // URL prefix for accessing files
+      assets: "src/uploads/avatars", // Directory where files are stored
+    })
+  );
 app.listen(
   {
     hostname: host,

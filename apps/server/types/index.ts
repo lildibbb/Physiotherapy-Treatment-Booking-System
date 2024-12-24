@@ -118,18 +118,37 @@ export type Payment = {
 
 export type UserProfile = {
   name?: string;
+  avatarFile?: File;
   avatar?: string;
   password?: string;
   confirmPassword?: string;
   contactDetails?: string;
+  dob?: string;
+  gender?: string;
+  address?: string;
+  specialization?: string;
+  qualification?: string[];
+  experience?: number;
 };
 
 export const UserProfileSchema = t.Object({
   name: t.Optional(t.String()),
+  avatarFile: t.Optional(
+    t.File({
+      type: ["image/jpeg", "image/png", "image/webp"],
+      maxSize: "5m",
+    })
+  ),
   avatar: t.Optional(t.String()),
   password: t.Optional(t.String()),
   confirmPassword: t.Optional(t.String()),
   contactDetails: t.Optional(t.String()),
+  dob: t.Optional(t.String()),
+  gender: t.Optional(t.String()),
+  address: t.Optional(t.String()),
+  specialization: t.Optional(t.String()),
+  qualification: t.Optional(t.Array(t.String())),
+  experience: t.Optional(t.Number()),
 });
 export const AppointmentSchema = t.Object({
   therapistID: t.Number(),

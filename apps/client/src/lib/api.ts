@@ -260,7 +260,8 @@ export const updateStaffDetails = async (
     //check if token is expired or not
     if (response.status === 401) {
       const data = await response.json();
-      handleExpiredSession(data.message);
+      handleExpiredSession(data.error);
+      console.log("Session expired:", data.error);
       return;
     }
     // Check if the response is successful
@@ -289,7 +290,8 @@ export const fetchTherapistDetails = async () => {
   //check if token is expired or not
   if (response.status === 401) {
     const data = await response.json();
-    handleExpiredSession(data.message);
+    handleExpiredSession(data.error);
+    console.log("Session expired:", data.error);
     return;
   }
   if (!response.ok) {
@@ -325,7 +327,8 @@ export const updateTherapistDetails = async (
     //check if token is expired or not
     if (response.status === 401) {
       const data = await response.json();
-      handleExpiredSession(data.message);
+      handleExpiredSession(data.error);
+      console.log("Session expired:", data.error);
       return;
     }
     // Check if the response is successful
@@ -481,8 +484,8 @@ export const createAppointment = async (payLoad: AppointmentPayload) => {
   // check if token is expired or not
   if (response.status === 401) {
     const data = await response.json();
-    handleExpiredSession(data.message);
-    console.log("Session expired:", data.message);
+    handleExpiredSession(data.error);
+    console.log("Session expired:", data.error);
     return;
   }
   if (!response.ok) {
@@ -584,7 +587,8 @@ export const fetchAppointments = async () => {
   //check if token is expired or not
   if (response.status === 401) {
     const data = await response.json();
-    handleExpiredSession(data.message);
+    handleExpiredSession(data.error);
+    console.log("Session expired:", data.error);
     return;
   }
   if (!response.ok) {
@@ -604,7 +608,8 @@ export const fetchUserProfile = async () => {
   }); //check if token is expired or not
   if (response.status === 401) {
     const data = await response.json();
-    handleExpiredSession(data.message);
+    handleExpiredSession(data.error);
+    console.log("Session expired:", data.error);
     return;
   }
   if (!response.ok) {
@@ -612,4 +617,52 @@ export const fetchUserProfile = async () => {
   }
 
   return await response.json();
+};
+
+interface UpdateUserProfileParams {
+  name?: string;
+  contactDetails?: string;
+  dob?: Date;
+  gender?: string;
+  password?: string;
+  avatarFile?: File;
+}
+
+export const updateUserProfile = async ({
+  name,
+  contactDetails,
+  dob,
+  gender,
+  password,
+  avatarFile,
+}: UpdateUserProfileParams) => {
+  const formData = new FormData();
+
+  if (name) formData.append("name", name);
+  if (contactDetails) formData.append("contactDetails", contactDetails);
+  if (dob) formData.append("dob", dob.toISOString().split("T")[0]);
+  if (gender) formData.append("gender", gender);
+  if (password) formData.append("password", password);
+  if (avatarFile) formData.append("avatarFile", avatarFile);
+
+  const response = await fetch(`${apiBaseUrl}/auth/profile`, {
+    method: "PATCH",
+    credentials: "include",
+    body: formData,
+  });
+  console.log(response.body);
+  //check if token is expired or not
+  if (response.status === 401) {
+    const data = await response.json();
+
+    handleExpiredSession(data.error);
+    console.log("Session expired:", data.error);
+    return;
+  }
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to update profile");
+  }
+
+  return response.json();
 };
