@@ -694,7 +694,7 @@ export const checkSession = async () => {
   if (!response.ok) {
     throw new Error("Failed to check session");
   }
-  return response;
+  return response.json();
 };
 
 export const logoutUser = async () => {
@@ -705,8 +705,9 @@ export const logoutUser = async () => {
       "Content-Type": "application/json",
     },
   });
+  console.log("response {apiLogoutUser:", response);
   if (!response.ok) {
     throw new Error("Failed to log out");
   }
-  return response;
+  return response.json();
 };

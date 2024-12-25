@@ -440,13 +440,15 @@ authRoutes
     if ("error" in authResult) {
       return { error: authResult.error, status: authResult.status };
     }
-    return jsonResponse({ status: "success" }, 200);
+    return jsonResponse({ message: "success", status: authResult.status });
   })
 
   .post(`${basePath}/logout`, async ({ cookie: { auth } }) => {
     console.log("auth: ", auth?.value);
     if (!auth) {
-      return jsonResponse({ status: "No active session" }, 200);
+      const data = jsonResponse({ message: "No active session", status: 401 });
+      console.log("Data: ", data);
+      return data;
     }
     auth.set({
       value: auth?.value,
@@ -456,5 +458,5 @@ authRoutes
       maxAge: 0,
       path: "/",
     });
-    return jsonResponse({ status: "Logout success" }, 200);
+    return jsonResponse({ message: "Logout success", status: 200 });
   });

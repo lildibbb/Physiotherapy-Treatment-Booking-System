@@ -23,8 +23,8 @@ export const Header = () => {
     const getAuthUser = async () => {
       try {
         const data = await checkSession();
-        console.log("data {checkSession}", data.body);
-        if (data) {
+        console.log("data {checkSession}", data);
+        if (data.status != 401) {
           // Adjust based on your API response structure
           setIsAuthenticated(true);
           console.log("User is authenticated");
@@ -47,6 +47,7 @@ export const Header = () => {
     try {
       const response = await logoutUser(); // Define logoutUser in your API functions
       console.log("response: ", response);
+      console.log("response status: ", response.status);
       if (response.status === 200) {
         setIsAuthenticated(false);
         toast({
