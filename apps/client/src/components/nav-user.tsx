@@ -65,7 +65,7 @@ export function NavUser() {
             <SidebarMenuButton size="lg">
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage
-                  src={avatar}
+                  src={avatar || undefined}
                   alt={user.name}
                   onError={(e) => {
                     const imgElement = e.target as HTMLImageElement;
