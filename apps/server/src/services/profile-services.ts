@@ -8,6 +8,7 @@ import { deleteOldAvatar, handleFileUpload } from "../routes/handleFileUpload";
 
 export async function getUserProfile(profile: {
   id: number;
+  role: string;
   therapistID: number;
   businessID: number;
   staffID: number;
@@ -17,6 +18,7 @@ export async function getUserProfile(profile: {
   const therapistID = profile.therapistID;
   const businessID = profile.businessID;
   const staffID = profile.staffID;
+  const role = profile.role;
   console.log("userID: " + userID);
   if (!userID) {
     return jsonResponse(
@@ -25,12 +27,7 @@ export async function getUserProfile(profile: {
     );
   }
   try {
-    if (
-      userID != null &&
-      therapistID == null &&
-      businessID == null &&
-      staffID == null
-    ) {
+    if (role === "patient") {
       const userProfile = await db
         .select({
           name: user_authentications.name,
@@ -46,16 +43,9 @@ export async function getUserProfile(profile: {
         .where(eq(user_authentications.userID, userID))
         .execute();
 
-      const result = { ...userProfile[0], User: { userID } };
+      const result = { ...userProfile[0], User: { userID, role } };
       return result;
-    }
-
-    if (
-      userID != null &&
-      therapistID != null &&
-      businessID == null &&
-      staffID == null
-    ) {
+    } else if (role === "therapist") {
       const userProfile = await db
         .select({
           name: user_authentications.name,
@@ -72,7 +62,20 @@ export async function getUserProfile(profile: {
         .where(eq(user_authentications.userID, userID))
         .execute();
 
-      return { ...userProfile[0], User: { userID, therapistID } };
+      return { ...userProfile[0], User: { userID, therapistID, role } };
+    } else if (role === "staff") {
+      const userProfile = await db
+        .select({
+          name: user_authentications.name,
+          avatar: user_authentications.avatar,
+          email: user_authentications.email,
+          contactDetails: user_authentications.contactDetails,
+        })
+        .from(user_authentications)
+        .where(eq(user_authentications.userID, userID))
+        .execute();
+
+      return { ...userProfile[0], User: { userID, staffID, role } };
     }
   } catch (error) {
     console.error("Failed to fetch user profile", error);

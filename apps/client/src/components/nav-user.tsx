@@ -17,9 +17,11 @@ import { LogOut } from "lucide-react";
 // src/components/nav-user.tsx
 import { useEffect, useState } from "react";
 
-import { fetchUserProfile } from "@/lib/api";
-import { Link } from "@tanstack/react-router";
+import { fetchUserProfile, logoutUser } from "@/lib/api";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { navUserItems } from "./app-sidebar-patient";
+import { toast } from "@/hooks/use-toast";
+import { Spinner } from "./spinner";
 
 interface User {
   name: string;
@@ -31,7 +33,9 @@ export function NavUser() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<string | null>(null);
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -54,6 +58,39 @@ export function NavUser() {
     fetchUser();
   }, []);
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true); // Start loading
+    try {
+      const response = await logoutUser(); // Define logoutUser in your API functions
+      console.log("response: ", response);
+      console.log("response status: ", response.status);
+      if (response.status === 200) {
+        setIsAuthenticated(false);
+        toast({
+          title: "Logged out",
+          description: "You have been successfully logged out.",
+        });
+        navigate({ to: "/" }); // Redirect to login page after logout
+        console.log("User logged out successfully");
+      } else {
+        toast({
+          title: "Logout Failed",
+          description: "Unable to logout. Please try again.",
+          variant: "destructive",
+        });
+        console.log("Failed to logout");
+      }
+    } catch (error) {
+      console.log("Error during logout:", error);
+      toast({
+        title: "Logout Error",
+        description: "An error occurred while trying to logout.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingOut(false); // End loading
+    }
+  };
   if (error) return <p className="text-red-500">{error}</p>;
   if (!user) return null;
 
@@ -94,8 +131,11 @@ export function NavUser() {
               ))}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
               <LogOut />
+              {isLoggingOut ? (
+                <Spinner className="w-4 h-4 mr-2" /> // Spinner size and margin
+              ) : null}
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -1,7 +1,7 @@
 // src/pages/user/_user/profile.tsx
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -60,12 +60,14 @@ import specialization from "../../data/specialization.json"; // Import the speci
 import { MultiSelect } from "@/components/ui/multi-seletc";
 import { InputTags } from "@/components/ui/input-tags";
 
+// Define language options with icons
 const frameworksList = [
   { value: "Malay", label: "Malay", icon: Turtle },
   { value: "English", label: "English", icon: Cat },
   { value: "Mandarin", label: "Mandarin", icon: Dog },
   { value: "Tamil", label: "Tamil", icon: Rabbit },
 ];
+
 // Base schema with common fields
 const baseSchema = {
   name: z.string().min(2, {
@@ -110,6 +112,24 @@ const patientSchema = z
     }
   );
 
+// Staff-specific schema (only base fields)
+const staffSchema = z
+  .object({
+    ...baseSchema,
+  })
+  .refine(
+    (data) => {
+      if (data.password || data.confirmPassword) {
+        return data.password === data.confirmPassword;
+      }
+      return true;
+    },
+    {
+      message: "Passwords don't match",
+      path: ["confirmPassword"],
+    }
+  );
+
 // Therapist-specific schema
 const therapistSchema = z
   .object({
@@ -134,43 +154,78 @@ const therapistSchema = z
       path: ["confirmPassword"],
     }
   );
+
+// Define TypeScript types for form data
 type PatientData = z.infer<typeof patientSchema>;
 type TherapistData = z.infer<typeof therapistSchema>;
-type FormData = PatientData | TherapistData;
+type StaffData = z.infer<typeof staffSchema>;
+type FormData = PatientData | TherapistData | StaffData;
 
+// Create the route for the profile page
 export const Route = createFileRoute("/user/_user/profile")({
   component: ProfilePage,
 });
 
+// Helper function to get schema based on role
+const getSchemaForRole = (role: string | null) => {
+  switch (role) {
+    case "therapist":
+      return therapistSchema;
+    case "patient":
+      return patientSchema;
+    case "staff":
+      return staffSchema;
+    default:
+      return z.object({}); // Fallback schema
+  }
+};
+
+// Helper function to get default values based on role
+const getDefaultValuesForRole = (role: string | null) => {
+  switch (role) {
+    case "therapist":
+      return {
+        name: "",
+        contactDetails: "",
+        password: "",
+        confirmPassword: "",
+        specialization: "",
+        qualification: [],
+        experience: 0,
+        language: [],
+      };
+    case "patient":
+      return {
+        name: "",
+        contactDetails: "",
+        password: "",
+        confirmPassword: "",
+        dob: undefined,
+        gender: undefined,
+      };
+    case "staff":
+      return {
+        name: "",
+        contactDetails: "",
+        password: "",
+        confirmPassword: "",
+      };
+    default:
+      return {};
+  }
+};
+
 function ProfilePage() {
-  const [isTherapist, setIsTherapist] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true); // Loading state
   const [fetchError, setFetchError] = useState<string | null>(null); // Fetch error state
-  const [successMessage] = useState<string | null>(null); // Success message state
 
+  // Initialize useForm with dynamic resolver and default values based on role
   const form = useForm<FormData>({
-    resolver: zodResolver(isTherapist ? therapistSchema : patientSchema),
-    defaultValues: isTherapist
-      ? {
-          name: "",
-          password: "",
-          confirmPassword: "",
-          contactDetails: "",
-          specialization: "",
-          qualification: [],
-          experience: 0,
-          language: [],
-        }
-      : {
-          name: "",
-          password: "",
-          confirmPassword: "",
-          contactDetails: "",
-          dob: undefined as Date | undefined,
-          gender: undefined,
-        },
+    resolver: zodResolver(getSchemaForRole(role)),
+    defaultValues: useMemo(() => getDefaultValuesForRole(role), [role]),
   });
 
   // Fetch user profile data on component mount
@@ -178,7 +233,11 @@ function ProfilePage() {
     const getUserProfile = async () => {
       try {
         const data = await fetchUserProfile();
-        setIsTherapist(!!data.User?.therapistID);
+
+        // Set the role based on fetched data
+        const userRole = data.User?.role || null;
+        setRole(userRole);
+        console.log("user role set to: " + userRole);
 
         if (data) {
           const commonFields = {
@@ -188,7 +247,8 @@ function ProfilePage() {
             confirmPassword: "",
           };
 
-          if (data.User?.therapistID) {
+          // Reset form with role-specific data
+          if (userRole === "therapist") {
             form.reset({
               ...commonFields,
               specialization: data.specialization || "",
@@ -196,17 +256,22 @@ function ProfilePage() {
               experience: data.experience || 0,
               language: data.language || [],
             } as TherapistData);
-          } else {
+          } else if (userRole === "patient") {
             const dobDate = data.dob ? new Date(data.dob) : undefined;
             form.reset({
               ...commonFields,
               dob: dobDate,
               gender: data.gender || undefined,
             } as PatientData);
+          } else if (userRole === "staff") {
+            form.reset({
+              ...commonFields,
+            } as StaffData);
           }
 
+          // Set avatar if available
           if (data.avatar) {
-            const apiBaseUrl = "http://localhost:5431";
+            const apiBaseUrl = "http://localhost:5431"; // Update with your actual API base URL
             const avatarUrl = `${apiBaseUrl}/${data.avatar}`;
             console.log("Avatar URL:", avatarUrl);
 
@@ -224,6 +289,7 @@ function ProfilePage() {
     getUserProfile();
   }, [form]);
 
+  // Handle avatar image changes
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -244,6 +310,7 @@ function ProfilePage() {
     }
   };
 
+  // Handle form submission
   const onSubmit = async (formData: FormData) => {
     try {
       const fileInput = document.getElementById(
@@ -252,58 +319,73 @@ function ProfilePage() {
       const avatarFile = fileInput?.files?.[0];
 
       // Prepare the data for update based on user type
-      const updateData = {
+      const updateData: any = {
         name: formData.name,
         contactDetails: formData.contactDetails,
         password: formData.password || undefined,
         avatarFile: avatarFile,
-        ...(isTherapist
-          ? {
-              specialization: (formData as TherapistData).specialization,
-              qualification: Array.isArray(
-                (formData as TherapistData).qualification
-              )
-                ? (formData as TherapistData).qualification
-                : [(formData as TherapistData).qualification].filter(Boolean),
-              experience: (formData as TherapistData).experience,
-              language: Array.isArray((formData as TherapistData).language)
-                ? (formData as TherapistData).language
-                : [(formData as TherapistData).language].filter(Boolean),
-            }
-          : {
-              dob: (formData as PatientData).dob,
-              gender: (formData as PatientData).gender,
-            }),
       };
 
+      if (role === "therapist") {
+        const therapistData = formData as TherapistData;
+        updateData.specialization = therapistData.specialization;
+        updateData.qualification = Array.isArray(therapistData.qualification)
+          ? therapistData.qualification
+          : [therapistData.qualification].filter(Boolean);
+        updateData.experience = therapistData.experience;
+        updateData.language = Array.isArray(therapistData.language)
+          ? therapistData.language
+          : [therapistData.language].filter(Boolean);
+      } else if (role === "patient") {
+        const patientData = formData as PatientData;
+        updateData.dob = patientData.dob;
+        updateData.gender = patientData.gender;
+      }
+
+      // Remove undefined fields
       const cleanedData = Object.fromEntries(
         Object.entries(updateData).filter(([_, value]) => value !== undefined)
       );
-      console.log("cleaner  data", cleanedData);
+      console.log("Cleaned data:", cleanedData);
+
+      // Call the API to update the profile
       const updatedProfile = await updateUserProfile(cleanedData);
 
       if (updatedProfile) {
-        const updatedFormData = {
-          name: updatedProfile.name,
-          contactDetails: updatedProfile.contactDetails,
-          password: "",
-          confirmPassword: "",
-          ...(isTherapist
-            ? {
-                specialization: updatedProfile.specialization,
-                qualification: updatedProfile.qualification,
-                experience: updatedProfile.experience,
-                language: updatedProfile.language,
-              }
-            : {
-                dob: updatedProfile.dob
-                  ? new Date(updatedProfile.dob)
-                  : undefined,
-                gender: updatedProfile.gender || undefined,
-              }),
-        };
+        let updatedFormData: Partial<FormData>;
 
-        form.reset(updatedFormData);
+        if (role === "therapist") {
+          updatedFormData = {
+            name: updatedProfile.name,
+            contactDetails: updatedProfile.contactDetails,
+            password: "",
+            confirmPassword: "",
+            specialization: updatedProfile.specialization,
+            qualification: updatedProfile.qualification,
+            experience: updatedProfile.experience,
+            language: updatedProfile.language,
+          } as Partial<TherapistData>;
+        } else if (role === "patient") {
+          updatedFormData = {
+            name: updatedProfile.name,
+            contactDetails: updatedProfile.contactDetails,
+            password: "",
+            confirmPassword: "",
+            dob: updatedProfile.dob ? new Date(updatedProfile.dob) : undefined,
+            gender: updatedProfile.gender || undefined,
+          } as Partial<PatientData>;
+        } else if (role === "staff") {
+          updatedFormData = {
+            name: updatedProfile.name,
+            contactDetails: updatedProfile.contactDetails,
+            password: "",
+            confirmPassword: "",
+          } as Partial<StaffData>;
+        } else {
+          updatedFormData = {};
+        }
+
+        form.reset(updatedFormData as FormData);
 
         if (updatedProfile.avatarUrl) {
           setAvatar(updatedProfile.avatarUrl);
@@ -324,6 +406,7 @@ function ProfilePage() {
       });
     }
   };
+
   // Conditional Rendering Based on Loading and Error States
   if (isLoading) {
     return (
@@ -357,7 +440,13 @@ function ProfilePage() {
           <CardHeader>
             <CardTitle>Edit Profile</CardTitle>
             <CardDescription>
-              Update your {isTherapist ? "therapist" : "personal"} information
+              Update your{" "}
+              {role === "therapist"
+                ? "therapist"
+                : role === "staff"
+                  ? "staff"
+                  : "personal"}{" "}
+              information
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -398,6 +487,12 @@ function ProfilePage() {
                       <span>Upload new avatar</span>
                     </Label>
                   </div>
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
                 </div>
 
                 {/* Name Field */}
@@ -434,8 +529,8 @@ function ProfilePage() {
                   )}
                 />
 
-                {/* Conditional Fields based on user type */}
-                {isTherapist ? (
+                {/* Conditional Fields based on user role */}
+                {role === "therapist" ? (
                   // Therapist-specific fields
                   <>
                     <FormField
@@ -495,7 +590,7 @@ function ProfilePage() {
                           <FormControl>
                             <InputTags
                               {...field}
-                              placeholder="Enter qualifications "
+                              placeholder="Enter qualifications"
                               onChange={field.onChange}
                               value={field.value}
                             />
@@ -521,28 +616,16 @@ function ProfilePage() {
                               animation={2}
                               maxCount={3}
                             />
-                            {/* <Input
-                              {...field}
-                              placeholder="Enter languages separated by commas"
-                              onChange={(e) => {
-                                const languages = e.target.value
-                                  .split(",")
-                                  .map((l) => l.trim());
-                                field.onChange(languages);
-                              }}
-                              value={
-                                Array.isArray(field.value)
-                                  ? field.value.join(", ")
-                                  : ""
-                              }
-                            /> */}
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </>
-                ) : (
+                ) : role === "staff" ? (
+                  // Staff-specific fields (only common fields are shown)
+                  <></> // No additional fields for staff
+                ) : role === "patient" ? (
                   // Patient-specific fields
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Date of Birth */}
@@ -619,7 +702,7 @@ function ProfilePage() {
                       )}
                     />
                   </div>
-                )}
+                ) : null}
 
                 {/* Password Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -662,3 +745,5 @@ function ProfilePage() {
     </div>
   );
 }
+
+export default ProfilePage;
