@@ -52,7 +52,6 @@ export const patients = pgTable("patients", {
   userID: integer("userID")
     .references(() => user_authentications.userID)
     .notNull(),
-
   dob: date("dob"),
   gender: varchar("gender", { length: 10 }),
   address: varchar("address", { length: 255 }),

@@ -311,7 +311,15 @@ export async function loginUser(reqBody: UserLogin) {
     }
   }
   // Return user details without the token (token will be generated in the login route)
-  return { id: userID, email, businessID, therapistID, staffID, status: 200 };
+  return {
+    id: userID,
+    email,
+    businessID,
+    therapistID,
+    staffID,
+    role,
+    status: 200,
+  };
 }
 
 export async function registerStaff(

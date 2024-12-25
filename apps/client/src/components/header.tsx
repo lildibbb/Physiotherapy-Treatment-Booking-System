@@ -18,15 +18,17 @@ import { Spinner } from "./spinner";
 export const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [role, setRole] = useState("");
   const navigate = useNavigate();
   useEffect(() => {
     const getAuthUser = async () => {
       try {
         const data = await checkSession();
         console.log("data {checkSession}", data);
-        if (data.status != 401) {
+        if (data.authContext.isAuthenticated == true) {
           // Adjust based on your API response structure
           setIsAuthenticated(true);
+          setRole(data.authContext.role);
           console.log("User is authenticated");
         } else {
           setIsAuthenticated(false);
@@ -75,7 +77,20 @@ export const Header = () => {
       setIsLoggingOut(false); // End loading
     }
   };
-
+  const getDashboardHref = () => {
+    switch (role) {
+      case "staff":
+        return "/staff/dashboard";
+      case "business":
+        return "/business/dashboard";
+      case "patient":
+        return "/user/dashboard";
+      case "therapist":
+        return "/therapist/dashboard";
+      default:
+        return "/dashboard"; // Default dashboard or a fallback route
+    }
+  };
   const navigationItems = [
     {
       title: "Home",
@@ -84,7 +99,7 @@ export const Header = () => {
     },
     {
       title: "Dashboard",
-      href: "/",
+      href: getDashboardHref(),
       description: "",
     },
     {
@@ -111,7 +126,7 @@ export const Header = () => {
     },
     {
       title: "About",
-      description: "Managing a small business today is already tough.",
+      description: "Where you can find information about our services",
       items: [
         {
           title: "About us",

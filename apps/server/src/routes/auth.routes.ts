@@ -64,7 +64,8 @@ export const authRoutes = new Elysia()
             return { message: loginResponse.error };
           }
 
-          const { id, email, businessID, therapistID, staffID } = loginResponse;
+          const { id, email, businessID, therapistID, staffID, role } =
+            loginResponse;
 
           // Validate that email is defined
           if (!email) {
@@ -79,9 +80,11 @@ export const authRoutes = new Elysia()
             businessID?: number;
             therapistID?: number;
             staffID?: number;
+            role: string;
           } = {
             id,
             email,
+            role,
           };
           console.log("TokenPayLoad: ", tokenPayload); //For debugging purposes
           // Only add `businessID` if it's defined (not null)
@@ -438,9 +441,25 @@ authRoutes
     const authResult = await verifyAuth(jwt, auth?.value);
     console.log("Auth Result {checkSession} :", authResult);
     if ("error" in authResult) {
-      return { error: authResult.error, status: authResult.status };
+      let isAuthenticated: boolean = false;
+      return {
+        error: authResult.error,
+        status: authResult.status,
+        authContext: {
+          isAuthenticated: isAuthenticated,
+        },
+      };
     }
-    return jsonResponse({ message: "success", status: authResult.status });
+
+    let isAuthenticated: boolean = true;
+    return jsonResponse({
+      message: "success",
+      authContext: {
+        role: authResult.profile.role,
+        isAuthenticated: isAuthenticated,
+      },
+      status: authResult.status,
+    });
   })
 
   .post(`${basePath}/logout`, async ({ cookie: { auth } }) => {

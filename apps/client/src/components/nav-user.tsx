@@ -30,6 +30,7 @@ interface User {
 export function NavUser() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [avatar, setAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -37,6 +38,13 @@ export function NavUser() {
         const data = await fetchUserProfile();
         console.log("data fetched {sidebar}:  ", data);
         setUser(data);
+        if (data.avatar) {
+          const apiBaseUrl = "http://localhost:5431";
+          const avatarUrl = `${apiBaseUrl}/${data.avatar}`;
+          console.log("Avatar URL:", avatarUrl);
+
+          setAvatar(avatarUrl);
+        }
       } catch (err: any) {
         console.error("Failed to fetch user profile", err);
         setError(err.message);
@@ -56,7 +64,14 @@ export function NavUser() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton size="lg">
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage
+                  src={avatar}
+                  alt={user.name}
+                  onError={(e) => {
+                    const imgElement = e.target as HTMLImageElement;
+                    imgElement.style.display = "none";
+                  }}
+                />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">

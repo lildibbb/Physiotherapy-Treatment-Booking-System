@@ -690,7 +690,7 @@ export const checkSession = async () => {
       "Content-Type": "application/json",
     },
   });
-
+  console.log("response {apiCheckSession:", response);
   if (!response.ok) {
     throw new Error("Failed to check session");
   }
