@@ -1,4 +1,4 @@
-import { AppointmentPayload } from "@/types/types";
+import { AppointmentPayload, AvailabilityPayload } from "@/types/types";
 import { handleExpiredSession } from "./helper";
 
 const apiBaseUrl = "http://localhost:5431/api";
@@ -529,37 +529,6 @@ export const fulfillCheckoutRequest = async (sessionID: string) => {
   console.log("Data from {api ts}:", data);
   return data;
 };
-// TODO : UI FOR STAFF UPDATE AVAILBILITY
-export const updateAvailability = async (
-  dayOfWeek: string,
-  startTime: string,
-  endTime: string,
-  isAvailable: number,
-  specialDate: string
-) => {
-  const response = await fetch(`${apiBaseUrl}/therapist/availability`, {
-    method: "PATCH",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      dayOfWeek,
-      startTime,
-      endTime,
-      isAvailable,
-      specialDate,
-    }),
-  });
-  console.log("Response from {api ts}:", response);
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to update availability");
-  }
-  const data = await response.json();
-  console.log("Data from {api ts}:", data);
-  return data;
-};
 
 export const fetchAppointments = async () => {
   const response = await fetch(`${apiBaseUrl}/booking/appointment`, {
@@ -691,6 +660,7 @@ export const checkSession = async () => {
     },
   });
   console.log("response {apiCheckSession:", response);
+
   if (!response.ok) {
     throw new Error("Failed to check session");
   }
@@ -706,8 +676,60 @@ export const logoutUser = async () => {
     },
   });
   console.log("response {apiLogoutUser:", response);
+  if (response.status === 401) {
+    const data = await response.json();
+
+    handleExpiredSession(data.error);
+    console.log("Session expired:", data.error);
+    return;
+  }
   if (!response.ok) {
     throw new Error("Failed to log out");
   }
   return response.json();
+};
+
+export const getDataTherapistForStaff = async () => {
+  const response = await fetch(
+    `${apiBaseUrl}/therapist/data-and-availability`,
+    {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  console.log("response {apiGetDataTherapistForStaff:", response);
+  if (!response.ok) {
+    throw new Error("Failed to get data for staff");
+  }
+  return response.json();
+};
+
+// TODO : UI FOR STAFF UPDATE AVAILBILITY
+export const updateAvailability = async (payLoad: AvailabilityPayload[]) => {
+  const response = await fetch(`${apiBaseUrl}/therapist/availability`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payLoad),
+  });
+  console.log("Response from {api.ts}:", response);
+  if (response.status === 401) {
+    const data = await response.json();
+
+    handleExpiredSession(data.error);
+    console.log("Session expired:", data.error);
+    return;
+  }
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Failed to update availability");
+  }
+  const data = await response.json();
+  console.log("Data from {api.ts}:", data);
+  return data;
 };

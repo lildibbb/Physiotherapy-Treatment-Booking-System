@@ -22,3 +22,13 @@ export interface AppointmentPayload {
   status?: string;
   planID?: number;
 }
+
+export interface AvailabilityPayload {
+  therapistID: number;
+  availabilityID: number;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  isAvailable: number;
+  specialDate?: string | null;
+}

@@ -77,18 +77,19 @@ export type Email = {
 };
 
 export type Availability = {
+  availabilityID: number; // Unique identifier for the availability
+  therapistID: number; // Unique identifier for the therapist
   dayOfWeek: string; // Day of the week
-  startTime: string; // Start time of the availability
-  endTime: string; // End time of the availability
+  startTime: string | null;
+  endTime: string | null;
   isAvailable: number; // Availability status
-  specialDate?: string; // Special date for the availability
+  specialDate?: string | null;
 };
 export type AvailableSlot = {
   date: string; // The date of the availability (e.g., "2023-11-19")
   day: string; // The day of the week (e.g., "Monday")
   morning: string[]; // Morning time slots (e.g., ["08:00", "08:30"])
   afternoon: string[]; // Afternoon time slots (e.g., ["13:00", "14:00"])
-
   unavailable: boolean; // Availability status
 };
 
@@ -234,11 +235,13 @@ export const EmailSchema = t.Object({
 });
 
 export const AvailabilitySchema = t.Object({
+  availabilityID: t.Number(), // Unique identifier for the availability
+  therapistID: t.Number(), // Unique identifier for the therapist
   dayOfWeek: t.String(), // Day of the week
   startTime: t.String(), // Start time of the availability
   endTime: t.String(), // End time of the availability
-  isAvailable: t.Boolean(), // Availability status
-  specialDate: t.String(), // Special date for the availability
+  isAvailable: t.Union([t.Number(), t.String()]), // Availability status
+  specialDate: t.Optional(t.Union([t.String(), t.Null()])),
 });
 
 //Define the AvailableSlot type schema
@@ -253,3 +256,4 @@ export const AvailableSlotSchema = t.Object({
 
 // Define the AvailableSlotsResponse type schema
 export const AvailableSlotsResponseSchema = t.Array(AvailableSlotSchema);
+export const AvailabilityBatchSchema = t.Array(AvailabilitySchema);

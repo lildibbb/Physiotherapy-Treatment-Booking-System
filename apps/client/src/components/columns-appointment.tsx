@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 
-import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableColumnHeader } from "./dashboard/staff/data-table-column-header";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
 import { MoreHorizontal } from "lucide-react";

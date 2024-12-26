@@ -13,7 +13,7 @@ import { UserNav } from "@/components/dashboard/patient/user-nav";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DataTable } from "@/components/data-table";
-import { columns } from "@/components/columns";
+import { columns } from "@/components/columns-appointment";
 
 interface AppointmentData {
   appointmentID: string;

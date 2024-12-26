@@ -1,7 +1,12 @@
-import { eq } from "drizzle-orm";
-import type { Availability, AvailableSlot } from "../../types";
+import { eq, inArray } from "drizzle-orm";
+import type { Availability, AvailableSlot, Therapist } from "../../types";
 import db from "../db";
-import { availabilities } from "../schema";
+import {
+  availabilities,
+  physiotherapists,
+  staffs,
+  user_authentications,
+} from "../schema";
 import {
   generateWeekDates,
   getDayOfWeek,
@@ -92,15 +97,139 @@ export async function getAvailableSlot(params: {
   }
 }
 
+export async function getAvailability(profile: { staffID: number }) {
+  const staffID = profile.staffID;
+  console.log("Staff ID received:", staffID);
+
+  // Step 1: Validate the staffID
+  if (!staffID) {
+    return jsonResponse({ error: "Invalid staff ID" }, 400);
+  }
+
+  try {
+    // Step 2: Retrieve the businessID for the given staffID
+    const staffRecords = await db
+      .select({ businessID: staffs.businessID })
+      .from(staffs)
+      .where(eq(staffs.staffID, staffID))
+      .execute();
+
+    if (staffRecords.length === 0) {
+      return jsonResponse({ error: "businessID not found" }, 404);
+    }
+
+    const businessID = staffRecords[0].businessID;
+    console.log("Business ID retrieved:", businessID);
+
+    // Step 3: Fetch all therapists associated with the businessID
+    const therapistData: Therapist[] = await db
+      .select({
+        therapistID: physiotherapists.therapistID,
+        name: user_authentications.name,
+        contactDetails: user_authentications.contactDetails,
+      })
+      .from(physiotherapists)
+      .innerJoin(
+        user_authentications,
+        eq(physiotherapists.userID, user_authentications.userID)
+      )
+      .where(eq(physiotherapists.businessID, businessID))
+      .execute();
+
+    console.log("Therapist Data:", therapistData);
+
+    // Step 4: Extract all therapistIDs
+    const therapistIDs = therapistData.map(
+      (therapist) => therapist.therapistID
+    );
+    console.log("Therapist IDs:", therapistIDs);
+
+    if (therapistIDs.length === 0) {
+      return jsonResponse(
+        { message: "No therapists found for this business." },
+        200
+      );
+    }
+
+    // Step 5: Retrieve all availability records for the extracted therapistIDs
+    const availabilityData: Availability[] = await db
+      .select({
+        availabilityID: availabilities.availabilityID,
+        therapistID: availabilities.therapistID,
+        dayOfWeek: availabilities.dayOfWeek,
+        startTime: availabilities.startTime,
+        endTime: availabilities.endTime,
+        isAvailable: availabilities.isAvailable,
+        specialDate: availabilities.specialDate,
+      })
+      .from(availabilities)
+      .where(inArray(availabilities.therapistID, therapistIDs))
+      .execute();
+
+    console.log("Availability Data:", availabilityData);
+
+    // Step 6: Organize availability data by therapistID
+    const availabilityByTherapist: Record<number, Availability[]> = {};
+
+    availabilityData.forEach((availability) => {
+      if (!availabilityByTherapist[availability.therapistID]) {
+        availabilityByTherapist[availability.therapistID] = [];
+      }
+      availabilityByTherapist[availability.therapistID].push(availability);
+    });
+
+    // Step 7: Combine therapist data with their respective availability
+    const therapistDataWithAvailability = therapistData.map((therapist) => ({
+      ...therapist,
+      availability: availabilityByTherapist[therapist.therapistID] || [],
+    }));
+
+    // Step 8: Return the aggregated data
+    return jsonResponse({ TherapistData: therapistDataWithAvailability }, 200);
+  } catch (error) {
+    console.error("Error fetching availability:", error);
+    return jsonResponse(
+      { error: "Error fetching availability", detail: error },
+      500
+    );
+  }
+}
 //TODO : UI for updating availability
 export async function updateAvailability(
   reqBody: Partial<Availability>,
-  profile: { therapistID: number }
+  profile: { staffID: number }
 ) {
   // pass the therapistID from the decoded token
-  const therapistID = profile.therapistID;
+  const therapistID = reqBody.therapistID;
+  const staffID = profile.staffID;
+  console.log("staffID received:", staffID);
   console.log("Therapist ID received:", therapistID);
+
   if (!therapistID) {
+    return jsonResponse({ error: "Invalid therapist ID" }, 400);
+  }
+  if (!staffID) {
+    return jsonResponse({ error: "Invalid staff ID" }, 400);
+  }
+
+  const getBusinessIDfromStaff = await db
+    .select({ businessID: staffs.businessID })
+    .from(staffs)
+    .where(eq(staffs.staffID, staffID))
+    .execute();
+  const staffBusinessID = getBusinessIDfromStaff[0].businessID;
+  console.log("staffBusinessID:", staffBusinessID);
+
+  const getTherapistIDfromBusiness = await db
+    .select({ businessID: physiotherapists.businessID })
+    .from(physiotherapists)
+    .where(eq(physiotherapists.therapistID, therapistID))
+    .execute();
+  const therapistBusinessID = getTherapistIDfromBusiness[0].businessID;
+
+  console.log("therapistBusinessID:", therapistBusinessID);
+
+  if (staffBusinessID !== therapistBusinessID) {
     return jsonResponse(
       { error: "Only authorised user can update availability" },
       403
@@ -108,6 +237,19 @@ export async function updateAvailability(
   }
 
   try {
+    const availabilityResult = await db
+      .select({ availabilityID: availabilities.availabilityID })
+      .from(availabilities)
+      .where(eq(availabilities.therapistID, therapistID))
+      .execute();
+    console.log("availabilityResult:", availabilityResult);
+    const availabilityIDArray: number[] = availabilityResult.map(
+      (result) => result.availabilityID
+    );
+
+    console.log("Availability ID received:", availabilityIDArray);
+    const availabilityID = reqBody.availabilityID;
+    console.log("Availability ID received:", availabilityID);
     const availbilityUpdateFields: Partial<Availability> = {};
     if (reqBody.dayOfWeek)
       availbilityUpdateFields.dayOfWeek = reqBody.dayOfWeek;
@@ -123,7 +265,7 @@ export async function updateAvailability(
       await db
         .update(availabilities)
         .set(availbilityUpdateFields)
-        .where(eq(availabilities.therapistID, therapistID))
+        .where(eq(availabilities.availabilityID, availabilityID!))
         .execute();
     }
     return jsonResponse({ message: "Availability updated successfully" }, 200);
@@ -132,3 +274,121 @@ export async function updateAvailability(
     return jsonResponse({ message: "Error updating availability", error }, 500);
   }
 }
+// export async function updateBatchAvailability(
+//   reqBody: Partial<Availability>[],
+//   profile: { staffID: number }
+// ) {
+//   const staffID = profile.staffID;
+//   console.log("staffID received:", staffID);
+
+//   if (!Array.isArray(reqBody) || reqBody.length === 0) {
+//     return jsonResponse(
+//       { error: "Invalid payload format or empty array" },
+//       400
+//     );
+//   }
+
+//   try {
+//     // Begin a transaction to ensure atomicity
+//     await db.transaction(async (tx) => {
+//       for (const slot of reqBody) {
+//         const therapistID = slot.therapistID;
+//         console.log("Therapist ID received:", therapistID);
+
+//         if (!therapistID) {
+//           throw { status: 400, message: "Invalid therapist ID" };
+//         }
+
+//         // Fetch business IDs
+//         const getBusinessIDfromStaff = await tx
+//           .select({ businessID: staffs.businessID })
+//           .from(staffs)
+//           .where(eq(staffs.staffID, staffID))
+//           .execute();
+
+//         if (getBusinessIDfromStaff.length === 0) {
+//           throw { status: 400, message: "Staff not found" };
+//         }
+
+//         const staffBusinessID = getBusinessIDfromStaff[0].businessID;
+//         console.log("staffBusinessID:", staffBusinessID);
+
+//         const getTherapistIDfromBusiness = await tx
+//           .select({ businessID: physiotherapists.businessID })
+//           .from(physiotherapists)
+//           .where(eq(physiotherapists.therapistID, therapistID))
+//           .execute();
+
+//         if (getTherapistIDfromBusiness.length === 0) {
+//           throw {
+//             status: 400,
+//             message: `Therapist ID ${therapistID} not found`,
+//           };
+//         }
+
+//         const therapistBusinessID = getTherapistIDfromBusiness[0].businessID;
+//         console.log("therapistBusinessID:", therapistBusinessID);
+
+//         if (staffBusinessID !== therapistBusinessID) {
+//           throw {
+//             status: 403,
+//             message: "Only authorised user can update availability",
+//           };
+//         }
+
+//         // Validate the availability slot
+//         const availabilityResult = await tx
+//           .select({ availabilityID: availabilities.availabilityID })
+//           .from(availabilities)
+//           .where(eq(availabilities.therapistID, therapistID))
+//           .execute();
+
+//         if (availabilityResult.length === 0) {
+//           throw {
+//             status: 400,
+//             message: `No availabilities found for therapist ID ${therapistID}`,
+//           };
+//         }
+
+//         const availabilityIDArray: number[] = availabilityResult.map(
+//           (result) => result.availabilityID
+//         );
+
+//         const availabilityID = slot.availabilityID;
+//         console.log("Availability ID received:", availabilityID);
+
+//         if (!availabilityID || !availabilityIDArray.includes(availabilityID)) {
+//           throw {
+//             status: 400,
+//             message: `Invalid availability ID ${availabilityID} for therapist ID ${therapistID}`,
+//           };
+//         }
+
+//         const availabilityUpdateFields: Partial<Availability> = {};
+//         if (slot.dayOfWeek) availabilityUpdateFields.dayOfWeek = slot.dayOfWeek;
+//         if (slot.startTime) availabilityUpdateFields.startTime = slot.startTime;
+//         if (slot.endTime) availabilityUpdateFields.endTime = slot.endTime;
+//         if (slot.isAvailable !== undefined)
+//           availabilityUpdateFields.isAvailable = slot.isAvailable ? 1 : 0;
+//         if (slot.specialDate !== undefined)
+//           availabilityUpdateFields.specialDate = slot.specialDate;
+
+//         if (Object.keys(availabilityUpdateFields).length > 0) {
+//           await tx
+//             .update(availabilities)
+//             .set(availabilityUpdateFields)
+//             .where(eq(availabilities.availabilityID, availabilityID))
+//             .execute();
+//         }
+//       }
+//     });
+
+//     return jsonResponse({ message: "Batch update successful" }, 200);
+//   } catch (error: any) {
+//     console.error("Error updating availability:", error);
+//     if (error.status && error.message) {
+//       return jsonResponse({ error: error.message }, error.status);
+//     }
+//     return jsonResponse({ message: "Error updating availability", error }, 500);
+//   }
+// }

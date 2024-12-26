@@ -10,6 +10,8 @@ import {
   type TherapistRegistration,
   type Therapist,
   type Availability,
+  AvailabilitySchema,
+  AvailabilityBatchSchema,
 } from "../../types";
 import { basePath, jwtAccessSetup } from "./setup";
 import {
@@ -19,6 +21,7 @@ import {
   updateTherapistDetails,
 } from "../services/therapist-services";
 import {
+  getAvailability,
   getAvailableSlot,
   updateAvailability,
 } from "../services/slot-services";
@@ -259,17 +262,88 @@ export const therapistRoutes = new Elysia()
           );
         }
       })
-      .patch("/availability", async ({ body, cookie: { auth }, jwt }) => {
+      .patch(
+        "/availability",
+        async ({ body, cookie: { auth }, jwt }) => {
+          const authResult = await verifyAuth(jwt, auth?.value);
+          console.log("Auth Result:", authResult);
+          console.log("Received PATCH /api/therapist/availability:", body);
+          if ("error" in authResult) {
+            return { error: authResult.error, status: authResult.status };
+          }
+
+          if (!Array.isArray(body)) {
+            return {
+              error: "Payload must be an array of availability objects",
+              status: 400,
+            };
+          }
+
+          const results = [];
+          for (const item of body as Availability[]) {
+            try {
+              const result = await updateAvailability(item, authResult.profile);
+              results.push({ item, status: "success", result });
+            } catch (error: any) {
+              console.error("Error updating item:", item, error);
+              results.push({
+                item,
+                status: "error",
+                error: error.message || "Unknown error",
+              });
+            }
+            const successCount = results.filter(
+              (r) => r.status === "success"
+            ).length;
+            const errorCount = results.filter(
+              (r) => r.status === "error"
+            ).length;
+
+            return jsonResponse(
+              {
+                message: "Processing completed",
+                successCount,
+                errorCount,
+                results,
+              },
+              200
+            );
+          }
+        },
+        {
+          body: AvailabilityBatchSchema,
+        }
+      )
+      // .patch(
+      //   "/availability/batch",
+      //   async ({ body, cookie: { auth }, jwt }) => {
+      //     const authResult = await verifyAuth(jwt, auth?.value);
+      //     console.log("Auth Result:", authResult);
+      //     console.log(
+      //       "Received PATCH /api/therapist/availability/batch:",
+      //       body
+      //     );
+      //     if ("error" in authResult) {
+      //       return { error: authResult.error, status: authResult.status };
+      //     }
+
+      //     return await updateBatchAvailability(
+      //       body as Partial<Availability>[],
+      //       authResult.profile
+      //     );
+      //   },
+      //   {
+      //     body: AvailabilityBatchSchema, // New batch schema
+      //   }
+      // )
+      .get("/data-and-availability", async ({ jwt, cookie: { auth } }) => {
         const authResult = await verifyAuth(jwt, auth?.value);
         console.log("Auth Result:", authResult);
         if ("error" in authResult) {
           return { error: authResult.error, status: authResult.status };
         }
 
-        return await updateAvailability(
-          body as Availability,
-          authResult.profile
-        );
+        return await getAvailability(authResult.profile);
       });
 
     return group; // Return the group instance to satisfy Elysia type requirements

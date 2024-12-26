@@ -14,18 +14,25 @@ import {
 } from "@/components/ui/popover";
 
 interface DatePickerProps {
-  selected: Date;
-  onChange: (date: Date) => void;
+  selected: Date | null; // Updated to accept Date or null
+  onChange: (date: Date | null) => void; // Updated to handle null
   className?: string;
+  placeholder?: string; // Added placeholder prop
+  isClearable?: boolean; // Added isClearable prop
 }
-// components/ui/date-picker.tsx
 
 export const DatePicker: React.FC<DatePickerProps> = ({
   selected,
   onChange,
   className,
+  placeholder,
+  isClearable,
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
+
+  const handleClear = () => {
+    onChange(null);
+  };
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -37,24 +44,30 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             !selected && "text-muted-foreground",
             className // Apply the passed className
           )}
-          onClick={() => setIsOpen(!isOpen)} // Toggle popover on click
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {selected ? format(selected, "PPP") : <span>Pick a date</span>}
+          {selected ? (
+            format(selected, "PPP")
+          ) : (
+            <span>{placeholder || "Pick a date"}</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          selected={selected}
+          selected={selected || undefined}
           onSelect={(date) => {
-            if (date) {
-              onChange(date);
-              setIsOpen(false);
-            }
+            onChange(date ?? null);
+            setIsOpen(false);
           }}
           initialFocus
         />
+        {isClearable && selected && (
+          <Button variant="ghost" className="w-full mt-2" onClick={handleClear}>
+            Clear
+          </Button>
+        )}
       </PopoverContent>
     </Popover>
   );

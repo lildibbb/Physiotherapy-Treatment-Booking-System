@@ -6,6 +6,7 @@ import {
   business_entities,
   staffs,
   physiotherapists,
+  availabilities,
 } from "../schema";
 import type {
   BusinessRegistration,
@@ -508,14 +509,11 @@ export async function registerTherapist(
 
     const userId = newTherapistUser[0].userID;
     const fakeData = {
-      qualification: [
-        "Bachelor of Physiotherapy",
-        "Master of Orthopedics",
-        "Certification in Sports Therapy",
-      ],
+      qualification: [],
       experience: 10,
-      languages: ["English", "Mandarin"],
+      languages: ["English", "Malay"],
     };
+
     //insert into staffs table using businessID from the decoded token
     const newTherapist = await db
       .insert(physiotherapists)
@@ -531,6 +529,27 @@ export async function registerTherapist(
       .returning()
       .execute();
     console.log("newTherapist", newTherapist);
+    // Define all days of the week
+    const daysOfWeek = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+
+    // Prepare availability records
+    const availabilityRecords = daysOfWeek.map((day) => ({
+      therapistID: newTherapist[0].therapistID,
+      dayOfWeek: day,
+    }));
+
+    // Insert all availability records in a single batch
+    await db.insert(availabilities).values(availabilityRecords).execute();
+
+    console.log("Availability records inserted:", availabilityRecords);
     return jsonResponse(
       {
         message: "Physiotherapist registration successful",
