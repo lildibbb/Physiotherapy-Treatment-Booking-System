@@ -311,6 +311,17 @@ export async function loginUser(reqBody: UserLogin) {
       staffID = staff[0].staffID;
     }
   }
+  let patientID = null;
+  if (role === "patient") {
+    const patient = await db
+      .select()
+      .from(patients)
+      .where(eq(patients.userID, userID))
+      .execute();
+    if (patient.length > 0) {
+      patientID = patient[0].patientID;
+    }
+  }
   // Return user details without the token (token will be generated in the login route)
   return {
     id: userID,
@@ -318,6 +329,7 @@ export async function loginUser(reqBody: UserLogin) {
     businessID,
     therapistID,
     staffID,
+    patientID,
     role,
     status: 200,
   };

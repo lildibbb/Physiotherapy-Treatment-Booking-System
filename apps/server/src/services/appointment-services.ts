@@ -1,7 +1,13 @@
 import { eq, or, and, asc } from "drizzle-orm";
 import type { Appointment } from "../../types";
 import db from "../db";
-import { patients, physiotherapists, staffs, appointments } from "../schema";
+import {
+  patients,
+  physiotherapists,
+  staffs,
+  appointments,
+  user_authentications,
+} from "../schema";
 import jsonResponse from "./auth-services";
 
 // Create appointment and associate it with the logged-in user
@@ -100,15 +106,17 @@ export async function getAppointmentByID(profile: {
   id: number;
   therapistID: number;
   staffID: number;
+  patientID: number;
 }) {
   //pass the decoded userID from the token
-  const { id, therapistID, staffID } = profile;
+  const { id, therapistID, staffID, patientID } = profile;
   if (!id) {
     return jsonResponse(
       { error: "Only authorized users can access this" },
       401
     );
   }
+  console.log("User ID received:", id);
   try {
     const appointmentData = await db
       .select({
@@ -119,27 +127,72 @@ export async function getAppointmentByID(profile: {
         appointmentDate: appointments.appointmentDate,
         time: appointments.time,
         status: appointments.status,
-        patientName: patients.name, // Join to get patient name
-        therapistName: physiotherapists.name, // Join to get therapist name
-        staffName: staffs.name, // Join to get staff name
       })
       .from(appointments)
-      .leftJoin(patients, eq(patients.patientID, appointments.patientID)) // Assumes patientID linkage
-      .leftJoin(
-        physiotherapists,
-        eq(physiotherapists.therapistID, appointments.therapistID)
-      )
-      .leftJoin(staffs, eq(staffs.staffID, appointments.staffID))
       .where(
         or(
-          eq(patients.userID, id),
-          eq(physiotherapists.therapistID, therapistID),
-          eq(staffs.staffID, staffID)
+          eq(appointments.patientID, patientID),
+          eq(appointments.therapistID, therapistID),
+          eq(appointments.staffID, staffID)
         )
-      ) // Filter by userID
+      )
       .execute();
 
-    return appointmentData;
+    console.log("appointmentData patientID ", appointmentData[0]?.patientID);
+    const patientUserID = await db
+      .select({ patientUserID: patients.userID })
+      .from(patients)
+      .where(eq(patients.patientID, appointmentData[0].patientID));
+
+    console.log("patientUserID: " + patientUserID[0]?.patientUserID);
+    const patientName = await db
+      .select({ patientName: user_authentications.name })
+      .from(user_authentications)
+      .where(eq(user_authentications.userID, patientUserID[0].patientUserID))
+      .execute();
+
+    console.log("patient name: " + patientName[0]?.patientName);
+
+    const therapistUserID = await db
+      .select({ therapistUserID: physiotherapists.userID })
+      .from(physiotherapists)
+      .where(eq(physiotherapists.therapistID, appointmentData[0].therapistID));
+    console.log("therapist userID: ", therapistUserID[0]?.therapistUserID);
+
+    const therapistName = await db
+      .select({ therapistName: user_authentications.name })
+      .from(user_authentications)
+      .where(
+        eq(user_authentications.userID, therapistUserID[0]?.therapistUserID)
+      )
+      .execute();
+
+    console.log("therapist name: ", therapistName[0]?.therapistName);
+    const staffUserID = await db
+      .select({ staffUserID: staffs.userID })
+      .from(staffs)
+      .where(eq(staffs.staffID, appointmentData[0].staffID));
+
+    console.log("staffUserID: " + staffUserID[0]?.staffUserID);
+
+    const staffName = await db
+      .select({ staffName: user_authentications.name })
+      .from(user_authentications)
+      .where(eq(user_authentications.userID, staffUserID[0]?.staffUserID))
+      .execute();
+
+    console.log("staff name: ", staffName[0]?.staffName);
+
+    const completedAppointmentData = appointmentData.map((appointment) => ({
+      ...appointment,
+      patientName: patientName[0]?.patientName || "Unknown Patient",
+      therapistName: therapistName[0]?.therapistName || "Unknown Therapist",
+      staffName: staffName[0]?.staffName || "Unknown Staff",
+    }));
+
+    console.log("completedAppointmentData:", completedAppointmentData);
+
+    return completedAppointmentData;
   } catch (error) {
     console.error("Error fetching appointment data:", error);
     return { error: "Unable to fetch appointment data", status: 500 };

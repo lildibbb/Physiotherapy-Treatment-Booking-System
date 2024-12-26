@@ -207,7 +207,7 @@ const EditAvailabilityForm = ({
       console.log("Batch Payload:", JSON.stringify(batchPayload, null, 2));
 
       // Send batch request
-      const data = await updateAvailability(batchPayload);
+      await updateAvailability(batchPayload);
 
       // Call onSave callback after successful batch update
       onSave(availability);
