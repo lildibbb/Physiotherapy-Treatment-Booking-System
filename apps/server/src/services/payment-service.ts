@@ -118,12 +118,15 @@ export async function fulfillCheckoutRequest(sessionID: string) {
 
         if (paymentData.length > 0) {
           const { appointmentID } = paymentData[0]; // Access the first item
+          console.log("appointmentID: ", appointmentID);
           const appointmentData = await db
             .update(appointments)
             .set({ status: "Ongoing" })
             .where(eq(appointments.appointmentID, appointmentID)) // Use the first item's appointmentID
             .returning()
             .execute();
+
+          console.log("Appointment Data {Fullfillservice}:", appointmentData);
         } else {
           return jsonResponse({ error: "No payment data updated" }, 500);
         }

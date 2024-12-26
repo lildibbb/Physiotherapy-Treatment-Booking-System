@@ -66,6 +66,7 @@ export type Therapist = {
   city?: string;
   state?: string;
   location?: string;
+  avatar?: string | null;
 };
 
 export type Email = {
@@ -132,6 +133,25 @@ export type UserProfile = {
   experience?: number;
 };
 
+export type TreatmentPlan = {
+  planID: number;
+  description: string;
+  startDate: string;
+  endDate: string;
+  patientID: number;
+  therapistID: number;
+  appointmentID: number;
+};
+
+export const TreatmentPlanSchema = t.Object({
+  planID: t.Number(),
+  description: t.String(),
+  startDate: t.String(),
+  endDate: t.String(),
+  patientID: t.Number(),
+  therapistID: t.Number(),
+  appointmentID: t.Number(),
+});
 export const UserProfileSchema = t.Object({
   name: t.Optional(t.String()),
   avatarFile: t.Optional(

@@ -110,6 +110,9 @@ export const treatment_plans = pgTable("treatment_plans", {
   therapistID: integer("therapistID")
     .references(() => physiotherapists.therapistID)
     .notNull(),
+  appointmentID: integer("appointmentID")
+    .references(() => appointments.appointmentID)
+    .notNull(),
 });
 
 export const payments = pgTable("payments", {
@@ -142,7 +145,6 @@ export const appointments = pgTable("appointments", {
   staffID: integer("staffID")
     .references(() => staffs.staffID)
     .notNull(),
-  planID: integer("planID").references(() => treatment_plans.planID),
 });
 
 // Define exercises schema

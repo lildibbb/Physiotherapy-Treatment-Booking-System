@@ -134,17 +134,37 @@ export const authRoutes = new Elysia()
           },
         }
       )
-      .get("/profile", async ({ jwt, cookie: { auth } }) => {
-        const authResult = await verifyAuth(jwt, auth?.value);
+      .get(
+        "/profile",
+        async ({ jwt, cookie: { auth } }) => {
+          const authResult = await verifyAuth(jwt, auth?.value);
 
-        if ("error" in authResult) {
-          return jsonResponse(authResult, 401);
+          if ("error" in authResult) {
+            return jsonResponse(authResult, 401);
+          }
+          const data = await getUserProfile(authResult.profile);
+          console.log("data", data);
+          // Directly return the result of updateUserProfile
+          return data;
+        },
+        {
+          detail: {
+            description: "Get user profile",
+            tags: ["User"],
+            responses: {
+              200: {
+                description: "User profile fetched successfully",
+              },
+              401: {
+                description: "Unauthorized",
+              },
+              500: {
+                description: "Internal Server Error",
+              },
+            },
+          },
         }
-        const data = await getUserProfile(authResult.profile);
-        console.log("data", data);
-        // Directly return the result of updateUserProfile
-        return data;
-      })
+      )
 
       .patch(
         "/profile",
@@ -448,45 +468,71 @@ authRoutes
       },
     }
   )
-  .get(`${basePath}/check-session`, async ({ cookie: { auth }, jwt }) => {
-    const authResult = await verifyAuth(jwt, auth?.value);
-    console.log("Auth Result {checkSession} :", authResult);
-    if ("error" in authResult) {
-      let isAuthenticated: boolean = false;
-      return {
-        error: authResult.error,
-        status: authResult.status,
+  .get(
+    `${basePath}/check-session`,
+    async ({ cookie: { auth }, jwt }) => {
+      const authResult = await verifyAuth(jwt, auth?.value);
+      console.log("Auth Result {checkSession} :", authResult);
+      if ("error" in authResult) {
+        let isAuthenticated: boolean = false;
+        return {
+          error: authResult.error,
+          status: authResult.status,
+          authContext: {
+            isAuthenticated: isAuthenticated,
+          },
+        };
+      }
+
+      let isAuthenticated: boolean = true;
+      return jsonResponse({
+        message: "success",
         authContext: {
+          role: authResult.profile.role,
           isAuthenticated: isAuthenticated,
         },
-      };
-    }
-
-    let isAuthenticated: boolean = true;
-    return jsonResponse({
-      message: "success",
-      authContext: {
-        role: authResult.profile.role,
-        isAuthenticated: isAuthenticated,
+        status: authResult.status,
+      });
+    },
+    {
+      detail: {
+        description: "Check user session",
+        tags: ["Authentication"],
+        responses: {
+          200: {
+            description: "User session",
+          },
+        },
       },
-      status: authResult.status,
-    });
-  })
-
-  .post(`${basePath}/logout`, async ({ cookie: { auth } }) => {
-    console.log("auth: ", auth?.value);
-    if (!auth) {
-      const data = jsonResponse({ message: "No active session", status: 401 });
-      console.log("Data: ", data);
-      return data;
     }
-    auth.set({
-      value: auth?.value,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 0,
-      path: "/",
-    });
-    return jsonResponse({ message: "Logout success", status: 200 });
-  });
+  )
+
+  .post(
+    `${basePath}/logout`,
+    async ({ cookie: { auth } }) => {
+      console.log("auth: ", auth?.value);
+      if (!auth) {
+        const data = jsonResponse({
+          message: "No active session",
+          status: 401,
+        });
+        console.log("Data: ", data);
+        return data;
+      }
+      auth.set({
+        value: auth?.value,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 0,
+        path: "/",
+      });
+      return jsonResponse({ message: "Logout success", status: 200 });
+    },
+    {
+      detail: {
+        description: "Logout user",
+        tags: ["Authentication"],
+      },
+    }
+  );

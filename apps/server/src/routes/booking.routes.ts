@@ -38,25 +38,75 @@ export const bookingRoutes = new Elysia()
             return { error: "Internal Server Error", status: 500 };
           }
         },
-        { body: AppointmentSchema }
+        {
+          body: AppointmentSchema,
+          details: {
+            description: "Create a new appointment",
+            tags: ["Appointment"],
+            responses: {
+              200: {
+                description: "Appointment created successfully",
+              },
+              400: {
+                description: "Bad Request - Invalid appointment data",
+              },
+              401: {
+                description: "Unauthorized - token missing or invalid",
+              },
+              403: {
+                description:
+                  "Forbidden - Unauthorized access due to missing or invalid business ID",
+              },
+              500: {
+                description: "Internal Server Error",
+              },
+            },
+          },
+        }
       )
-      .get("/appointment", async ({ jwt, cookie: { auth } }) => {
-        const authResult = await verifyAuth(jwt, auth?.value);
-        console.log("Auth Result:", authResult);
-        if ("error" in authResult) {
-          console.log("Error in authResult:", authResult);
-          return jsonResponse(authResult, 401);
+      .get(
+        "/appointment",
+        async ({ jwt, cookie: { auth } }) => {
+          const authResult = await verifyAuth(jwt, auth?.value);
+          console.log("Auth Result:", authResult);
+          if ("error" in authResult) {
+            console.log("Error in authResult:", authResult);
+            return jsonResponse(authResult, 401);
+          }
+          try {
+            const appointmentData = await getAppointmentByID(
+              authResult.profile
+            );
+            return jsonResponse(appointmentData);
+          } catch (error) {
+            return jsonResponse(
+              { error: "Failed to fetch appointment data" },
+              500
+            );
+          }
+        },
+        {
+          detail: {
+            description: "Get appointment details",
+            tags: ["Appointment"],
+            responses: {
+              200: {
+                description: "Appointment details fetched successfully",
+              },
+              401: {
+                description: "Unauthorized - token missing or invalid",
+              },
+              403: {
+                description:
+                  "Forbidden - Unauthorized access due to missing or invalid business ID",
+              },
+              500: {
+                description: "Internal Server Error",
+              },
+            },
+          },
         }
-        try {
-          const appointmentData = await getAppointmentByID(authResult.profile);
-          return jsonResponse(appointmentData);
-        } catch (error) {
-          return jsonResponse(
-            { error: "Failed to fetch appointment data" },
-            500
-          );
-        }
-      });
+      );
 
     return group;
   });

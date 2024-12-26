@@ -11,6 +11,7 @@ import bcrypt from "bcryptjs";
 export async function getAllTherapistPublic(): Promise<
   Array<{
     therapistID: number;
+    avatar: string | null;
     name: string;
     specialization: string;
     qualification: string[];
@@ -23,6 +24,7 @@ export async function getAllTherapistPublic(): Promise<
     const therapistDetails = await db
       .select({
         therapistID: physiotherapists.therapistID,
+        avatar: user_authentications.avatar ?? null,
         name: user_authentications.name,
         specialization: physiotherapists.specialization,
         qualification: physiotherapists.qualification,
@@ -211,6 +213,7 @@ export async function getTherapistByID(
     const therapistDetail = await db
       .select({
         therapistID: physiotherapists.therapistID,
+        avatar: user_authentications.avatar,
         name: user_authentications.name,
         specialization: physiotherapists.specialization,
         qualification: physiotherapists.qualification,
@@ -234,13 +237,14 @@ export async function getTherapistByID(
     if (!therapistDetail || therapistDetail.length === 0) {
       throw new Error(`Therapist with ID ${therapistID} not found.`);
     }
-
+    console.log("therapist detail", therapistDetail);
     // Since you expect only one therapist, access the first result (index 0)
     const therapist = therapistDetail[0];
 
     const transformedTherapist: Therapist = {
       therapistID: therapist.therapistID,
       name: therapist.name,
+      avatar: therapist.avatar,
       specialization: therapist.specialization,
       qualification: Array.isArray(therapist.qualification)
         ? therapist.qualification

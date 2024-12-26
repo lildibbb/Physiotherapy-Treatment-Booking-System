@@ -56,7 +56,7 @@ function RouteComponent() {
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
+  const [avatar, setAvatar] = useState<string | null>(null);
   const { toast } = useToast();
   const form = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentFormSchema),
@@ -83,7 +83,16 @@ function RouteComponent() {
     async function fetchDetails() {
       try {
         const therapistData = await fetchTherapistDetailsByID(id);
+        console.log("Therapist Data:", therapistData);
         setTherapist(therapistData);
+
+        if (therapistData.avatar) {
+          const apiBaseUrl = "http://localhost:5431"; // Update with your actual API base URL
+          const avatarUrl = `${apiBaseUrl}/${therapistData.avatar}`;
+          console.log("Avatar URL:", avatarUrl);
+
+          setAvatar(avatarUrl);
+        }
       } catch (error) {
         console.error("Error fetching therapist details:", error);
         setError("Failed to fetch therapist details");
@@ -210,7 +219,7 @@ function RouteComponent() {
                 <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 mx-auto md:mx-0">
                   <img
                     src={
-                      therapist.image ||
+                      avatar ||
                       "https://static.vecteezy.com/system/resources/previews/009/749/645/non_2x/teacher-avatar-man-icon-cartoon-male-profile-mascot-illustration-head-face-business-user-logo-free-vector.jpg"
                     }
                     alt={therapist.name}

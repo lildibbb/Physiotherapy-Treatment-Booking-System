@@ -22,6 +22,7 @@ import {
 } from "./ui/dialog";
 
 type Therapist = {
+  avatar: string | null;
   therapistID: number;
   name: string;
   specialization: string;
@@ -42,7 +43,20 @@ export const TherapistList = () => {
     async function getTherapists() {
       try {
         const data = await fetchAllTherapistPublic();
-        setTherapists(data.data);
+        console.log("data therapistPublic", data);
+
+        console.log("data avatar", data.data.avatar);
+        const apiBaseUrl = "http://localhost:5431";
+        // Map the data to include full avatar URLs
+        const therapistsWithAvatar = data.data.map((therapist: Therapist) => ({
+          ...therapist,
+          avatar: therapist.avatar
+            ? `${apiBaseUrl}/${therapist.avatar.replace(/\\/g, "/")}` // Replace backslashes with forward slashes
+            : null, // Keep null if no avatar
+        }));
+
+        setTherapists(therapistsWithAvatar);
+        console.log("Processed Therapists:", therapistsWithAvatar);
       } catch (err) {
         setError("Failed to fetch therapists.");
         console.error(err);
@@ -86,10 +100,14 @@ export const TherapistList = () => {
                 <Avatar className="h-20 w-20">
                   <AvatarImage
                     src={
-                      therapist.image ||
+                      therapist.avatar ||
                       "https://static.vecteezy.com/system/resources/previews/009/749/645/non_2x/teacher-avatar-man-icon-cartoon-male-profile-mascot-illustration-head-face-business-user-logo-free-vector.jpg"
                     }
                     alt={therapist.name}
+                    onError={(e) => {
+                      const imgElement = e.target as HTMLImageElement;
+                      imgElement.style.display = "none";
+                    }}
                   />
                   <AvatarFallback>{therapist.name.charAt(0)}</AvatarFallback>
                 </Avatar>

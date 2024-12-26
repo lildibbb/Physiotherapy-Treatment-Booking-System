@@ -120,7 +120,9 @@ function RouteComponent() {
               <div className="mb-4">
                 <DatePicker
                   selected={selectedDate}
-                  onChange={(date: Date) => setSelectedDate(date)}
+                  onChange={(date: Date | null) => {
+                    if (date) setSelectedDate(date);
+                  }}
                   className="w-full"
                 />
               </div>

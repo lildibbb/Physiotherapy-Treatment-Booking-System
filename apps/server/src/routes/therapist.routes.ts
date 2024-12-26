@@ -312,6 +312,16 @@ export const therapistRoutes = new Elysia()
         },
         {
           body: AvailabilityBatchSchema,
+          details: {
+            description: "Update therapist availability",
+            tags: ["Physiotherapist"],
+            responses: {
+              200: { description: "Availability updated successfully" },
+              400: { description: "Bad Request - Invalid availability data" },
+              401: { description: "Unauthorized - token missing or invalid" },
+              500: { description: "Internal Server Error" },
+            },
+          },
         }
       )
       // .patch(
@@ -336,15 +346,29 @@ export const therapistRoutes = new Elysia()
       //     body: AvailabilityBatchSchema, // New batch schema
       //   }
       // )
-      .get("/data-and-availability", async ({ jwt, cookie: { auth } }) => {
-        const authResult = await verifyAuth(jwt, auth?.value);
-        console.log("Auth Result:", authResult);
-        if ("error" in authResult) {
-          return { error: authResult.error, status: authResult.status };
-        }
+      .get(
+        "/data-and-availability",
+        async ({ jwt, cookie: { auth } }) => {
+          const authResult = await verifyAuth(jwt, auth?.value);
+          console.log("Auth Result:", authResult);
+          if ("error" in authResult) {
+            return { error: authResult.error, status: authResult.status };
+          }
 
-        return await getAvailability(authResult.profile);
-      });
+          return await getAvailability(authResult.profile);
+        },
+        {
+          detail: {
+            description: "Get therapist data and availability",
+            tags: ["Physiotherapist"],
+            responses: {
+              200: { description: "Data retrieved successfully" },
+              401: { description: "Unauthorized - token missing or invalid" },
+              500: { description: "Internal Server Error" },
+            },
+          },
+        }
+      );
 
     return group; // Return the group instance to satisfy Elysia type requirements
   });

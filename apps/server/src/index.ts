@@ -11,6 +11,7 @@ import { therapistRoutes } from "./routes/therapist.routes";
 import { paymentRoutes } from "./routes/payment.routes";
 import { bookingRoutes } from "./routes/booking.routes";
 import { staticPlugin } from "@elysiajs/static";
+import { treatmentPlanRoutes } from "./routes/treatmentPlan.routes";
 // PostgreSQL Client
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
@@ -54,6 +55,7 @@ const app = new Elysia()
   .use(therapistRoutes)
   .use(paymentRoutes)
   .use(bookingRoutes)
+  .use(treatmentPlanRoutes)
   .use(
     staticPlugin({
       prefix: "/uploads/avatars", // URL prefix for accessing files
