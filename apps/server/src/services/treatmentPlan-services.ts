@@ -25,9 +25,10 @@ export async function getTreatmentPlan(
     const treatmentPlanData = await db
       .select({
         planID: treatment_plans.planID,
-        description: treatment_plans.description,
+        goals: treatment_plans.goals,
         startDate: treatment_plans.startDate,
-        endDate: treatment_plans.endDate,
+        duration: treatment_plans.duration,
+        frequency: treatment_plans.frequency,
         patientID: treatment_plans.patientID,
         therapistID: treatment_plans.therapistID,
         appointmentID: treatment_plans.appointmentID,
@@ -49,13 +50,14 @@ export async function getTreatmentPlan(
         )
       )
       .execute();
-
+    console.log("length", treatmentPlanData.length);
     if (!treatmentPlanData.length) {
       return jsonResponse(
         { error: "No treatment plan found or access denied." },
         404
       );
     }
+    console.log("treatmentPlant: ", treatmentPlanData);
     // Successful fetch
     return jsonResponse(treatmentPlanData[0], 200);
   } catch (error) {
@@ -117,10 +119,10 @@ export async function createTreatmentPlan(
     }
 
     // Validate reqBody
-    if (!reqBody.description || !reqBody.startDate || !reqBody.endDate) {
+    if (!reqBody.goals || !reqBody.startDate) {
       return jsonResponse(
         {
-          error: "Missing required fields: description, startDate, or endDate",
+          error: "Missing required fields: description, startDate",
         },
         400
       );
@@ -142,9 +144,10 @@ export async function createTreatmentPlan(
     const treatmentPlanData = await db
       .insert(treatment_plans)
       .values({
-        description: reqBody.description,
+        goals: reqBody.goals,
         startDate: reqBody.startDate,
-        endDate: reqBody.endDate,
+        duration: reqBody.duration,
+        frequency: reqBody.frequency,
         patientID: ids[0].patientID,
         therapistID: ids[0].therapistID,
         appointmentID: appointmentID,

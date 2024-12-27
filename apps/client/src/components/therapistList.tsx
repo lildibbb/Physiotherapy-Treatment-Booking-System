@@ -31,7 +31,7 @@ type Therapist = {
   businessName: string;
   location: string;
   image?: string;
-  languages?: string[];
+  language?: string[];
 };
 
 export const TherapistList = () => {
@@ -146,15 +146,15 @@ export const TherapistList = () => {
               <div className="flex items-center space-x-2">
                 <Globe className="h-4 w-4 text-muted-foreground" />
                 <span>
-                  {therapist.languages?.length
-                    ? therapist.languages.join(", ")
+                  {therapist.language?.length
+                    ? therapist.language.join(", ")
                     : "N/A"}
                 </span>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between items-center pt-2">
-            <Dialog>
+          <CardFooter className="flex justify-end items-center pt-2">
+            {/* <Dialog>
               <DialogTrigger asChild>
                 <Button variant="link" className="p-0">
                   <User className="h-4 w-4 mr-2" />
@@ -169,7 +169,7 @@ export const TherapistList = () => {
                   </DialogDescription>
                 </DialogHeader>
               </DialogContent>
-            </Dialog>
+            </Dialog> */}
 
             <Link
               to="/findDoctor/$therapistID"

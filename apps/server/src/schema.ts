@@ -63,7 +63,7 @@ export const physiotherapists = pgTable("physiotherapists", {
   userID: integer("userID")
     .references(() => user_authentications.userID)
     .notNull(),
-
+  about: varchar("about", { length: 500 }),
   specialization: varchar("specialization", { length: 255 }).notNull(),
   qualification: json("qualification"),
   experience: integer("experience"),
@@ -101,9 +101,10 @@ export const staffs = pgTable("staffs", {
 // Define treatment_plans schema
 export const treatment_plans = pgTable("treatment_plans", {
   planID: serial("planID").primaryKey(),
-  description: varchar("description", { length: 500 }).notNull(),
+  goals: varchar("description", { length: 500 }).notNull(),
   startDate: date("startDate").notNull(),
-  endDate: date("endDate").notNull(),
+  duration: integer("duration").notNull(),
+  frequency: integer("frequency").notNull(),
   patientID: integer("patientID")
     .references(() => patients.patientID)
     .notNull(),

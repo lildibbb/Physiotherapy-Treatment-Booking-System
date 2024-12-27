@@ -88,7 +88,7 @@ export const Header = () => {
       case "therapist":
         return "/therapist/dashboard";
       default:
-        return "/dashboard"; // Default dashboard or a fallback route
+        return "/login"; // Default dashboard or a fallback route
     }
   };
   const navigationItems = [

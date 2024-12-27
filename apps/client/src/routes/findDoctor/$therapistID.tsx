@@ -84,6 +84,7 @@ function RouteComponent() {
       try {
         const therapistData = await fetchTherapistDetailsByID(id);
         console.log("Therapist Data:", therapistData);
+        console.log("Therapist Details ", therapistData.about);
         setTherapist(therapistData);
 
         if (therapistData.avatar) {
@@ -252,7 +253,7 @@ function RouteComponent() {
             <div className="border rounded-lg p-6 shadow-sm ">
               <h3 className="mt-6 text-lg font-semibold">About Doctor</h3>
               <p className="text-gray-600">
-                {therapist.description || "No description available"}
+                {therapist.about || "No description available"}
               </p>
             </div>
           </div>

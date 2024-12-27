@@ -1,4 +1,6 @@
+import { checkSession } from "@/lib/api";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 interface AuthContext {
   auth: {

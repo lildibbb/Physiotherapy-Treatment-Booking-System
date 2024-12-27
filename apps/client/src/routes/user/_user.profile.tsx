@@ -59,6 +59,7 @@ import { toast } from "@/hooks/use-toast";
 import specialization from "../../data/specialization.json"; // Import the specialization JSON
 import { MultiSelect } from "@/components/ui/multi-seletc";
 import { InputTags } from "@/components/ui/input-tags";
+import { Textarea } from "@/components/ui/textarea";
 
 // Define language options with icons
 const frameworksList = [
@@ -95,7 +96,7 @@ const patientSchema = z
     dob: z.date({
       required_error: "Date of birth is required.",
     }),
-    gender: z.enum(["male", "female", "other"], {
+    gender: z.enum(["Male", "Female", "other"], {
       required_error: "Please select a gender.",
     }),
   })
@@ -141,6 +142,7 @@ const therapistSchema = z
       z.number().min(0).optional()
     ),
     language: z.array(z.string()).default([]), // Default to empty array
+    about: z.string().min(0).optional(),
   })
   .refine(
     (data) => {
@@ -193,6 +195,7 @@ const getDefaultValuesForRole = (role: string | null) => {
         qualification: [],
         experience: 0,
         language: [],
+        about: "",
       };
     case "patient":
       return {
@@ -255,6 +258,7 @@ function ProfilePage() {
               qualification: data.qualification || [],
               experience: data.experience || 0,
               language: data.language || [],
+              about: data.about || "",
             } as TherapistData);
           } else if (userRole === "patient") {
             const dobDate = data.dob ? new Date(data.dob) : undefined;
@@ -336,6 +340,7 @@ function ProfilePage() {
         updateData.language = Array.isArray(therapistData.language)
           ? therapistData.language
           : [therapistData.language].filter(Boolean);
+        updateData.about = therapistData.about;
       } else if (role === "patient") {
         const patientData = formData as PatientData;
         updateData.dob = patientData.dob;
@@ -364,6 +369,7 @@ function ProfilePage() {
             qualification: updatedProfile.qualification,
             experience: updatedProfile.experience,
             language: updatedProfile.language,
+            about: updatedProfile.about,
           } as Partial<TherapistData>;
         } else if (role === "patient") {
           updatedFormData = {
@@ -621,6 +627,24 @@ function ProfilePage() {
                         </FormItem>
                       )}
                     />
+
+                    <FormField
+                      control={form.control}
+                      name="about"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>About Me</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Tell us a little bit about yourself"
+                              className="resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </>
                 ) : role === "staff" ? (
                   // Staff-specific fields (only common fields are shown)
@@ -692,8 +716,8 @@ function ProfilePage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="male">Male</SelectItem>
-                              <SelectItem value="female">Female</SelectItem>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Female">Female</SelectItem>
                               <SelectItem value="other">Other</SelectItem>
                             </SelectContent>
                           </Select>

@@ -31,40 +31,79 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { MainNav } from "@/components/dashboard/patient/main-nav";
 import { UserNav } from "@/components/dashboard/patient/user-nav";
 import { Spinner } from "@/components/spinner"; // Assuming you have a Spinner component
+import { useEffect, useState } from "react";
+import {
+  checkSession,
+  fetchAppointmentByID,
+  fetchAppointments,
+  getTreatmentPlan,
+} from "@/lib/api";
+import { Pen, User } from "lucide-react";
 
 export const Route = createFileRoute("/user/_user/appointment_/$appointmentID")(
   {
     component: RouteComponent,
   }
 );
-
+interface AppointmentData {
+  appointmentID: string;
+  appointmentDate: string;
+  time: string;
+  patientName: string;
+  therapistName: string;
+  gender: string;
+  status: string;
+  avatar?: string | null;
+}
 function RouteComponent() {
   const { appointmentID } = Route.useParams();
   console.log("appointmentID from params: ", appointmentID);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [role, setRole] = useState("");
+  const [treatmentPlan, setTreatmentPlan] = useState<any | null>(null);
+  const [data, setData] = React.useState<AppointmentData>();
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
+  const [avatar, setAvatar] = useState<string | null>(null);
+  // Input validation
+  if (!appointmentID) {
+    console.error("therapistID is missing in params");
+    return <p>Error: Therapist ID is required.</p>;
+  }
+
+  const id = Number(appointmentID);
+  if (isNaN(id)) {
+    console.error("Invalid therapistID:", appointmentID);
+    return <p>Error: Invalid Therapist ID.</p>;
+  }
   // Mock appointment data tailored for Physiotherapy
   const appointment = {
-    id: "000003",
-    appointmentDate: "Mar 30, 2024",
-    time: "09:00 AM",
-    patientName: "Emily Davis",
-    age: 28,
-    gender: "Female",
-    status: "Recovering",
-    primaryCondition: "Post-surgery Recovery",
-    bloodType: "A+",
-    lastVisit: "Mar 18, 2024",
-    nextAppointment: "Apr 15, 2024",
+    appointmentDate: data?.appointmentDate,
+    avatar: avatar,
+    time: new Date(),
+    patientName: data?.patientName,
+    gender: data?.gender,
+    status: data?.status,
+
+    lastVisit: data?.appointmentDate
+      ? new Date(data.appointmentDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "N/A",
+
     treatmentPlan: {
-      goals: "Improve mobility and reduce pain in the knee.",
+      goals: treatmentPlan?.goals,
       exercises: [
         "Quadriceps strengthening",
         "Hamstring stretches",
         "Ankle pumps",
         "Balance exercises",
       ],
-      doctors: ["Dr. Smith", "Physiotherapist John"],
-      duration: "6 weeks",
-      frequency: "3 times a week",
+      physiotherapist: data?.therapistName,
+      duration: treatmentPlan?.duration + " weeks",
+      frequency: treatmentPlan?.frequency + " times a week",
     },
     pastAppointments: [
       {
@@ -119,6 +158,60 @@ function RouteComponent() {
       },
     ],
   };
+  useEffect(() => {
+    const getAuthUser = async () => {
+      try {
+        const data = await checkSession();
+        console.log("data {checkSession}", data);
+        if (data.authContext.isAuthenticated == true) {
+          // Adjust based on your API response structure
+          setIsAuthenticated(true);
+          setRole(data.authContext.role);
+          console.log("User is authenticated");
+        } else {
+          setIsAuthenticated(false);
+          console.log("User is not authenticated");
+        }
+      } catch (error) {
+        console.log("Error in checkSession:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    const getTreatmentPlanData = async (id: number) => {
+      try {
+        const data = await getTreatmentPlan(id);
+        console.log("Fetched treatment plan data:", data);
+        setTreatmentPlan(data);
+      } catch (error) {
+        console.error("Failed to fetch treatment plan data");
+        setError("Failed to fetch treatment");
+      }
+    };
+    const loadAppointments = async (id: number) => {
+      try {
+        const appointments = await fetchAppointmentByID(id);
+        console.log("Fetched Appointments:", appointments);
+        setData(appointments);
+        if (appointments.avatar) {
+          const apiBaseUrl = "http://localhost:5431"; // Update with your actual API base URL
+          const avatarUrl = `${apiBaseUrl}/${appointments.avatar}`;
+          console.log("Avatar URL:", avatarUrl);
+
+          setAvatar(avatarUrl);
+        }
+      } catch (error) {
+        setError("Failed to fetch appointments");
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getAuthUser();
+    getTreatmentPlanData(id);
+    loadAppointments(id);
+  }, []); // Empty dependency array ensures this runs once on mount
 
   // State for tracking exercise progress
   const [exerciseProgress, setExerciseProgress] = React.useState<{
@@ -145,18 +238,16 @@ function RouteComponent() {
   };
 
   // Placeholder for loading and error states (to be implemented when fetching data)
-  const isLoading = false;
-  const error = "";
 
   // If you implement fetching logic later, replace the mock data and handle loading/error states accordingly
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Spinner />
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen">
+  //       <Spinner />
+  //     </div>
+  //   );
+  // }
 
   if (error || !appointment) {
     return (
@@ -219,9 +310,12 @@ function RouteComponent() {
             </div>
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
-              <Button variant="secondary" className="px-4 py-2">
-                Edit Appointment
-              </Button>
+              {role === "staff" || role === "therapist" ? (
+                <Button variant="secondary" className="px-4 py-2">
+                  Edit Appointment
+                </Button>
+              ) : null}
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -248,9 +342,8 @@ function RouteComponent() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem>Option 1</DropdownMenuItem>
-                  <DropdownMenuItem>Option 2</DropdownMenuItem>
-                  <DropdownMenuItem>Option 3</DropdownMenuItem>
+                  <DropdownMenuItem>Cancel Appointment</DropdownMenuItem>
+                  <DropdownMenuItem>Reschedule Date</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -259,16 +352,14 @@ function RouteComponent() {
           {/* Combined Grid: Patient Profile, Treatment Plan, Past Appointments, Current Exercises, Recent Documents, Clinical Notes */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Patient Profile Card */}
-            <Card className="lg:col-span-3 bg-white rounded-xl border border-gray-200 p-6 mb-8">
+            <Card className="lg:col-span-3 rounded-xl border  p-6 mb-8">
               <div className="flex items-start gap-6">
                 <Avatar className="w-24 h-24">
                   <AvatarImage
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150"
+                    src={avatar || ""}
                     alt={appointment.patientName}
                   />
-                  <AvatarFallback>
-                    {appointment.patientName.charAt(0)}
-                  </AvatarFallback>
+                  <AvatarFallback>{appointment.patientName}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-start justify-between">
@@ -277,8 +368,7 @@ function RouteComponent() {
                         {appointment.patientName}
                       </h2>
                       <p className="text-secondary-600">
-                        {appointment.age} years • {appointment.gender} • ID: #
-                        {appointment.id}
+                        {appointment.gender} •
                       </p>
                     </div>
                     <span className="px-3 py-1 rounded-full text-sm border bg-amber-50 text-amber-700 border-amber-100">
@@ -287,31 +377,9 @@ function RouteComponent() {
                   </div>
                   <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                      <p className="text-sm text-secondary-500">
-                        Primary Condition
-                      </p>
-                      <p className="font-medium text-secondary-900">
-                        {appointment.primaryCondition}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-secondary-500">Blood Type</p>
-                      <p className="font-medium text-secondary-900">
-                        {appointment.bloodType}
-                      </p>
-                    </div>
-                    <div>
                       <p className="text-sm text-secondary-500">Last Visit</p>
                       <p className="font-medium text-secondary-900">
                         {appointment.lastVisit}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-secondary-500">
-                        Next Appointment
-                      </p>
-                      <p className="font-medium text-primary-600">
-                        {appointment.nextAppointment}
                       </p>
                     </div>
                   </div>
@@ -320,7 +388,7 @@ function RouteComponent() {
             </Card>
 
             {/* Treatment Plan */}
-            <Card className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-4">
+            <Card className="lg:col-span-2  rounded-xl border  p-4">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="font-semibold text-secondary-900">
@@ -328,12 +396,28 @@ function RouteComponent() {
                   </h3>
                   <p className="text-sm text-secondary-500">March 2024</p>
                 </div>
-                <Input
-                  type="month"
-                  defaultValue="2024-03"
-                  className="w-32 text-sm"
-                  aria-label="Select Month"
-                />
+
+                {role === "patient" ? (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="link" className="p-0">
+                        <Pen className="h-4 w-4 mr-2" /> Create Plan
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle></DialogTitle>
+                        <DialogDescription>
+                          Fill out the form below to add treatment.
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <p className="font-medium text-primary-600">
+                    {appointment.lastVisit}
+                  </p>
+                )}
               </div>
               {/* Treatment Plan Details */}
               <div className="space-y-4">
@@ -354,11 +438,11 @@ function RouteComponent() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium text-secondary-900">Doctors</h4>
+                  <h4 className="font-medium text-secondary-900">
+                    Phsyiotherapist
+                  </h4>
                   <ul className="list-disc list-inside text-secondary-600">
-                    {appointment.treatmentPlan.doctors.map((doctor, index) => (
-                      <li key={index}>{doctor}</li>
-                    ))}
+                    Physiotherapist {appointment.treatmentPlan.physiotherapist}
                   </ul>
                 </div>
                 <div>
@@ -377,7 +461,7 @@ function RouteComponent() {
             </Card>
 
             {/* Past Appointments */}
-            <Card className="bg-white rounded-xl border border-gray-200 p-4">
+            <Card className=" rounded-xl border  p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-secondary-900">
                   Past Appointments
@@ -448,7 +532,7 @@ function RouteComponent() {
             </Card>
 
             {/* Current Exercises */}
-            <Card className="bg-white rounded-xl border border-gray-200 p-4">
+            <Card className=" rounded-xl border  p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-secondary-900">
                   Current Exercises
@@ -550,7 +634,7 @@ function RouteComponent() {
             </Card>
 
             {/* Recent Documents */}
-            <Card className="bg-white rounded-xl border border-gray-200 p-4">
+            <Card className=" rounded-xl border  p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-secondary-900">
                   Recent Documents
@@ -603,7 +687,7 @@ function RouteComponent() {
             </Card>
 
             {/* Clinical Notes */}
-            <Card className="bg-white rounded-xl border border-gray-200 p-4">
+            <Card className=" rounded-xl border  p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-secondary-900">
                   Clinical Notes
@@ -614,7 +698,7 @@ function RouteComponent() {
               </div>
               <div className="space-y-4">
                 {appointment.clinicalNotes.map((note, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                  <div key={index} className="p-3  rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-medium text-secondary-900">
                         {note.author}

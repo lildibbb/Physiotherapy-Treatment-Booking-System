@@ -29,6 +29,7 @@ export async function getAllTherapistPublic(): Promise<
         specialization: physiotherapists.specialization,
         qualification: physiotherapists.qualification,
         experience: physiotherapists.experience,
+        language: physiotherapists.language,
         businessName: business_entities.companyName,
         city: business_entities.city,
         state: business_entities.state,
@@ -218,6 +219,7 @@ export async function getTherapistByID(
         specialization: physiotherapists.specialization,
         qualification: physiotherapists.qualification,
         experience: physiotherapists.experience,
+        about: physiotherapists.about,
         businessName: business_entities.companyName,
         city: business_entities.city,
         state: business_entities.state,
@@ -250,6 +252,7 @@ export async function getTherapistByID(
         ? therapist.qualification
         : [],
       experience: therapist.experience,
+      about: therapist.about ?? undefined,
       businessName: therapist.businessName, // Include businessName if needed
       location: `${String(therapist.city)}, ${String(therapist.state)}`,
     };

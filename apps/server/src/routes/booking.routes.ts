@@ -5,7 +5,7 @@ import jsonResponse, { verifyAuth } from "../services/auth-services";
 import { AppointmentSchema, type Appointment } from "../../types";
 import {
   createAppointment,
-  getAppointmentByID,
+  getAppointment,
 } from "../services/appointment-services";
 
 export const bookingRoutes = new Elysia()
@@ -74,10 +74,66 @@ export const bookingRoutes = new Elysia()
             return jsonResponse(authResult, 401);
           }
           try {
-            const appointmentData = await getAppointmentByID(
-              authResult.profile
-            );
+            const appointmentData = await getAppointment(authResult.profile);
             return jsonResponse(appointmentData);
+          } catch (error) {
+            return jsonResponse(
+              { error: "Failed to fetch appointment data" },
+              500
+            );
+          }
+        },
+        {
+          detail: {
+            description: "Get appointment details",
+            tags: ["Appointment"],
+            responses: {
+              200: {
+                description: "Appointment details fetched successfully",
+              },
+              401: {
+                description: "Unauthorized - token missing or invalid",
+              },
+              403: {
+                description:
+                  "Forbidden - Unauthorized access due to missing or invalid business ID",
+              },
+              500: {
+                description: "Internal Server Error",
+              },
+            },
+          },
+        }
+      )
+      .get(
+        "/appointment/:appointmentID",
+        async ({ params, jwt, cookie: { auth } }) => {
+          const authResult = await verifyAuth(jwt, auth?.value);
+          console.log("Auth Result:", authResult);
+          if ("error" in authResult) {
+            console.log("Error in authResult:", authResult);
+            return jsonResponse(authResult, 401);
+          }
+          const appointmentID = Number(params.appointmentID);
+          // Validate appointmentID
+          if (isNaN(appointmentID)) {
+            return jsonResponse({ error: "Invalid appointment ID" }, 400);
+          }
+          try {
+            const appointmentData = await getAppointment(authResult.profile);
+            // Use `find` to locate the appointment with the matching appointmentID
+            if (Array.isArray(appointmentData)) {
+              const filteredAppointment = appointmentData.find(
+                (appt) => appt.appointmentID === appointmentID
+              );
+
+              if (!filteredAppointment) {
+                return jsonResponse({ error: "Appointment not found" }, 404); // Not Found
+              }
+              return jsonResponse(filteredAppointment, 200); // OK
+            } else {
+              return jsonResponse({ error: "Invalid appointment data" }, 500);
+            }
           } catch (error) {
             return jsonResponse(
               { error: "Failed to fetch appointment data" },

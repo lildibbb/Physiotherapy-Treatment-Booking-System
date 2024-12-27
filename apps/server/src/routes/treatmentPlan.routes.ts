@@ -44,8 +44,7 @@ export const treatmentPlanRoutes = new Elysia()
               );
             }
 
-            // Return fetched treatment plan
-            return jsonResponse(data, 200);
+            return data;
           } catch (error: any) {
             // Log and handle unexpected errors
             console.error(

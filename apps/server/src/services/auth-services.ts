@@ -531,7 +531,7 @@ export async function registerTherapist(
       .insert(physiotherapists)
       .values({
         userID: userId,
-
+        about: null,
         specialization: reqBody.specialization,
         qualification: reqBody.qualification || fakeData.qualification || null,
         experience: reqBody.experience || null,

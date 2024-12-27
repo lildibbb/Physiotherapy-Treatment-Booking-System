@@ -56,6 +56,7 @@ export async function getUserProfile(profile: {
           qualification: physiotherapists.qualification,
           experience: physiotherapists.experience,
           language: physiotherapists.language,
+          about: physiotherapists.about,
         })
         .from(user_authentications)
         .innerJoin(physiotherapists, eq(physiotherapists.userID, userID))
@@ -202,7 +203,11 @@ export async function userProfileUpdate(
         console.log("parsedExperience", parsedExperience);
         updatedUserProfile.experience = parsedExperience;
       }
+      if (reqBody.language) {
+        updatedUserProfile.language = reqBody.language;
+      }
 
+      if (reqBody.about) updatedUserProfile.about = reqBody.about;
       if (Object.keys(updatedUserProfile).length > 0) {
         await db
           .update(physiotherapists)

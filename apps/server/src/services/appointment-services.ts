@@ -102,7 +102,7 @@ export async function createAppointment(
 }
 
 // TODO table UI for get appointment
-export async function getAppointmentByID(profile: {
+export async function getAppointment(profile: {
   id: number;
   therapistID: number;
   staffID: number;
@@ -145,9 +145,21 @@ export async function getAppointmentByID(profile: {
       .where(eq(patients.patientID, appointmentData[0].patientID));
 
     console.log("patientUserID: " + patientUserID[0]?.patientUserID);
-    const patientName = await db
-      .select({ patientName: user_authentications.name })
+
+    const avatarData = await db
+      .select({ avatar: user_authentications.avatar })
       .from(user_authentications)
+      .where(eq(user_authentications.userID, patientUserID[0].patientUserID))
+      .execute();
+
+    console.log("avatarData: ", avatarData[0]?.avatar);
+    const patientName = await db
+      .select({
+        patientName: user_authentications.name,
+        gender: patients.gender,
+      })
+      .from(user_authentications)
+      .innerJoin(patients, eq(patients.userID, patientUserID[0].patientUserID))
       .where(eq(user_authentications.userID, patientUserID[0].patientUserID))
       .execute();
 
@@ -185,7 +197,9 @@ export async function getAppointmentByID(profile: {
 
     const completedAppointmentData = appointmentData.map((appointment) => ({
       ...appointment,
+      avatar: avatarData[0]?.avatar || null,
       patientName: patientName[0]?.patientName || "Unknown Patient",
+      gender: patientName[0]?.gender || "Unknown",
       therapistName: therapistName[0]?.therapistName || "Unknown Therapist",
       staffName: staffName[0]?.staffName || "Unknown Staff",
     }));

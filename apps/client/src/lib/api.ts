@@ -553,6 +553,31 @@ export const fetchAppointments = async () => {
   return await response.json();
 };
 
+export const fetchAppointmentByID = async (appointmentID: number) => {
+  const response = await fetch(
+    `${apiBaseUrl}/booking/appointment/${appointmentID}`,
+    {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  console.log(response.status);
+  //check if token is expired or not
+  if (response.status === 401) {
+    const data = await response.json();
+    handleExpiredSession(data.error);
+    console.log("Session expired:", data.error);
+    return;
+  }
+  if (!response.ok) {
+    throw new Error("Failed to fetch appointments");
+  }
+  return await response.json();
+};
+
 export const fetchUserProfile = async () => {
   const response = await fetch(`${apiBaseUrl}/auth/profile`, {
     method: "GET",
@@ -585,6 +610,7 @@ interface UpdateUserProfileParams {
   qualification?: string[];
   experience?: number;
   language?: string[];
+  about?: string;
 }
 
 export const updateUserProfile = async ({
@@ -598,6 +624,7 @@ export const updateUserProfile = async ({
   qualification,
   experience,
   language,
+  about,
 }: UpdateUserProfileParams) => {
   const formData = new FormData();
 
@@ -627,7 +654,7 @@ export const updateUserProfile = async ({
   if (language && language.length > 0) {
     language.forEach((lang) => formData.append("language", lang));
   }
-
+  if (about) formData.append("about", about);
   const response = await fetch(`${apiBaseUrl}/auth/profile`, {
     method: "PATCH",
     credentials: "include",
@@ -732,4 +759,22 @@ export const updateAvailability = async (payLoad: AvailabilityPayload[]) => {
   const data = await response.json();
   console.log("Data from {api.ts}:", data);
   return data;
+};
+
+export const getTreatmentPlan = async (appointmentID: number) => {
+  const response = await fetch(
+    `${apiBaseUrl}/treatment-plan/${appointmentID}/treatment-plan`,
+    {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  console.log("Response from {api.ts getTreatmentPlan}:", response);
+  if (!response.ok) {
+    throw new Error("Failed to get treatment plan");
+  }
+  return response.json();
 };

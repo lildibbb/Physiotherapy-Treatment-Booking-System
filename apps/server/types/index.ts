@@ -63,6 +63,7 @@ export type Therapist = {
   contactDetails?: string;
   qualification?: string[]; // array for the qualifications
   experience?: number | null;
+  about?: string;
   city?: string;
   state?: string;
   location?: string;
@@ -131,13 +132,16 @@ export type UserProfile = {
   specialization?: string;
   qualification?: string[];
   experience?: number;
+  language?: string[];
+  about?: string;
 };
 
 export type TreatmentPlan = {
   planID: number;
-  description: string;
+  goals: string;
   startDate: string;
-  endDate: string;
+  duration: number;
+  frequency: number;
   patientID: number;
   therapistID: number;
   appointmentID: number;
@@ -145,9 +149,10 @@ export type TreatmentPlan = {
 
 export const TreatmentPlanSchema = t.Object({
   planID: t.Number(),
-  description: t.String(),
+  goals: t.String(),
   startDate: t.String(),
-  endDate: t.String(),
+  duration: t.Number(),
+  frequency: t.Number(),
   patientID: t.Number(),
   therapistID: t.Number(),
   appointmentID: t.Number(),
@@ -170,6 +175,8 @@ export const UserProfileSchema = t.Object({
   specialization: t.Optional(t.String()),
   qualification: t.Optional(t.Array(t.String())),
   experience: t.Optional(t.Union([t.Number(), t.String()])),
+  language: t.Optional(t.Array(t.String())),
+  about: t.Optional(t.String()),
 });
 export const AppointmentSchema = t.Object({
   therapistID: t.Number(),

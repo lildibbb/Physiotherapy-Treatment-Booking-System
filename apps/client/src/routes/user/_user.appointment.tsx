@@ -22,6 +22,7 @@ interface AppointmentData {
   patientName: string;
   therapistName: string;
   status: string;
+  avatar?: string | null;
 }
 
 export const Route = createFileRoute("/user/_user/appointment")({
