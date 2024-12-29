@@ -1,8 +1,13 @@
 import jsonResponse from "./auth-services";
 import db from "../db";
 import { eq, or, and, asc } from "drizzle-orm";
-import type { TreatmentPlan } from "../../types";
-import { appointments, treatment_plans, user_authentications } from "../schema";
+import type { Exercise, TreatmentPlan } from "../../types";
+import {
+  appointments,
+  exercises,
+  treatment_plans,
+  user_authentications,
+} from "../schema";
 
 export async function getTreatmentPlan(
   appointmentID: number,
@@ -83,10 +88,8 @@ export async function createTreatmentPlan(
     therapistID: number;
   }
 ) {
-  // Function implementation goes here
-
   const { id, therapistID } = profile;
-  if (!id) {
+  if (!id && !therapistID) {
     return jsonResponse(
       { error: "Only authorized users can access this" },
       401
@@ -176,6 +179,92 @@ export async function createTreatmentPlan(
       {
         error: "An unexpected error occurred while creating the treatment plan",
       },
+      500
+    );
+  }
+}
+
+export async function createExercise(
+  reqBody: Exercise,
+  profile: {
+    id: number;
+    therapistID: number;
+  }
+) {
+  const { id, therapistID } = profile;
+  if (!id && !therapistID) {
+    return jsonResponse(
+      { error: "Only authorized users can access this" },
+      401
+    );
+  }
+
+  try {
+    const newExercise = await db
+      .insert(exercises)
+      .values({
+        planID: reqBody.planID,
+        name: reqBody.name,
+        description: reqBody.description,
+        duration: reqBody.duration,
+        videoURL: reqBody.videoURL,
+      })
+      .returning()
+      .execute();
+
+    console.log(
+      `Successfully added exercise with ID ${newExercise[0].exerciseID}`
+    );
+    return jsonResponse(
+      { message: "Exercise added successfully", data: newExercise[0] },
+      201
+    );
+  } catch (error) {
+    console.error(`Error while creating exercise`, error);
+    return jsonResponse(
+      {
+        error: "An unexpected error occurred while creating the exercise",
+      },
+      500
+    );
+  }
+}
+
+export async function getExercise(
+  planID: number,
+  profile: {
+    id: number;
+  }
+) {
+  const { id } = profile;
+  if (!id) {
+    return jsonResponse(
+      { error: "Only authorized users can access this" },
+      401
+    );
+  }
+  try {
+    const exerciseData = await db
+      .select()
+      .from(exercises)
+      .where(eq(exercises.planID, planID))
+      .execute();
+
+    if (!exerciseData.length) {
+      return jsonResponse(
+        { error: "No exercise found or access denied." },
+        404
+      );
+    }
+    console.log("exercise from database", exerciseData);
+    return jsonResponse(exerciseData, 200);
+  } catch (error: any) {
+    console.error(
+      `Error fetching exercise for planID: ${planID}`,
+      error.message
+    );
+    return jsonResponse(
+      { error: "An unexpected error occurred while fetching the exercise." },
       500
     );
   }

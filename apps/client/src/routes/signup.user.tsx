@@ -26,7 +26,8 @@ import { z } from "zod";
 import { registerUser } from "../lib/api";
 import { Header } from "@/components/header";
 import { PhoneInput } from "@/components/ui/phone-input";
-
+import { useState } from "react";
+import { Spinner } from "@/components/spinner";
 // Define Zod schema for form validation
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -52,7 +53,7 @@ export const Route = createFileRoute("/signup/user")({
 
 function RouteComponent() {
   const { toast } = useToast();
-
+  const [isLoading, setIsLoading] = useState(false);
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -78,6 +79,10 @@ function RouteComponent() {
         title: "Registration Successful",
         description: "Your account has been created. You can now log in.",
       });
+      setIsLoading(true); // Set loading state
+      setTimeout(() => {
+        window.location.href = "/"; // Redirect after loading
+      }, 500); // Adjust timeout as necessary
     } catch (error) {
       console.error("Registration error:", error);
 
@@ -129,104 +134,117 @@ function RouteComponent() {
       <Header /> {/* Include the Header at the top */}
       <div className="flex items-center justify-center pt-8">
         <Card className="w-full max-w-md p-4">
-          <CardHeader>
-            <CardTitle className="font-semibold tracking-tight text-2xl text-center">
-              Sign Up
-            </CardTitle>
-            <CardDescription className="text-center">
-              Create your account to get started
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Full Name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Email" type="email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Password"
-                          type="password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="contactDetails"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Contact Phone</FormLabel>
-                      <FormControl>
-                        <PhoneInput
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="Contact phone number"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button type="submit" className="w-full">
+          {isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <Spinner className="w-4 h-4 mr-2" />
+              {/* Replace with your spinner component */}
+            </div>
+          ) : (
+            <>
+              <CardHeader>
+                <CardTitle className="font-semibold tracking-tight text-2xl text-center">
                   Sign Up
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
+                </CardTitle>
+                <CardDescription className="text-center">
+                  Create your account to get started
+                </CardDescription>
+              </CardHeader>
 
-          <CardFooter className="flex flex-col items-center">
-            <p className="text-sm text-center">
-              Already have an account?{" "}
-              <Link to="/login" className="text-blue-500 hover:underline">
-                Login
-              </Link>
-            </p>
-          </CardFooter>
+              <CardContent>
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Full Name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-          <p className="px-8 text-center text-sm text-muted-foreground">
-            By clicking continue, you agree to our Terms of Service and Privacy
-            Policy.
-          </p>
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Email"
+                              type="email"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Password"
+                              type="password"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="contactDetails"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Contact Phone</FormLabel>
+                          <FormControl>
+                            <PhoneInput
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Contact phone number"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button type="submit" className="w-full">
+                      Sign Up
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+
+              <CardFooter className="flex flex-col items-center">
+                <p className="text-sm text-center">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-blue-500 hover:underline">
+                    Login
+                  </Link>
+                </p>
+              </CardFooter>
+
+              <p className="px-8 text-center text-sm text-muted-foreground">
+                By clicking continue, you agree to our Terms of Service and
+                Privacy Policy.
+              </p>
+            </>
+          )}
         </Card>
       </div>
     </div>

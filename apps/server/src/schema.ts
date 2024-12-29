@@ -153,6 +153,9 @@ export const exercises = pgTable("exercises", {
   exerciseID: serial("exerciseID").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   description: varchar("description", { length: 500 }).notNull(),
+  duration: integer("duration").notNull(),
+  videoURL: varchar("videoURL", { length: 255 }),
+
   planID: integer("planID")
     .references(() => treatment_plans.planID)
     .notNull(),

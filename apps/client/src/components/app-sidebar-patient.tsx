@@ -14,6 +14,7 @@ import {
   Home,
   NotebookPen,
   Sparkles,
+  Users,
 } from "lucide-react";
 import type * as React from "react";
 import { ModeToggle } from "./ui/mode-toggle";
@@ -37,6 +38,11 @@ const navItems = [
     title: "Book",
     url: "/findDoctor",
     icon: NotebookPen,
+  },
+  {
+    title: "Physiotherapist",
+    url: "/staff/therapist_list",
+    icon: Users,
   },
 ];
 

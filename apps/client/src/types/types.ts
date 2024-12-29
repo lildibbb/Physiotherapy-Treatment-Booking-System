@@ -32,3 +32,20 @@ export interface AvailabilityPayload {
   isAvailable: number;
   specialDate?: string | null;
 }
+
+export interface TreatmentPayload {
+  goals: string;
+  startDate: string;
+  duration: number;
+  frequency: number;
+  patientID: number;
+  therapistID: number;
+}
+
+export interface ExercisePayload {
+  planID: number;
+  name: string;
+  description: string;
+  videoURL?: string;
+  duration: number;
+}

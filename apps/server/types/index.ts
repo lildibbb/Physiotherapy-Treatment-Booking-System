@@ -137,7 +137,7 @@ export type UserProfile = {
 };
 
 export type TreatmentPlan = {
-  planID: number;
+  // planID: number;
   goals: string;
   startDate: string;
   duration: number;
@@ -147,8 +147,23 @@ export type TreatmentPlan = {
   appointmentID: number;
 };
 
-export const TreatmentPlanSchema = t.Object({
+export type Exercise = {
+  planID: number;
+  name: string;
+  description: string;
+  duration: number;
+  videoURL?: string;
+};
+
+export const ExerciseSchema = t.Object({
   planID: t.Number(),
+  name: t.String(),
+  description: t.String(),
+  duration: t.Number(),
+  videoURL: t.Optional(t.String()),
+});
+
+export const TreatmentPlanSchema = t.Object({
   goals: t.String(),
   startDate: t.String(),
   duration: t.Number(),
@@ -247,7 +262,7 @@ export const TherapistSchema = t.Object({
   specialization: t.String(),
   contactDetails: t.String(),
   qualification: t.Optional(t.Array(t.String())),
-  eexperience: t.Optional(t.Number()), // Experience in years (e.g., 3)\
+  experience: t.Optional(t.Number()), // Experience in years (e.g., 3)\
   city: t.Optional(t.String()), // Optional field
   state: t.Optional(t.String()), // Optional field
   location: t.Optional(t.String()), // Location for the therapist

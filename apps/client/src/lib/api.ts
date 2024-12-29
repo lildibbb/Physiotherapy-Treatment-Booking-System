@@ -1,4 +1,9 @@
-import { AppointmentPayload, AvailabilityPayload } from "@/types/types";
+import {
+  AppointmentPayload,
+  AvailabilityPayload,
+  ExercisePayload,
+  TreatmentPayload,
+} from "@/types/types";
 import { handleExpiredSession } from "./helper";
 
 const apiBaseUrl = "http://localhost:5431/api";
@@ -772,9 +777,77 @@ export const getTreatmentPlan = async (appointmentID: number) => {
       },
     }
   );
+  if (response.status === 401) {
+    const data = await response.json();
+
+    handleExpiredSession(data.error);
+    console.log("Session expired:", data.error);
+    return;
+  }
   console.log("Response from {api.ts getTreatmentPlan}:", response);
   if (!response.ok) {
     throw new Error("Failed to get treatment plan");
+  }
+  return response.json();
+};
+
+export const createTreatmentPlan = async (
+  appointmentID: number,
+  payload: TreatmentPayload
+) => {
+  const response = await fetch(
+    `${apiBaseUrl}/treatment-plan/${appointmentID}/create-treatment-plan`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({ appointmentID, ...payload }),
+    }
+  );
+  console.log("Payload being sent to the server:", {
+    appointmentID,
+    ...payload,
+  });
+  console.log("Response from {api.ts createTreatmentPlan}:", response);
+  if (!response.ok) {
+    throw new Error("Failed to create treatment plan");
+  }
+  return response.json();
+};
+
+export const createExercise = async (payload: ExercisePayload) => {
+  const response = await fetch(`${apiBaseUrl}/treatment-plan/exercise/create`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  console.log("Response from {api.ts createExercise}:", response);
+  if (!response.ok) {
+    throw new Error("Failed to create exercise");
+  }
+  return response.json();
+};
+
+export const fetchExerciseByID = async (planID: number) => {
+  const response = await fetch(
+    `${apiBaseUrl}/treatment-plan/exercise/${planID}`,
+    {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  console.log("Response from {api.ts fetchExerciseByID}:", response);
+  if (!response.ok) {
+    throw new Error("Failed to fetch exercise by ID");
   }
   return response.json();
 };

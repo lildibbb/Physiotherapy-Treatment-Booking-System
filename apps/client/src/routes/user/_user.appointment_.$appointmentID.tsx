@@ -13,8 +13,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -34,11 +33,16 @@ import { Spinner } from "@/components/spinner"; // Assuming you have a Spinner c
 import { useEffect, useState } from "react";
 import {
   checkSession,
+  createExercise,
+  createTreatmentPlan,
   fetchAppointmentByID,
-  fetchAppointments,
+  fetchExerciseByID,
   getTreatmentPlan,
 } from "@/lib/api";
-import { Pen, User } from "lucide-react";
+import { Pen } from "lucide-react";
+import TreatmentPlanForm from "@/components/forms/treatmentPlan";
+import { ExercisePayload, TreatmentPayload } from "@/types/types";
+import ExerciseForm from "@/components/forms/exerciseForm";
 
 export const Route = createFileRoute("/user/_user/appointment_/$appointmentID")(
   {
@@ -47,6 +51,8 @@ export const Route = createFileRoute("/user/_user/appointment_/$appointmentID")(
 );
 interface AppointmentData {
   appointmentID: string;
+  patientID: string;
+  therapistID: string;
   appointmentDate: string;
   time: string;
   patientName: string;
@@ -54,6 +60,14 @@ interface AppointmentData {
   gender: string;
   status: string;
   avatar?: string | null;
+}
+interface Exercise {
+  exerciseID: number;
+  name: string;
+  description: string;
+  videoURL: string;
+  duration: number;
+  planID: number;
 }
 function RouteComponent() {
   const { appointmentID } = Route.useParams();
@@ -65,6 +79,9 @@ function RouteComponent() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [isPlanExist, setIsPlanExist] = useState(false);
+  const [exercise, setExercise] = useState<Exercise[] | null>(null);
+  const [isExerciseExist, setIsExerciseExist] = useState(false);
   // Input validation
   if (!appointmentID) {
     console.error("therapistID is missing in params");
@@ -76,6 +93,7 @@ function RouteComponent() {
     console.error("Invalid therapistID:", appointmentID);
     return <p>Error: Invalid Therapist ID.</p>;
   }
+
   // Mock appointment data tailored for Physiotherapy
   const appointment = {
     appointmentDate: data?.appointmentDate,
@@ -101,7 +119,7 @@ function RouteComponent() {
         "Ankle pumps",
         "Balance exercises",
       ],
-      physiotherapist: data?.therapistName,
+      physiotherapist: "Physiotherapist " + data?.therapistName,
       duration: treatmentPlan?.duration + " weeks",
       frequency: treatmentPlan?.frequency + " times a week",
     },
@@ -183,9 +201,9 @@ function RouteComponent() {
         const data = await getTreatmentPlan(id);
         console.log("Fetched treatment plan data:", data);
         setTreatmentPlan(data);
+        setIsPlanExist(true);
       } catch (error) {
-        console.error("Failed to fetch treatment plan data");
-        setError("Failed to fetch treatment");
+        console.error("Failed to fetch treatment plan data or Not Found");
       }
     };
     const loadAppointments = async (id: number) => {
@@ -212,7 +230,96 @@ function RouteComponent() {
     getTreatmentPlanData(id);
     loadAppointments(id);
   }, []); // Empty dependency array ensures this runs once on mount
+  useEffect(() => {
+    if (treatmentPlan?.planID) {
+      const loadExercise = async () => {
+        try {
+          const exercises = await fetchExerciseByID(treatmentPlan.planID);
+          console.log("Fetched Exercises:", exercises);
+          // Handle exercise data appropriately
+          // Sanitize and convert video URLs to embed format
+          const sanitizedExercises = exercises.map(
+            (exercise: Exercise): Exercise => {
+              if (exercise.videoURL) {
+                // Extract the video ID and construct the embed URL
+                const url = new URL(exercise.videoURL);
+                const videoID = url.searchParams.get("v");
+                exercise.videoURL = videoID
+                  ? `https://www.youtube.com/embed/${videoID}`
+                  : exercise.videoURL;
+              }
+              return exercise;
+            }
+          );
 
+          console.log(
+            "Updated Exercises with embedded video URLs:",
+            sanitizedExercises
+          );
+
+          setExercise(sanitizedExercises);
+          setIsExerciseExist(true);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      loadExercise();
+    }
+  }, [treatmentPlan]);
+
+  const patientID = Number(data?.patientID);
+  const therapistID = Number(data?.therapistID);
+  console.log("Patient ID:", patientID);
+  console.log("therapist ID:", therapistID);
+
+  const handleCreateTreatment = async (data: {
+    goals: string;
+    startDate: Date;
+    duration: number;
+    frequency: number;
+  }) => {
+    try {
+      const payload: TreatmentPayload = {
+        patientID: patientID,
+        therapistID: therapistID,
+        goals: data.goals,
+        duration: data.duration,
+        frequency: data.frequency,
+        startDate: data.startDate.toISOString(),
+      };
+      console.log("payload:", payload, "appointmentID", id);
+      const newTreatmentPlan = await createTreatmentPlan(id, payload);
+      console.log("NewtreatmentPlan:", newTreatmentPlan);
+      return newTreatmentPlan;
+    } catch (error) {
+      console.error("Failed to create treatment plan", error);
+      return null;
+    }
+  };
+  const handleCreateExercise = async (data: {
+    name: string;
+    description: string;
+    duration: number;
+    videoURL?: string;
+  }) => {
+    try {
+      const payload: ExercisePayload = {
+        planID: treatmentPlan.planID,
+        name: data.name,
+        description: data.description,
+        duration: data.duration,
+        videoURL: data.videoURL,
+      };
+      console.log("payload:", payload);
+      const newExercise = await createExercise(payload);
+      console.log("New exercise:", newExercise);
+      return newExercise;
+    } catch (error) {
+      console.error("Failed to create exercise", error);
+      return null;
+    }
+  };
   // State for tracking exercise progress
   const [exerciseProgress, setExerciseProgress] = React.useState<{
     [key: number]: boolean;
@@ -241,13 +348,13 @@ function RouteComponent() {
 
   // If you implement fetching logic later, replace the mock data and handle loading/error states accordingly
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <Spinner />
-  //     </div>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
 
   if (error || !appointment) {
     return (
@@ -387,77 +494,114 @@ function RouteComponent() {
               </div>
             </Card>
 
-            {/* Treatment Plan */}
-            <Card className="lg:col-span-2  rounded-xl border  p-4">
-              <div className="flex items-center justify-between mb-4">
+            <Card className="lg:col-span-2 rounded-xl border p-4">
+              {isPlanExist === true ? (
                 <div>
-                  <h3 className="font-semibold text-secondary-900">
-                    Treatment Plan
-                  </h3>
-                  <p className="text-sm text-secondary-500">March 2024</p>
-                </div>
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-semibold text-secondary-900">
+                        Treatment Plan
+                      </h3>
+                    </div>
 
-                {role === "patient" ? (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="link" className="p-0">
-                        <Pen className="h-4 w-4 mr-2" /> Create Plan
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle></DialogTitle>
-                        <DialogDescription>
-                          Fill out the form below to add treatment.
-                        </DialogDescription>
-                      </DialogHeader>
-                    </DialogContent>
-                  </Dialog>
-                ) : (
-                  <p className="font-medium text-primary-600">
-                    {appointment.lastVisit}
-                  </p>
-                )}
-              </div>
-              {/* Treatment Plan Details */}
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium text-secondary-900">Goals</h4>
-                  <p className="text-secondary-600">
-                    {appointment.treatmentPlan.goals}
-                  </p>
+                    <p className="font-medium text-primary-600">
+                      {appointment.lastVisit}
+                    </p>
+                  </div>
+
+                  {/* Treatment Plan Details */}
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium text-secondary-900">Goals</h4>
+                      <p className="text-secondary-600">
+                        {appointment.treatmentPlan.goals}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-secondary-900">
+                        Exercises
+                      </h4>
+                      <ul className="list-disc list-inside text-secondary-600">
+                        {exercise?.map((exerciseItem) => (
+                          <li key={exerciseItem.exerciseID}>
+                            <strong>{exerciseItem.name}</strong>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-secondary-900">
+                        Physiotherapist
+                      </h4>
+                      <p className="text-secondary-600">
+                        {appointment.treatmentPlan.physiotherapist}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-secondary-900">
+                        Duration
+                      </h4>
+                      <p className="text-secondary-600">
+                        {appointment.treatmentPlan.duration}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-secondary-900">
+                        Frequency
+                      </h4>
+                      <p className="text-secondary-600">
+                        {appointment.treatmentPlan.frequency}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-medium text-secondary-900">Exercises</h4>
-                  <ul className="list-disc list-inside text-secondary-600">
-                    {appointment.treatmentPlan.exercises.map(
-                      (exercise, index) => (
-                        <li key={index}>{exercise}</li>
-                      )
-                    )}
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-medium text-secondary-900">
-                    Phsyiotherapist
-                  </h4>
-                  <ul className="list-disc list-inside text-secondary-600">
-                    Physiotherapist {appointment.treatmentPlan.physiotherapist}
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-medium text-secondary-900">Duration</h4>
-                  <p className="text-secondary-600">
-                    {appointment.treatmentPlan.duration}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-secondary-900">Frequency</h4>
-                  <p className="text-secondary-600">
-                    {appointment.treatmentPlan.frequency}
-                  </p>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-semibold text-secondary-900">
+                        Treatment Plan
+                      </h3>
+                      <p className="text-sm text-secondary-600">
+                        Waiting for the physiotherapist to create a personalized
+                        treatment plan.
+                      </p>
+                    </div>
+                    {role === "therapist" ? (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="link" className="p-0">
+                            <Pen className="h-4 w-4 mr-2" /> Create Plan
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle></DialogTitle>
+                            <DialogDescription>
+                              Fill out the form below to add treatment.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <TreatmentPlanForm onSubmit={handleCreateTreatment} />
+                        </DialogContent>
+                      </Dialog>
+                    ) : null}
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center rounded-lg bg-secondary-100 p-6">
+                      <div className="text-center">
+                        <p className="text-primary-600 font-medium">
+                          No treatment plan available at the moment.
+                        </p>
+                        <p className="text-secondary-600 text-sm mt-1">
+                          Your physiotherapist will create a plan tailored to
+                          your needs soon.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </Card>
 
             {/* Past Appointments */}
@@ -533,104 +677,140 @@ function RouteComponent() {
 
             {/* Current Exercises */}
             <Card className=" rounded-xl border  p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-secondary-900">
-                  Current Exercises
-                </h3>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-dumbbell w-5 h-5 text-secondary-400"
-                >
-                  <path d="M4 12h2"></path>
-                  <path d="M18 12h2"></path>
-                  <path d="M6 12a2 2 0 1 0 4 0"></path>
-                  <path d="M14 12a2 2 0 1 0 4 0"></path>
-                  <path d="M10 12h4"></path>
-                </svg>
-              </div>
-              <div className="space-y-4">
-                {appointment.currentExercises.map((exercise, index) => (
-                  <div key={index} className="p-3 hover:bg-gray-50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-secondary-900">
-                        {exercise.name}
-                      </h4>
-                      <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs">
-                        {exercise.duration}
-                      </span>
-                    </div>
-                    <p className="text-sm text-secondary-600 mt-1">
-                      {exercise.description}
-                    </p>
-                    {/* Checkbox for Progress Tracking */}
-                    <div className="mt-2 flex items-center">
-                      <Checkbox
-                        id={`exercise-${index}`}
-                        checked={exerciseProgress[index]}
-                        onCheckedChange={() => handleCheckboxChange(index)}
-                      />
-                      <label
-                        htmlFor={`exercise-${index}`}
-                        className="ml-2 text-sm text-secondary-700"
+              {isExerciseExist === true ? (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-secondary-900">
+                      Current Exercises
+                    </h3>
+                  </div>
+
+                  <div className="space-y-4">
+                    {exercise?.map((exerciseItem, index) => (
+                      <div
+                        key={exerciseItem.exerciseID}
+                        className="p-3 hover:bg-gray-50 rounded-lg"
                       >
-                        Mark as Completed
-                      </label>
-                    </div>
-                    {/* Watch Tutorial Button */}
-                    <div className="mt-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-secondary-900">
+                            {exerciseItem.name}
+                          </h4>
+                          <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs">
+                            {exerciseItem.duration} mins
+                          </span>
+                        </div>
+                        <p className="text-sm text-secondary-600 mt-1">
+                          {exerciseItem.description}
+                        </p>
+                        {/* Checkbox for Progress Tracking */}
+                        <div className="mt-2 flex items-center">
+                          <Checkbox
+                            id={`exercise-${index}`}
+                            checked={exerciseProgress[index]}
+                            onCheckedChange={() => handleCheckboxChange(index)}
+                          />
+                          <label
+                            htmlFor={`exercise-${index}`}
+                            className="ml-2 text-sm text-secondary-700"
+                          >
+                            Mark as Completed
+                          </label>
+                        </div>
+                        {/* Watch Tutorial Button */}
+                        {exerciseItem.videoURL && (
+                          <div className="mt-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="link"
+                                  className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                                >
+                                  Watch Tutorial
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-5xl">
+                                <DialogHeader>
+                                  <DialogTitle>
+                                    {exerciseItem.name} Tutorial
+                                  </DialogTitle>
+                                  <DialogDescription>
+                                    Watch this video to learn how to perform the
+                                    exercise correctly.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="mt-4">
+                                  <AspectRatio
+                                    ratio={16 / 9}
+                                    className="w-full"
+                                  >
+                                    <iframe
+                                      src={exerciseItem.videoURL}
+                                      title={`${exerciseItem.name} Tutorial`}
+                                      frameBorder="0"
+                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                      allowFullScreen
+                                      className="w-full h-full rounded-lg"
+                                    ></iframe>
+                                  </AspectRatio>
+                                </div>
+                                <DialogClose asChild>
+                                  <Button variant="secondary" className="mt-4">
+                                    Close
+                                  </Button>
+                                </DialogClose>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <button className="mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium w-full text-center">
+                    View All Exercises
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-secondary-900">
+                      Current Exercises
+                    </h3>
+
+                    {role === "therapist" ? (
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button
-                            variant="link"
-                            className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-                          >
-                            Watch Tutorial
+                          <Button variant="link" className="p-0">
+                            <Pen className="h-4 w-4 mr-2" /> Create Plan
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-5xl">
-                          {/* Increased from max-w-3xl to max-w-5xl */}
+                        <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>{exercise.name} Tutorial</DialogTitle>
+                            <DialogTitle></DialogTitle>
                             <DialogDescription>
-                              Watch this video to learn how to perform the
-                              exercise correctly.
+                              Fill out the form below to add exercise.
                             </DialogDescription>
                           </DialogHeader>
-                          <div className="mt-4">
-                            <AspectRatio ratio={16 / 9} className="w-full">
-                              {/* Using ShadCN's AspectRatio */}
-                              <iframe
-                                src={exercise.videoUrl}
-                                title={`${exercise.name} Tutorial`}
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                                className="w-full h-full rounded-lg"
-                              ></iframe>
-                            </AspectRatio>
-                          </div>
-                          <DialogClose asChild>
-                            <Button variant="secondary" className="mt-4">
-                              Close
-                            </Button>
-                          </DialogClose>
+                          <ExerciseForm onSubmit={handleCreateExercise} />
                         </DialogContent>
                       </Dialog>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center rounded-lg bg-secondary-100 p-6">
+                      <div className="text-center">
+                        <p className="text-primary-600 font-medium">
+                          No treatment plan available at the moment.
+                        </p>
+                        <p className="text-secondary-600 text-sm mt-1">
+                          Your physiotherapist will create a plan tailored to
+                          your needs soon.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-              <button className="mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium w-full text-center">
-                View All Exercises
-              </button>
+                </>
+              )}
             </Card>
 
             {/* Recent Documents */}

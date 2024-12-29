@@ -2,10 +2,17 @@ import { Elysia } from "elysia";
 import jsonResponse, { verifyAuth } from "../services/auth-services";
 import { basePath, jwtAccessSetup } from "./setup";
 import {
+  createExercise,
   createTreatmentPlan,
+  getExercise,
   getTreatmentPlan,
 } from "../services/treatmentPlan-services";
-import { TreatmentPlanSchema, type TreatmentPlan } from "../../types";
+import {
+  ExerciseSchema,
+  TreatmentPlanSchema,
+  type Exercise,
+  type TreatmentPlan,
+} from "../../types";
 
 export const treatmentPlanRoutes = new Elysia()
   .use(jwtAccessSetup)
@@ -115,7 +122,7 @@ export const treatmentPlanRoutes = new Elysia()
           if (isNaN(appointmentID)) {
             return jsonResponse({ error: "Invalid appointment ID" }, 400);
           }
-
+          console.log("received body", body);
           // Call service to create the treatment plan
           try {
             const result = await createTreatmentPlan(
@@ -184,6 +191,132 @@ export const treatmentPlanRoutes = new Elysia()
               500: {
                 description:
                   "Unexpected server error while creating the treatment plan",
+              },
+            },
+          },
+        }
+      )
+      .post(
+        `exercise/create`,
+        async ({ body, jwt, cookie: { auth } }) => {
+          // Authenticate user
+          const authResult = await verifyAuth(jwt, auth?.value);
+          console.log("Auth Result [fromExerciseCreate]:", authResult);
+
+          if ("error" in authResult) {
+            return jsonResponse({ error: authResult.error }, 401);
+          }
+
+          // Call service to create the exercise
+          try {
+            const result = await createExercise(
+              body as Exercise,
+              authResult.profile
+            );
+            return result; // `createExercise` already returns appropriate responses
+          } catch (error: any) {
+            console.error("Error creating exercise", error.message);
+
+            return jsonResponse(
+              {
+                error:
+                  "An unexpected error occurred while creating the exercise",
+              },
+              500
+            );
+          }
+        },
+        {
+          body: ExerciseSchema,
+          detail: {
+            description: "Create a new exercise for a specific treatment plan",
+            tags: ["Treatment Plan"],
+            responses: {
+              201: {
+                description: "Exercise created successfully",
+              },
+              400: {
+                description:
+                  "Invalid request, such as missing fields or invalid treatment plan ID",
+              },
+              401: {
+                description:
+                  "Unauthorized: Authentication failed or not provided",
+              },
+              403: {
+                description:
+                  "Forbidden: User not authorized to create exercise for this treatment plan",
+              },
+              404: {
+                description: "Treatment plan not found",
+              },
+              500: {
+                description:
+                  "Unexpected server error while creating the exercise",
+              },
+            },
+          },
+        }
+      )
+      .get(
+        `/exercise/:planID`,
+        async ({ params, jwt, cookie: { auth } }) => {
+          // Authenticate user
+          const authResult = await verifyAuth(jwt, auth?.value);
+          console.log("Auth Result [fromExerciseGet]:", authResult);
+          if ("error" in authResult) {
+            return jsonResponse({ error: authResult.error }, 401);
+          }
+
+          const planID = Number(params.planID);
+          // Call service to get all exercises
+          try {
+            const result = await getExercise(planID, authResult.profile);
+            return result; // `getAllExercises` already returns appropriate responses
+          } catch (error: any) {
+            console.error("Error getting exercises", error.message);
+
+            return jsonResponse(
+              {
+                error:
+                  "An unexpected error occurred while getting the exercises",
+              },
+              500
+            );
+          }
+        },
+        {
+          detail: {
+            description: "Get all exercises for a specific treatment plan",
+            tags: ["Treatment Plan"],
+            parameters: [
+              {
+                name: "planID",
+                in: "path",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+                description:
+                  "The ID of the treatment plan for which the exercises are requested",
+              },
+            ],
+            responses: {
+              200: {
+                description: "Exercises returned successfully",
+              },
+              400: {
+                description: "Invalid treatment plan ID",
+              },
+              401: {
+                description:
+                  "Unauthorized: Authentication failed or not provided",
+              },
+              404: {
+                description: "No exercises found or access denied",
+              },
+              500: {
+                description: "Unexpected server error while fetching exercises",
               },
             },
           },
