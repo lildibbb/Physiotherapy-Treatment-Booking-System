@@ -17,7 +17,10 @@ import { Button } from "../ui/button";
 const exerciseSchema = z.object({
   name: z.string().min(1, "Please enter the exercise name."),
   description: z.string().min(1, "Please enter the exercise description."),
-  videoURL: z.string().url("Please enter a valid video URL.").optional(),
+  videoURL: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z.string().url("Please enter a valid video URL.").optional()
+  ),
   duration: z.number().min(1, "Please enter a valid duration (in minutes)."),
 });
 

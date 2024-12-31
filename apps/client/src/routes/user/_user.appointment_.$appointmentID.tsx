@@ -314,6 +314,31 @@ function RouteComponent() {
       console.log("payload:", payload);
       const newExercise = await createExercise(payload);
       console.log("New exercise:", newExercise);
+      const exercises = await fetchExerciseByID(treatmentPlan.planID);
+      console.log("Fetched Exercises:", exercises);
+      // Handle exercise data appropriately
+      // Sanitize and convert video URLs to embed format
+      const sanitizedExercises = exercises.map(
+        (exercise: Exercise): Exercise => {
+          if (exercise.videoURL) {
+            // Extract the video ID and construct the embed URL
+            const url = new URL(exercise.videoURL);
+            const videoID = url.searchParams.get("v");
+            exercise.videoURL = videoID
+              ? `https://www.youtube.com/embed/${videoID}`
+              : exercise.videoURL;
+          }
+          return exercise;
+        }
+      );
+
+      console.log(
+        "Updated Exercises with embedded video URLs:",
+        sanitizedExercises
+      );
+
+      setExercise(sanitizedExercises);
+
       return newExercise;
     } catch (error) {
       console.error("Failed to create exercise", error);
@@ -683,6 +708,22 @@ function RouteComponent() {
                     <h3 className="font-semibold text-secondary-900">
                       Current Exercises
                     </h3>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="link" className="p-0">
+                          <Pen className="h-4 w-4 mr-2" /> Create Plan
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle></DialogTitle>
+                          <DialogDescription>
+                            Fill out the form below to add exercise.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <ExerciseForm onSubmit={handleCreateExercise} />
+                      </DialogContent>
+                    </Dialog>
                   </div>
 
                   <div className="space-y-4">

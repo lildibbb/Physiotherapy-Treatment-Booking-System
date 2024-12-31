@@ -22,7 +22,8 @@ export interface AppointmentPayload {
   status?: string;
   planID?: number;
 }
-
+  {/* Checkbox for Progress Tracking */}
+                       
 export interface AvailabilityPayload {
   therapistID: number;
   availabilityID: number;
@@ -32,7 +33,7 @@ export interface AvailabilityPayload {
   isAvailable: number;
   specialDate?: string | null;
 }
-
+ 
 export interface TreatmentPayload {
   goals: string;
   startDate: string;
