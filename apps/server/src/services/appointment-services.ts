@@ -139,6 +139,13 @@ export async function getAppointment(profile: {
       .execute();
 
     console.log("appointmentData patientID ", appointmentData[0]?.patientID);
+    console.log("appointmentData  ", appointmentData.length);
+    if (appointmentData.length === 0) {
+      throw {
+        error: "No appointment found for the provided userID.",
+        status: 404,
+      };
+    }
     const patientUserID = await db
       .select({ patientUserID: patients.userID })
       .from(patients)
@@ -207,8 +214,62 @@ export async function getAppointment(profile: {
     console.log("completedAppointmentData:", completedAppointmentData);
 
     return completedAppointmentData;
+  } catch (error: any) {
+    console.error("Error fetching appointment data:", error);
+    if (error.status === 404) {
+      return {
+        error: "No appointment found for the provided userID",
+        status: 404,
+      };
+    }
+    return { error: "Unable to fetch appointment data", status: 500 };
+  }
+}
+
+export async function cancelAppointment(
+  reqBody: { appointmentID: number },
+  profile: {
+    id: number;
+    patientID: number;
+  }
+) {
+  const { id, patientID } = profile;
+  const { appointmentID } = reqBody;
+  if (!id) {
+    return jsonResponse(
+      { error: "Only authorized users can access this" },
+      401
+    );
+  }
+  console.log("User ID received:", id);
+  try {
+    const appointmentData = await db
+      .update(appointments)
+      .set({ status: "Waiting for approval of refund" })
+      .where(
+        and(
+          eq(appointments.appointmentID, appointmentID),
+          eq(appointments.patientID, patientID)
+        )
+      )
+      .returning()
+      .execute();
+    console.log("appointmentData: ", appointmentData);
+    if (appointmentData.length === 0) {
+      return jsonResponse(
+        { error: "Appointment not found or already cancelled." },
+        404
+      );
+    }
+    return jsonResponse(
+      {
+        message: "Appointment cancellation initiated.",
+        data: appointmentData[0],
+      },
+      200
+    );
   } catch (error) {
     console.error("Error fetching appointment data:", error);
-    return { error: "Unable to fetch appointment data", status: 500 };
+    return jsonResponse({ error: "Unable to fetch appointment data" }, 500);
   }
 }

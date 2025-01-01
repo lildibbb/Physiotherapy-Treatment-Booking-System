@@ -2,8 +2,14 @@ import Elysia from "elysia";
 import { basePath, jwtAccessSetup } from "./setup";
 
 import jsonResponse, { verifyAuth } from "../services/auth-services";
-import { AppointmentSchema, type Appointment } from "../../types";
 import {
+  AppointmentSchema,
+  CancelAppointmentSchema,
+  type Appointment,
+  type CancelAppointment,
+} from "../../types";
+import {
+  cancelAppointment,
   createAppointment,
   getAppointment,
 } from "../services/appointment-services";
@@ -121,6 +127,11 @@ export const bookingRoutes = new Elysia()
           }
           try {
             const appointmentData = await getAppointment(authResult.profile);
+            console.log("helo");
+            console.log("Appointment Data:", appointmentData);
+            if (!appointmentData) {
+              return jsonResponse({ error: "Appointment not found" }, 404); // Not Found
+            }
             // Use `find` to locate the appointment with the matching appointmentID
             if (Array.isArray(appointmentData)) {
               const filteredAppointment = appointmentData.find(
@@ -162,7 +173,30 @@ export const bookingRoutes = new Elysia()
             },
           },
         }
-      );
+      )
+      .patch(
+        `/cancel`,
+        async ({ body, cookie: { auth }, jwt }) => {
+          const authResult = await verifyAuth(jwt, auth?.value);
+          console.log("Auth Result {cancelAppointment} :", authResult);
+          if ("error" in authResult) {
+            return jsonResponse(authResult, 401);
+          }
 
+          try {
+            console.log("Received body:", body);
+            const appointmentID = body as CancelAppointment;
+
+            console.log("Appointment ID {cancelAppointment} :", appointmentID);
+            return await cancelAppointment(appointmentID, authResult.profile); // Pass as an object
+          } catch (error) {
+            console.error("Error {cancelAppointment} :", error);
+            return { error: "Internal Server Error", status: 500 };
+          }
+        },
+        {
+          body: CancelAppointmentSchema,
+        }
+      );
     return group;
   });

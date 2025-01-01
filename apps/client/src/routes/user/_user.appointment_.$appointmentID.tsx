@@ -25,6 +25,17 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 // Custom Components
 import { MainNav } from "@/components/dashboard/patient/main-nav";
@@ -32,6 +43,7 @@ import { UserNav } from "@/components/dashboard/patient/user-nav";
 import { Spinner } from "@/components/spinner"; // Assuming you have a Spinner component
 import { useEffect, useState } from "react";
 import {
+  cancelAppointment,
   checkSession,
   createExercise,
   createTreatmentPlan,
@@ -43,6 +55,7 @@ import { Pen } from "lucide-react";
 import TreatmentPlanForm from "@/components/forms/treatmentPlan";
 import { ExercisePayload, TreatmentPayload } from "@/types/types";
 import ExerciseForm from "@/components/forms/exerciseForm";
+import { toast } from "@/hooks/use-toast";
 
 export const Route = createFileRoute("/user/_user/appointment_/$appointmentID")(
   {
@@ -82,6 +95,7 @@ function RouteComponent() {
   const [isPlanExist, setIsPlanExist] = useState(false);
   const [exercise, setExercise] = useState<Exercise[] | null>(null);
   const [isExerciseExist, setIsExerciseExist] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
   // Input validation
   if (!appointmentID) {
     console.error("therapistID is missing in params");
@@ -345,6 +359,31 @@ function RouteComponent() {
       return null;
     }
   };
+
+  const handleCancelAppointment = async () => {
+    try {
+      const payload = {
+        appointmentID: id,
+      };
+      console.log("payload:", payload);
+      const cancelData = await cancelAppointment(payload);
+      console.log("Cancelled appointment:", cancelData);
+      toast({
+        title: "Appointment Cancellation",
+        description: "Appointment cancelled successfully",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Failed to cancel appointment", error);
+      toast({
+        title: "Cancellation Failed",
+        description: "Unable to cancel appointment at this moment",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAlertOpen(false); // Close the dialog
+    }
+  };
   // State for tracking exercise progress
   const [exerciseProgress, setExerciseProgress] = React.useState<{
     [key: number]: boolean;
@@ -474,11 +513,31 @@ function RouteComponent() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem>Cancel Appointment</DropdownMenuItem>
-                  <DropdownMenuItem>Reschedule Date</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsAlertOpen(true)}>
+                    Cancel Appointment
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+            <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+              <AlertDialogContent className="sm:max-w-md">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirm Cancellation</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to cancel this appointment?
+                    <br />
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setIsAlertOpen(false)}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction onClick={handleCancelAppointment}>
+                    Confirm
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           {/* Combined Grid: Patient Profile, Treatment Plan, Past Appointments, Current Exercises, Recent Documents, Clinical Notes */}

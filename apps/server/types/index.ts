@@ -154,6 +154,9 @@ export type Exercise = {
   duration: number;
   videoURL?: string;
 };
+export type CancelAppointment = {
+  appointmentID: number;
+};
 
 export const ExerciseSchema = t.Object({
   planID: t.Number(),
@@ -163,6 +166,9 @@ export const ExerciseSchema = t.Object({
   videoURL: t.Optional(t.String()),
 });
 
+export const CancelAppointmentSchema = t.Object({
+  appointmentID: t.Number(),
+});
 export const TreatmentPlanSchema = t.Object({
   goals: t.String(),
   startDate: t.String(),

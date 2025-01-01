@@ -577,6 +577,9 @@ export const fetchAppointmentByID = async (appointmentID: number) => {
     console.log("Session expired:", data.error);
     return;
   }
+  if (response.status === 404) {
+    throw new Error("Appointment not found");
+  }
   if (!response.ok) {
     throw new Error("Failed to fetch appointments");
   }
@@ -848,6 +851,28 @@ export const fetchExerciseByID = async (planID: number) => {
   console.log("Response from {api.ts fetchExerciseByID}:", response);
   if (!response.ok) {
     throw new Error("Failed to fetch exercise by ID");
+  }
+  return response.json();
+};
+
+export const cancelAppointment = async (payload: { appointmentID: number }) => {
+  const response = await fetch(`${apiBaseUrl}/booking/cancel`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  console.log("Response from {api.ts handleCancellation}:", response);
+  if (response.status === 401) {
+    const data = await response.json();
+    handleExpiredSession(data.error);
+    console.log("Session expired:", data.error);
+    return;
+  }
+  if (!response.ok) {
+    throw new Error("Failed to cancel appointment");
   }
   return response.json();
 };
