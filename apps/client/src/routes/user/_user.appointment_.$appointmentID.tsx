@@ -373,6 +373,7 @@ function RouteComponent() {
         description: "Appointment cancelled successfully",
         variant: "default",
       });
+      window.location.href = "/cancellation";
     } catch (error) {
       console.error("Failed to cancel appointment", error);
       toast({
