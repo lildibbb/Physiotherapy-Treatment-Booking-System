@@ -39,6 +39,10 @@ const therapistSchema = z.object({
     .string()
     .min(12, "Phone number must be at least 10 digits")
     .max(12, "Phone number cannot exceed 11 digits"),
+  rate: z
+    .string()
+    .refine((value) => !isNaN(Number(value)), "Rate must be a number")
+    .transform((value) => parseFloat(value)),
 });
 
 type TherapistFormData = z.infer<typeof therapistSchema>;
@@ -60,6 +64,7 @@ const RegisterTherapistForm: React.FC<RegisterTherapistFormProps> = ({
       name: "",
       specialization: "",
       contactDetails: "",
+      rate: 0,
     },
   });
   const handleSubmit = async (data: TherapistFormData) => {
@@ -184,7 +189,24 @@ const RegisterTherapistForm: React.FC<RegisterTherapistFormProps> = ({
             </FormItem>
           )}
         />
-
+        <FormField
+          control={form.control}
+          name="rate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Rate (per session)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Rate per session (e.g., RM100)"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button type="submit" className="w-full">
           Register Therapist
         </Button>

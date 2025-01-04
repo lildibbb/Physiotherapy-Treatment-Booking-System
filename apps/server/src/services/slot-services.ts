@@ -29,10 +29,10 @@ export async function getAvailableSlot(params: {
       .select()
       .from(availabilities)
       .where(eq(availabilities.therapistID, therapistID));
-    console.log("avaivle : ", availableSlots);
+    console.log("Available Slots:", availableSlots);
     console.log("Therapist ID received:", therapistID);
 
-    // Generate the 7 days starting from today (current week)
+    // Generate the 7 days starting from today (current week) in UTC
     const currentWeek = generateWeekDates();
 
     // Initialize empty object for slots by date
@@ -49,7 +49,8 @@ export async function getAvailableSlot(params: {
       },
       {} as Record<string, AvailableSlot>
     );
-    console.log("slotsByDate:", slotsByDate);
+    console.log("Initial slotsByDate:", slotsByDate);
+
     // Process available slots from the DB and mark the respective days as available
     availableSlots.forEach((slot) => {
       // Calculate the date key, either from specialDate or by calculating from the day of the week
@@ -63,40 +64,49 @@ export async function getAvailableSlot(params: {
         // If the special date is invalid, skip that specific slot but don't skip the whole week
         dateKey = calculateDateForDay(slot.dayOfWeek);
       }
-      console.log("Valid dateKey: ", dateKey);
+      console.log("Valid dateKey:", dateKey);
+
       // Mark the day as available only if there's a start and end time
       if (slot.startTime && slot.endTime && slot.isAvailable === 1) {
         if (!slotsByDate[dateKey]) {
           slotsByDate[dateKey] = {
             date: dateKey,
-            day: slot.dayOfWeek,
+            day: getDayOfWeek(dateKey), // Ensure consistency by deriving from dateKey
             morning: [],
             afternoon: [],
             unavailable: false, // Mark available
           };
+          console.log(`Initialized AvailableSlot for ${dateKey}`);
+        } else {
+          slotsByDate[dateKey].unavailable = false; // Mark as available
+          console.log(`Marked ${dateKey} as available`);
         }
 
         let currentTime = slot.startTime;
         while (currentTime < slot.endTime) {
           if (isMorning(currentTime)) {
             slotsByDate[dateKey].morning.push(currentTime);
+            console.log(`Added morning slot ${currentTime} to ${dateKey}`);
           } else if (isAfternoon(currentTime)) {
             slotsByDate[dateKey].afternoon.push(currentTime);
+            console.log(`Added afternoon slot ${currentTime} to ${dateKey}`);
           }
           currentTime = addOneHour(currentTime);
         }
+      } else {
+        console.log(
+          `Slot is unavailable or missing times: ${JSON.stringify(slot)}`
+        );
       }
     });
 
-    console.log("Fetched data for therapist:", therapistID, availableSlots);
-
+    console.log("Final slotsByDate:", slotsByDate);
     return Object.values(slotsByDate);
   } catch (error) {
     console.error("Error fetching availability slots:", error);
     throw new Error("Error fetching availability slots");
   }
 }
-
 export async function getAvailability(profile: { staffID: number }) {
   const staffID = profile.staffID;
   console.log("Staff ID received:", staffID);

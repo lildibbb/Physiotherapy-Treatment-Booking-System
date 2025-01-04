@@ -1,0 +1,34 @@
+import { cn } from "@/lib/utils";
+import { Link } from "@tanstack/react-router";
+
+export function MainNav({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLElement>) {
+  return (
+    <nav
+      className={cn("flex items-center space-x-4 lg:space-x-6", className)}
+      {...props}
+    >
+      <Link
+        href="/business/dashboard"
+        className="text-sm font-medium transition-colors hover:text-primary"
+      >
+        Overview
+      </Link>
+
+      <Link
+        href="/business/staff_list"
+        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+      >
+        Staff
+      </Link>
+      <Link
+        href="/business/therapist_list"
+        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+      >
+        Physiotherapist
+      </Link>
+    </nav>
+  );
+}

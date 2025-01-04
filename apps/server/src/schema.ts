@@ -68,6 +68,7 @@ export const physiotherapists = pgTable("physiotherapists", {
   qualification: json("qualification"),
   experience: integer("experience"),
   language: json("language"),
+  rate: decimal("rate", { precision: 10, scale: 2 }).notNull(),
   businessID: integer("businessID")
     .references(() => business_entities.businessID)
     .notNull(),

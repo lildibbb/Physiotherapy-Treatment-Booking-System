@@ -158,7 +158,10 @@ function RouteComponent() {
       const { appointmentID } = appointment;
       console.log("Appointment created with ID:", appointmentID);
       // On successful booking, attempt to create a checkout session
-      const checkoutUrl = await createCheckoutSession(appointmentID);
+      const checkoutUrl = await createCheckoutSession(
+        appointmentID,
+        therapist.rate
+      );
       console.log("Redirecting to checkout:", checkoutUrl);
 
       // Redirect to the Stripe checkout URL
@@ -189,9 +192,11 @@ function RouteComponent() {
     Math.max(0, selectedDateIndex - 2),
     Math.min(availability.length, selectedDateIndex + 3)
   );
-
+  const formattedRate = therapist?.rate
+    ? `RM ${parseFloat(therapist.rate).toFixed(2)}`
+    : "Rate not available";
   const selectedSlot = availability[selectedDateIndex];
-  const consultationTypes = ["Online Consultation", "In-Person Consultation"];
+  const consultationTypes = [`Online Consultation ,  ${formattedRate}`];
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 pt-20">
@@ -222,6 +227,9 @@ function RouteComponent() {
                   {therapist.experience} Years Experience
                 </p>
                 <p className="text-sm text-gray-500">{therapist.location}</p>
+                <p className="text-sm text-gray-500 font-semibold mt-2">
+                  Rate: {formattedRate} per session
+                </p>
                 <div className="flex flex-wrap gap-2 mt-4">
                   <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
                     Highly recommended

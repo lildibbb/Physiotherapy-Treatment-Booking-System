@@ -150,7 +150,8 @@ export const registerTherapist = async (
   password: string,
   name: string,
   specialization: string,
-  contactDetails: string
+  contactDetails: string,
+  rate: number
 ) => {
   const response = await fetch(`${apiBaseUrl}/therapist/register`, {
     method: "POST",
@@ -164,6 +165,7 @@ export const registerTherapist = async (
       name,
       specialization,
       contactDetails,
+      rate,
     }),
   });
   //check if token is expired or not
@@ -297,7 +299,8 @@ export const updateTherapistDetails = async (
   password: string,
   name: string,
   specialization: string,
-  contactDetails: string
+  contactDetails: string,
+  rate: number
 ) => {
   try {
     const response = await fetch(`${apiBaseUrl}/therapist/${therapistID}`, {
@@ -312,8 +315,10 @@ export const updateTherapistDetails = async (
         name,
         specialization,
         contactDetails,
+        rate,
       }),
     });
+    console.log(response);
     //check if token is expired or not
     if (response.status === 401) {
       const data = await response.json();
@@ -498,15 +503,19 @@ export const createAppointment = async (payLoad: AppointmentPayload) => {
   return data;
 };
 
-export const createCheckoutSession = async (appointmentID: number) => {
+export const createCheckoutSession = async (
+  appointmentID: number,
+  rate: string
+) => {
   const response = await fetch(`${apiBaseUrl}/payment/checkout`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ appointmentID }),
+    body: JSON.stringify({ appointmentID, rate }),
   });
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || "Failed to create checkout session");

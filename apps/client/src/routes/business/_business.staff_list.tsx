@@ -2,7 +2,7 @@ import type * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar-therapist";
+import { AppSidebar } from "@/components/app-sidebar-business";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -48,7 +48,8 @@ import {
 } from "@/components/ui/select";
 import { roles } from "../../data/roles.json";
 import { sendAccountCreatedEmail } from "../../emails/accountCreatedEmail";
-
+import { MainNav } from "@/components/dashboard/business/main-nav";
+import { UserNav } from "@/components/dashboard/business/user-nav";
 interface StaffData {
   staffID?: string;
   email: string;
@@ -68,7 +69,7 @@ function RouteComponent() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editFormData, setEditFormData] = useState<StaffData | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
+  const isSmallScreen = useMediaQuery("(max-width: 768px)");
   // Detect if the screen is mobile-sized
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -261,176 +262,179 @@ function RouteComponent() {
   );
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen">
-        <AppSidebar />
-        <div className="flex-1 p-4 md:p-6">
-          <SidebarTrigger className="mb-4" />
-          <header className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold">Staff Details</h1>
-            <p className="text-base md:text-lg text-gray-500">
-              Here's a list of staff members in your business.
-            </p>
-          </header>
-          <div className="mb-4 flex items-center gap-4">
-            <Input placeholder="Filter staff..." className="flex-1" />
-            {isMobile ? (
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline">+ Add</Button>
-                </SheetTrigger>
-                <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
-                  <SheetHeader className="mb-4">
-                    <SheetTitle>Register Staff</SheetTitle>
-                    <SheetDescription>
-                      Fill out the form below to add a new staff member.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="overflow-y-auto h-full pb-20">
-                    <RegisterStaffForm onSubmit={handleRegisterStaff} />
-                  </div>
-                  <SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsSheetOpen(false)}
-                      className="w-full"
-                    >
-                      Cancel
-                    </Button>
-                  </SheetFooter>
-                </SheetContent>
-              </Sheet>
-            ) : (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline">+ Add Staff</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Register Staff</DialogTitle>
-                    <DialogDescription>
-                      Fill out the form below to add a new staff member.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <RegisterStaffForm onSubmit={handleRegisterStaff} />
-                </DialogContent>
-              </Dialog>
-            )}
+    <div className="flex flex-col h-screen">
+      {/* Header */}
+      {isSmallScreen ? (
+        <header className="border-b">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <MainNav />
+            <UserNav />
           </div>
-
-          {loading ? (
-            <p>Loading...</p>
-          ) : staff.length > 0 ? (
-            isMobile ? (
-              <div className="space-y-4">
-                {staff.map((staffMember, index) => (
-                  <MobileStaffCard
-                    key={index}
-                    staffMember={staffMember}
-                    index={index}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card className="shadow-md rounded-lg overflow-hidden">
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Password</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {staff.map((staffMember, index) => (
-                        <TableRow key={index}>
-                          {editingIndex === index ? (
-                            <>
-                              <TableCell>
-                                <Input
-                                  name="email"
-                                  value={editFormData?.email || ""}
-                                  onChange={handleInputChange}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Input
-                                  type="password"
-                                  name="password"
-                                  value={editFormData?.password || ""}
-                                  onChange={handleInputChange}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Input
-                                  name="name"
-                                  value={editFormData?.name || ""}
-                                  onChange={handleInputChange}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Select
-                                  value={editFormData?.role || ""}
-                                  onValueChange={handleRoleChange}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a role" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {roles.map((role) => (
-                                      <SelectItem key={role} value={role}>
-                                        {role}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    onClick={() => handleSaveClick(index)}
-                                  >
-                                    Save
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    onClick={handleCancelClick}
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </>
-                          ) : (
-                            <>
-                              <TableCell>{staffMember.email}</TableCell>
-                              <TableCell>******</TableCell>
-                              <TableCell>{staffMember.name}</TableCell>
-                              <TableCell>
-                                <RoleBadge role={staffMember.role} />
-                              </TableCell>
-                              <TableCell>
-                                <Button onClick={() => handleEditClick(index)}>
-                                  Edit
-                                </Button>
-                              </TableCell>
-                            </>
-                          )}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )
+        </header>
+      ) : null}
+      <div className="flex-1 p-4 md:p-6">
+        <header className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold">Staff Details</h1>
+          <p className="text-base md:text-lg text-gray-500">
+            Here's a list of staff members in your business.
+          </p>
+        </header>
+        <div className="mb-4 flex items-center gap-4">
+          <Input placeholder="Filter staff..." className="flex-1" />
+          {isMobile ? (
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline">+ Add</Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
+                <SheetHeader className="mb-4">
+                  <SheetTitle>Register Staff</SheetTitle>
+                  <SheetDescription>
+                    Fill out the form below to add a new staff member.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="overflow-y-auto h-full pb-20">
+                  <RegisterStaffForm onSubmit={handleRegisterStaff} />
+                </div>
+                <SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsSheetOpen(false)}
+                    className="w-full"
+                  >
+                    Cancel
+                  </Button>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           ) : (
-            <p>No staff found.</p>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">+ Add Staff</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Register Staff</DialogTitle>
+                  <DialogDescription>
+                    Fill out the form below to add a new staff member.
+                  </DialogDescription>
+                </DialogHeader>
+                <RegisterStaffForm onSubmit={handleRegisterStaff} />
+              </DialogContent>
+            </Dialog>
           )}
         </div>
+
+        {loading ? (
+          <p>Loading...</p>
+        ) : staff.length > 0 ? (
+          isMobile ? (
+            <div className="space-y-4">
+              {staff.map((staffMember, index) => (
+                <MobileStaffCard
+                  key={index}
+                  staffMember={staffMember}
+                  index={index}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card className="shadow-md rounded-lg overflow-hidden">
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Password</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {staff.map((staffMember, index) => (
+                      <TableRow key={index}>
+                        {editingIndex === index ? (
+                          <>
+                            <TableCell>
+                              <Input
+                                name="email"
+                                value={editFormData?.email || ""}
+                                onChange={handleInputChange}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="password"
+                                name="password"
+                                value={editFormData?.password || ""}
+                                onChange={handleInputChange}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                name="name"
+                                value={editFormData?.name || ""}
+                                onChange={handleInputChange}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={editFormData?.role || ""}
+                                onValueChange={handleRoleChange}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {roles.map((role) => (
+                                    <SelectItem key={role} value={role}>
+                                      {role}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button onClick={() => handleSaveClick(index)}>
+                                  Save
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  onClick={handleCancelClick}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </>
+                        ) : (
+                          <>
+                            <TableCell>{staffMember.email}</TableCell>
+                            <TableCell>******</TableCell>
+                            <TableCell>{staffMember.name}</TableCell>
+                            <TableCell>
+                              <RoleBadge role={staffMember.role} />
+                            </TableCell>
+                            <TableCell>
+                              <Button onClick={() => handleEditClick(index)}>
+                                Edit
+                              </Button>
+                            </TableCell>
+                          </>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )
+        ) : (
+          <p>No staff found.</p>
+        )}
       </div>
-    </SidebarProvider>
+    </div>
   );
 }

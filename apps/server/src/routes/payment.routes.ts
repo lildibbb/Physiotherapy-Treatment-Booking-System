@@ -12,12 +12,20 @@ export const paymentRoutes = new Elysia()
     group
       .post(`/checkout`, async (req) => {
         const { appointmentID } = req.body as { appointmentID: number }; // Ensure appointmentID is received from the client
+        const { rate } = req.body as { rate: string };
+        const formattedRate = parseFloat(rate);
+        console.log("received reqbody", req.body);
         console.log("Appointment Id in endpoints: ", appointmentID);
+        console.log("Rate in endpoints: ", rate);
+        console.log("Formatted Rate in endpoints: ", formattedRate);
         if (!appointmentID) {
           return jsonResponse({ error: "Appointment ID is required" }, 400);
         }
         try {
-          const checkoutUrl = await createCheckoutSession(appointmentID);
+          const checkoutUrl = await createCheckoutSession(
+            appointmentID,
+            formattedRate
+          );
           return {
             status: 200,
             data: { url: checkoutUrl },

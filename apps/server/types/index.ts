@@ -43,6 +43,7 @@ export type TherapistRegistration = {
   qualification?: string[]; // array for the qualifications
   experience?: number; // Experience in years (e.g., 3)
   languages?: string[]; // Languages spoken by the therapist
+  rate: number; //
 };
 
 export type Staff = {
@@ -68,6 +69,7 @@ export type Therapist = {
   state?: string;
   location?: string;
   avatar?: string | null;
+  rate?: string;
 };
 
 export type Email = {
@@ -251,6 +253,7 @@ export const TherapistRegistrationSchema = t.Object({
   contactDetails: t.String(),
   qualification: t.Optional(t.Array(t.String())), // Optional field
   experience: t.Optional(t.Number()), // Optional field
+  rate: t.Number(),
 });
 
 export const StaffSchema = t.Object({
@@ -272,6 +275,7 @@ export const TherapistSchema = t.Object({
   city: t.Optional(t.String()), // Optional field
   state: t.Optional(t.String()), // Optional field
   location: t.Optional(t.String()), // Location for the therapist
+  rate: t.String(), // Rate per hour (e.g., 100)
 });
 
 export const EmailSchema = t.Object({

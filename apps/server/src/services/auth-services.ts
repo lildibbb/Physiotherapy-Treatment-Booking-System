@@ -18,6 +18,7 @@ import type {
 import type { UserRegistration } from "../../types";
 
 import { eq, or } from "drizzle-orm";
+import { decimal } from "drizzle-orm/mysql-core";
 
 // Helper function for consistent response formatting
 export default function jsonResponse(data: any, status = 200) {
@@ -447,7 +448,8 @@ export async function registerTherapist(
     !reqBody.password ||
     !reqBody.name ||
     !reqBody.specialization ||
-    !reqBody.contactDetails
+    !reqBody.contactDetails ||
+    !reqBody.rate
   ) {
     return { error: "Missing required fields", status: 400 };
   }
@@ -525,7 +527,7 @@ export async function registerTherapist(
       experience: 10,
       languages: ["English", "Malay"],
     };
-
+    const rate = reqBody.rate.toString();
     //insert into staffs table using businessID from the decoded token
     const newTherapist = await db
       .insert(physiotherapists)
@@ -536,6 +538,7 @@ export async function registerTherapist(
         qualification: reqBody.qualification || fakeData.qualification || null,
         experience: reqBody.experience || null,
         language: reqBody.languages || fakeData.languages || null,
+        rate: rate, // Convert rate to string
         businessID: businessID, // Use businessID from the token
       })
       .returning()

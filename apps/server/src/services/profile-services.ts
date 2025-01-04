@@ -77,6 +77,18 @@ export async function getUserProfile(profile: {
         .execute();
 
       return { ...userProfile[0], User: { userID, staffID, role } };
+    } else if (role === "business") {
+      const userProfile = await db
+        .select({
+          name: user_authentications.name,
+          avatar: user_authentications.avatar,
+          email: user_authentications.email,
+          contactDetails: user_authentications.contactDetails,
+        })
+        .from(user_authentications)
+        .where(eq(user_authentications.userID, userID))
+        .execute();
+      return { ...userProfile[0], User: { userID, businessID, role } };
     }
   } catch (error) {
     console.error("Failed to fetch user profile", error);

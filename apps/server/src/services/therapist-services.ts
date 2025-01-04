@@ -78,6 +78,7 @@ export async function getAllTherapistByBusiness(profile: {
       password: user_authentications.password,
       specialization: physiotherapists.specialization,
       contactDetails: user_authentications.contactDetails,
+      rate: physiotherapists.rate,
     })
     .from(physiotherapists)
     .innerJoin(
@@ -184,7 +185,7 @@ export async function updateTherapistDetails(
 
     if (reqBody.specialization)
       therapistUpdateFields.specialization = reqBody.specialization;
-
+    if (reqBody.rate) therapistUpdateFields.rate = reqBody.rate.toString();
     // Update physiotherapists table if specialization, name, or contactDetails is provided
     if (Object.keys(therapistUpdateFields).length > 0) {
       await db
@@ -223,6 +224,7 @@ export async function getTherapistByID(
         businessName: business_entities.companyName,
         city: business_entities.city,
         state: business_entities.state,
+        rate: physiotherapists.rate,
       })
       .from(physiotherapists)
       .innerJoin(
@@ -252,6 +254,7 @@ export async function getTherapistByID(
         ? therapist.qualification
         : [],
       experience: therapist.experience,
+      rate: therapist.rate,
       about: therapist.about ?? undefined,
       businessName: therapist.businessName, // Include businessName if needed
       location: `${String(therapist.city)}, ${String(therapist.state)}`,

@@ -20,30 +20,41 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-11-20.acacia",
 });
 
-export const createCheckoutSession = async (appointmentID: number) => {
+export const createCheckoutSession = async (
+  appointmentID: number,
+  rate: number
+) => {
   try {
+    const unitAmount = Math.round(rate * 100);
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "fpx"],
       submit_type: "book",
       line_items: [
         {
-          price: "price_1QNWvrGH6JXUmBKomzBv7qLq", // Use the predefined Stripe Price ID
+          price_data: {
+            currency: "myr",
+            product_data: {
+              name: "Appointment Booking",
+              description: "Book a session with our experienced therapist.",
+            },
+            unit_amount: unitAmount,
+          },
           quantity: 1,
         },
       ],
       mode: "payment",
       success_url:
-        "http://localhost:3000/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+        "http://192.168.0.139:3000/checkout/success?session_id={CHECKOUT_SESSION_ID}",
       cancel_url:
-        "http://localhost:3000/checkout/cancel?session_id={CHECKOUT_SESSION_ID}",
+        "http://192.168.0.139:3000/checkout/cancel?session_id={CHECKOUT_SESSION_ID}",
     });
-    const price = await fetchPriceDetails("price_1QNWvrGH6JXUmBKomzBv7qLq");
-    const { unit_amount_decimal } = price;
-    const formattedAmount = (Number(unit_amount_decimal) / 100).toFixed(2);
-    console.log("unit amount: ", formattedAmount);
+    // const price = await fetchPriceDetails("price_1QNWvrGH6JXUmBKomzBv7qLq");
+    // const { unit_amount_decimal } = price;
+    // const formattedAmount = (Number(unit_amount_decimal) / 100).toFixed(2);
+    // console.log("unit amount: ", formattedAmount);
     console.log("appointemntID in service: ", appointmentID);
     const paymentData = await createPaymentData({
-      amount: formattedAmount,
+      amount: (unitAmount / 100).toFixed(2),
       appointmentID: appointmentID,
       paymentStatus: "pending", // Initially marked as pending
       transactionReference: session.id,

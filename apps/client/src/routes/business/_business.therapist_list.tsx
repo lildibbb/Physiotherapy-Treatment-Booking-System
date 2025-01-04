@@ -2,7 +2,7 @@ import type * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar-therapist";
+import { AppSidebar } from "@/components/app-sidebar-business";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -48,6 +48,8 @@ import {
 } from "@/components/ui/select";
 import specialization from "../../data/specialization.json"; // Import the specialization JSON
 import { sendAccountCreatedEmail } from "@/emails/accountCreatedEmail";
+import { MainNav } from "@/components/dashboard/business/main-nav";
+import { UserNav } from "@/components/dashboard/business/user-nav";
 
 interface TherapistData {
   therapistID?: string;
@@ -56,6 +58,7 @@ interface TherapistData {
   name: string;
   specialization: string;
   contactDetails: string;
+  rate: number;
 }
 
 export const Route = createFileRoute("/business/_business/therapist_list")({
@@ -70,7 +73,7 @@ function RouteComponent() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
-
+  const isSmallScreen = useMediaQuery("(max-width: 768px)");
   useEffect(() => {
     const fetchTherapists = async () => {
       setLoading(true);
@@ -96,7 +99,8 @@ function RouteComponent() {
         data.password,
         data.name,
         data.specialization,
-        data.contactDetails
+        data.contactDetails,
+        data.rate
       );
       setTherapists((prevTherapists) => [
         ...prevTherapists,
@@ -156,13 +160,25 @@ function RouteComponent() {
           alert("Therapist ID is missing. Cannot update.");
           return;
         }
+        const payload = {
+          therapistID: therapistID,
+          email: editFormData.email,
+          password: editFormData.password,
+          name: editFormData.name,
+          specialization: editFormData.specialization,
+          contactDetails: editFormData.contactDetails,
+          rate: editFormData.rate,
+        };
+
+        console.log("ppayload", payload);
         await updateTherapistDetails(
           therapistID,
           editFormData.email,
           editFormData.password,
           editFormData.name,
           editFormData.specialization,
-          editFormData.contactDetails
+          editFormData.contactDetails,
+          editFormData.rate
         );
 
         const updatedTherapists = [...therapists];
@@ -253,6 +269,15 @@ function RouteComponent() {
               className="mt-1"
             />
           </div>
+          <div>
+            <label className="text-sm font-medium">Rate (per session)</label>
+            <Input
+              name="rate"
+              value={editFormData?.rate}
+              onChange={handleInputChange}
+              className="mt-1"
+            />
+          </div>
           <div className="flex gap-2 mt-4">
             <Button onClick={() => handleSaveClick(index)} className="flex-1">
               Save
@@ -298,194 +323,204 @@ function RouteComponent() {
   );
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen">
-        <AppSidebar />
-        <div className="flex-1 p-4 md:p-6">
-          <SidebarTrigger className="mb-4" />
-          <header className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold">
-              Therapist Details
-            </h1>
-            <p className="text-base md:text-lg text-gray-500">
-              Here's a list of therapists in your business.
-            </p>
-          </header>
-          <div className="mb-4 flex items-center gap-4">
-            <Input placeholder="Filter therapists..." className="flex-1" />
-            {isMobile ? (
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline">+ Add</Button>
-                </SheetTrigger>
-                <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
-                  <SheetHeader className="mb-4">
-                    <SheetTitle>Register Therapist</SheetTitle>
-                    <SheetDescription>
-                      Fill out the form below to add a new therapist.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="overflow-y-auto h-full pb-20">
-                    <RegisterTherapistForm onSubmit={handleRegisterTherapist} />
-                  </div>
-                  <SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsSheetOpen(false)}
-                      className="w-full"
-                    >
-                      Cancel
-                    </Button>
-                  </SheetFooter>
-                </SheetContent>
-              </Sheet>
-            ) : (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline">+ Add Therapist</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Register Therapist</DialogTitle>
-                    <DialogDescription>
-                      Fill out the form below to add a new therapist.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <RegisterTherapistForm onSubmit={handleRegisterTherapist} />
-                </DialogContent>
-              </Dialog>
-            )}
+    <div className="flex flex-col h-screen">
+      {/* Header */}
+      {isSmallScreen ? (
+        <header className="border-b">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <MainNav />
+            <UserNav />
           </div>
-
-          {loading ? (
-            <p>Loading...</p>
-          ) : therapists.length > 0 ? (
-            isMobile ? (
-              <div className="space-y-4">
-                {therapists.map((therapist, index) => (
-                  <MobileTherapistCard
-                    key={index}
-                    therapist={therapist}
-                    index={index}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card className="shadow-md rounded-lg overflow-hidden">
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Password</TableHead>
-
-                        <TableHead>Specialization</TableHead>
-                        <TableHead>Contact Details</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {therapists.map((therapist, index) => (
-                        <TableRow key={index}>
-                          {editingIndex === index ? (
-                            <>
-                              <TableCell>
-                                <Input
-                                  name="name"
-                                  value={editFormData?.name || ""}
-                                  onChange={handleInputChange}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Input
-                                  name="email"
-                                  value={editFormData?.email || ""}
-                                  onChange={handleInputChange}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Input
-                                  type="password"
-                                  name="password"
-                                  value={editFormData?.password || ""}
-                                  onChange={handleInputChange}
-                                />
-                              </TableCell>
-
-                              <TableCell>
-                                <Select
-                                  value={editFormData?.specialization || ""}
-                                  onValueChange={handleSpecializationChange}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a specialization" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {specialization.specializations.map(
-                                      (name) => (
-                                        <SelectItem key={name} value={name}>
-                                          {name}
-                                        </SelectItem>
-                                      )
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                              </TableCell>
-                              <TableCell>
-                                <Input
-                                  name="contactDetails"
-                                  value={editFormData?.contactDetails || ""}
-                                  onChange={handleInputChange}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    onClick={() => handleSaveClick(index)}
-                                  >
-                                    Save
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    onClick={handleCancelClick}
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </>
-                          ) : (
-                            <>
-                              <TableCell>{therapist.name}</TableCell>
-                              <TableCell>{therapist.email}</TableCell>
-                              <TableCell>******</TableCell>
-
-                              <TableCell>
-                                <SpecializationBadge
-                                  specialization={therapist.specialization}
-                                />
-                              </TableCell>
-                              <TableCell>{therapist.contactDetails}</TableCell>
-                              <TableCell>
-                                <Button onClick={() => handleEditClick(index)}>
-                                  Edit
-                                </Button>
-                              </TableCell>
-                            </>
-                          )}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )
+        </header>
+      ) : null}
+      <div className="flex-1 p-4 md:p-6">
+        <header className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold">Therapist Details</h1>
+          <p className="text-base md:text-lg text-gray-500">
+            Here's a list of therapists in your business.
+          </p>
+        </header>
+        <div className="mb-4 flex items-center gap-4">
+          <Input placeholder="Filter therapists..." className="flex-1" />
+          {isMobile ? (
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline">+ Add</Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
+                <SheetHeader className="mb-4">
+                  <SheetTitle>Register Therapist</SheetTitle>
+                  <SheetDescription>
+                    Fill out the form below to add a new therapist.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="overflow-y-auto h-full pb-20">
+                  <RegisterTherapistForm onSubmit={handleRegisterTherapist} />
+                </div>
+                <SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsSheetOpen(false)}
+                    className="w-full"
+                  >
+                    Cancel
+                  </Button>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           ) : (
-            <p>No therapists found.</p>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">+ Add Therapist</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Register Therapist</DialogTitle>
+                  <DialogDescription>
+                    Fill out the form below to add a new therapist.
+                  </DialogDescription>
+                </DialogHeader>
+                <RegisterTherapistForm onSubmit={handleRegisterTherapist} />
+              </DialogContent>
+            </Dialog>
           )}
         </div>
+
+        {loading ? (
+          <p>Loading...</p>
+        ) : therapists.length > 0 ? (
+          isMobile ? (
+            <div className="space-y-4">
+              {therapists.map((therapist, index) => (
+                <MobileTherapistCard
+                  key={index}
+                  therapist={therapist}
+                  index={index}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card className="shadow-md rounded-lg overflow-hidden">
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Password</TableHead>
+
+                      <TableHead>Specialization</TableHead>
+                      <TableHead>Contact Details</TableHead>
+                      <TableHead>Rate</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {therapists.map((therapist, index) => (
+                      <TableRow key={index}>
+                        {editingIndex === index ? (
+                          <>
+                            <TableCell>
+                              <Input
+                                name="name"
+                                value={editFormData?.name || ""}
+                                onChange={handleInputChange}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                name="email"
+                                value={editFormData?.email || ""}
+                                onChange={handleInputChange}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="password"
+                                name="password"
+                                value={editFormData?.password || ""}
+                                onChange={handleInputChange}
+                              />
+                            </TableCell>
+
+                            <TableCell>
+                              <Select
+                                value={editFormData?.specialization || ""}
+                                onValueChange={handleSpecializationChange}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a specialization" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {specialization.specializations.map(
+                                    (name) => (
+                                      <SelectItem key={name} value={name}>
+                                        {name}
+                                      </SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                name="contactDetails"
+                                value={editFormData?.contactDetails || ""}
+                                onChange={handleInputChange}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                name="rate"
+                                value={editFormData?.rate}
+                                onChange={handleInputChange}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button onClick={() => handleSaveClick(index)}>
+                                  Save
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  onClick={handleCancelClick}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </>
+                        ) : (
+                          <>
+                            <TableCell>{therapist.name}</TableCell>
+                            <TableCell>{therapist.email}</TableCell>
+                            <TableCell>******</TableCell>
+
+                            <TableCell>
+                              <SpecializationBadge
+                                specialization={therapist.specialization}
+                              />
+                            </TableCell>
+                            <TableCell>{therapist.contactDetails}</TableCell>
+                            <TableCell>{therapist.rate}</TableCell>
+                            <TableCell>
+                              <Button onClick={() => handleEditClick(index)}>
+                                Edit
+                              </Button>
+                            </TableCell>
+                          </>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )
+        ) : (
+          <p>No therapists found.</p>
+        )}
       </div>
-    </SidebarProvider>
+    </div>
   );
 }

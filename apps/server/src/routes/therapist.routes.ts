@@ -191,8 +191,8 @@ export const therapistRoutes = new Elysia()
           }
 
           // Type assertion for body to ensure it's an object
-          const bodyObj = body as Partial<TherapistRegistration>;
-
+          const bodyObj = body as Partial<Therapist>;
+          console.log(bodyObj);
           // Validate fields to ensure only valid fields are updated
           const validFields = [
             "email",
@@ -200,6 +200,7 @@ export const therapistRoutes = new Elysia()
             "name",
             "specialization",
             "contactDetails",
+            "rate",
           ];
           for (const key of Object.keys(bodyObj)) {
             if (!validFields.includes(key)) {
@@ -215,7 +216,7 @@ export const therapistRoutes = new Elysia()
           );
         },
         {
-          body: TherapistRegistrationSchema,
+          body: TherapistSchema,
           detail: {
             description: "Update therapist details by ID",
             tags: ["Physiotherapist"],
@@ -238,30 +239,46 @@ export const therapistRoutes = new Elysia()
           },
         }
       )
-      .get("/:therapistID/availability", async ({ params }) => {
-        const therapistID = Number(params.therapistID);
-        if (isNaN(therapistID)) {
-          return jsonResponse({ error: "Invalid therapist ID" }, 400); // Invalid ID
-        }
-        try {
-          const availableSlots = await getAvailableSlot({ therapistID });
+      .get(
+        "/:therapistID/availability",
+        async ({ params }) => {
+          const therapistID = Number(params.therapistID);
+          if (isNaN(therapistID)) {
+            return jsonResponse({ error: "Invalid therapist ID" }, 400); // Invalid ID
+          }
+          try {
+            const availableSlots = await getAvailableSlot({ therapistID });
 
-          if (availableSlots.length === 0) {
+            if (availableSlots.length === 0) {
+              return jsonResponse(
+                { message: "No available slots for this therapist." },
+                404
+              );
+            }
+
+            return jsonResponse({ availableSlots }, 200); // Success
+          } catch (error) {
+            console.error("Error fetching availability slots:", error);
             return jsonResponse(
-              { message: "No available slots for this therapist." },
-              404
+              { error: "Failed to fetch availability slots" },
+              500
             );
           }
-
-          return jsonResponse({ availableSlots }, 200); // Success
-        } catch (error) {
-          console.error("Error fetching availability slots:", error);
-          return jsonResponse(
-            { error: "Failed to fetch availability slots" },
-            500
-          );
+        },
+        {
+          detail: {
+            description: "Get therapist availability slots by ID",
+            tags: ["Physiotherapist"],
+            parameters: [
+              {
+                name: "therapistID",
+                in: "path",
+                description: "ID of the therapist to fetch availability slots",
+              },
+            ],
+          },
         }
-      })
+      )
       .patch(
         "/availability",
         async ({ body, cookie: { auth }, jwt }) => {

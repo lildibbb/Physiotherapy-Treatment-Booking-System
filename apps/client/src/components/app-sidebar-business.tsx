@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import type * as React from "react";
 import { ModeToggle } from "./ui/mode-toggle";
-import { NavUser } from "./nav-user";
+import { NavUser } from "./nav-business";
 
 // Main navigation items
 const navItems = [
@@ -42,12 +42,6 @@ const navItems = [
 
 // User-specific navigation items
 export const navUserItems = [
-  {
-    title: "Account",
-    url: "/user/profile",
-    icon: BadgeCheck,
-  },
-
   {
     title: "Notifications",
     url: "/notifications",
