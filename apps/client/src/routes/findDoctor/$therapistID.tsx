@@ -88,7 +88,7 @@ function RouteComponent() {
         setTherapist(therapistData);
 
         if (therapistData.avatar) {
-          const apiBaseUrl = "http://localhost:5431"; // Update with your actual API base URL
+          const apiBaseUrl = "http://192.168.0.139:5431"; // Update with your actual API base URL
           const avatarUrl = `${apiBaseUrl}/${therapistData.avatar}`;
           console.log("Avatar URL:", avatarUrl);
 
@@ -109,6 +109,7 @@ function RouteComponent() {
     async function fetchAvailability() {
       try {
         const availabilityData = await fetchTherapistAvailability(id);
+        console.log("Availability Data:", availabilityData);
         setAvailability(availabilityData);
         if (availabilityData.length > 0) {
           form.setValue("date", availabilityData[0].date);
@@ -195,238 +196,238 @@ function RouteComponent() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 pt-20">
       <Header />
-
-      {/* Search Section */}
-      <div className="mb-6 ">
-        <div className="flex flex-col md:flex-row gap-4">
-          <Input
-            type="search"
-            placeholder="Location"
-            className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <Input
-            type="text"
-            placeholder="Search for therapists..."
-            className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div>
-      <div className="flex flex-col md:flex-row  gap-6">
-        {/* Therapist Details Section */}
-        <div className="flex-1 h-auto md:mr-4">
-          <div className="space-y-6">
-            <div className="border rounded-lg p-6 shadow-sm">
-              <CardHeader>
-                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 mx-auto md:mx-0">
-                  <img
-                    src={
-                      avatar ||
-                      "https://static.vecteezy.com/system/resources/previews/009/749/645/non_2x/teacher-avatar-man-icon-cartoon-male-profile-mascot-illustration-head-face-business-user-logo-free-vector.jpg"
-                    }
-                    alt={therapist.name}
-                    className="w-full h-full object-cover"
-                  />
+      <main className="container mx-auto px-4 py-6 pt-20">
+        <div className="flex flex-col md:flex-row  gap-6">
+          {/* Therapist Details Section */}
+          <div className="flex-1 h-auto md:mr-4">
+            <div className="space-y-6">
+              <div className="border rounded-lg p-6 shadow-sm">
+                <CardHeader>
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 mx-auto md:mx-0">
+                    <img
+                      src={
+                        avatar ||
+                        "https://static.vecteezy.com/system/resources/previews/009/749/645/non_2x/teacher-avatar-man-icon-cartoon-male-profile-mascot-illustration-head-face-business-user-logo-free-vector.jpg"
+                      }
+                      alt={therapist.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </CardHeader>
+                <h2 className="text-2xl sm:text-3xl font-bold">
+                  {therapist.name}
+                </h2>
+                <p className="text-gray-600">{therapist.specialization}</p>
+                <p className="text-sm text-gray-500">
+                  {therapist.experience} Years Experience
+                </p>
+                <p className="text-sm text-gray-500">{therapist.location}</p>
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                    Highly recommended
+                  </span>
+                  <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                    Excellent wait time
+                  </span>
                 </div>
-              </CardHeader>
-              <h2 className="text-2xl sm:text-3xl font-bold">
-                {therapist.name}
-              </h2>
-              <p className="text-gray-600">{therapist.specialization}</p>
-              <p className="text-sm text-gray-500">
-                {therapist.experience} Years Experience
-              </p>
-              <p className="text-sm text-gray-500">{therapist.location}</p>
-              <div className="flex flex-wrap gap-2 mt-4">
-                <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
-                  Highly recommended
-                </span>
-                <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
-                  Excellent wait time
-                </span>
+
+                <h3 className="mt-4 text-lg font-semibold">Practices</h3>
+                <p className="text-blue-600">{therapist.businessName}</p>
               </div>
 
-              <h3 className="mt-4 text-lg font-semibold">Practices</h3>
-              <p className="text-blue-600">{therapist.businessName}</p>
+              {/* About Section */}
+              <div className="border rounded-lg p-6 shadow-sm ">
+                <h3 className="mt text-lg font-semibold">About Doctor</h3>
+                <p className="text-gray-600">
+                  {therapist.about || "No description available"}
+                </p>
+              </div>
             </div>
+          </div>
 
-            {/* About Section */}
+          {/* Booking Section */}
+          <div className="w-full md:w-1/3 flex flex-col gap-6">
+            {/* Consultation Type */}
             <div className="border rounded-lg p-6 shadow-sm ">
-              <h3 className="mt-6 text-lg font-semibold">About Doctor</h3>
-              <p className="text-gray-600">
-                {therapist.about || "No description available"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Booking Section */}
-        <div className="w-full md:w-1/3 flex flex-col gap-6">
-          {/* Consultation Type */}
-          <div className="border rounded-lg p-6 shadow-sm ">
-            <h3 className="text-lg font-semibold">
-              Step 1: Choose Consultation Type
-            </h3>
-            <div className="mt-4 flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
-              {consultationTypes.map((type) => (
-                <Button
-                  key={type}
-                  className="px-4 py-2 text-sm font-medium rounded-md transition-colors"
-                  variant={
-                    selectedConsultationType === type ? "default" : "outline"
-                  }
-                  onClick={() => setSelectedConsultationType(type)}
-                >
-                  {type}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Availability Section */}
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <Card className="p-4">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">
-                    Step 2: Choose Date & Time
-                  </CardTitle>
-                </CardHeader>
-
-                {/* Date Navigation */}
-                <div className="flex items-center justify-between mt-4 space-x-2">
-                  {/* Previous Button */}
+              <h3 className="text-lg font-semibold">
+                Step 1: Choose Consultation Type
+              </h3>
+              <div className="mt-4 flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
+                {consultationTypes.map((type) => (
                   <Button
-                    type="button"
-                    onClick={() => handleDateNavigation("prev")}
-                    variant="outline"
-                    size="sm"
-                    disabled={selectedDateIndex === 0}
-                    className="px-2 py-1 text-sm flex-shrink-0"
+                    key={type}
+                    className="px-4 py-2 text-sm font-medium rounded-md transition-colors"
+                    variant={
+                      selectedConsultationType === type ? "default" : "outline"
+                    }
+                    onClick={() => setSelectedConsultationType(type)}
                   >
-                    &lt; Prev
+                    {type}
                   </Button>
+                ))}
+              </div>
+            </div>
 
-                  {/* Date Container */}
-                  <div className="flex space-x-2 overflow-x-auto flex-grow">
-                    {visibleDates.map((slot: Slot) => {
-                      const actualIndex = availability.findIndex(
-                        (s) => s.date === slot.date
-                      );
-                      const date = new Date(slot.date);
+            {/* Availability Section */}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <Card className="p-4">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold">
+                      Step 2: Choose Date & Time
+                    </CardTitle>
+                  </CardHeader>
 
-                      return (
-                        <Button
-                          key={slot.date}
-                          type="button"
-                          onClick={() => handleDateSelect(actualIndex)}
-                          variant={
-                            actualIndex === selectedDateIndex
-                              ? "default"
-                              : "outline"
+                  {/* Date Navigation */}
+                  <div className="flex items-center justify-between mt-4 space-x-2">
+                    {/* Previous Button */}
+                    <Button
+                      type="button"
+                      onClick={() => handleDateNavigation("prev")}
+                      variant="outline"
+                      size="sm"
+                      disabled={selectedDateIndex === 0}
+                      className="px-2 py-1 text-sm flex-shrink-0"
+                    >
+                      &lt; Prev
+                    </Button>
+
+                    {/* Date Container */}
+                    <div className="flex space-x-2 overflow-x-auto flex-grow">
+                      {visibleDates.map((slot: Slot) => {
+                        const actualIndex = availability.findIndex(
+                          (s) => s.date === slot.date
+                        );
+
+                        // Create Date object from ISO string
+                        const date = new Date(slot.date);
+
+                        // Format date components in UTC
+                        const formattedWeekday = date.toLocaleDateString(
+                          "en-US",
+                          {
+                            weekday: "short",
+                            timeZone: "UTC",
                           }
-                          size="sm"
-                          className={`flex flex-col items-center ${
-                            actualIndex === selectedDateIndex
-                              ? "bg-pink-600 text-white"
-                              : ""
-                          } px-3 py-2 rounded-md min-w-[60px] sm:min-w-[80px]`}
-                        >
-                          <span className="text-xs font-medium">
-                            {date.toLocaleDateString("en-US", {
-                              weekday: "short",
-                            })}
-                          </span>
-                          <span className="text-sm">
-                            {date.toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </span>
-                        </Button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Next Button */}
-                  <Button
-                    type="button"
-                    onClick={() => handleDateNavigation("next")}
-                    variant="outline"
-                    size="sm"
-                    disabled={selectedDateIndex === availability.length - 1}
-                    className="px-2 py-1 text-sm flex-shrink-0"
-                  >
-                    Next &gt;
-                  </Button>
-                </div>
-
-                {/* Time Slots */}
-                <CardContent className="mt-6">
-                  {selectedSlot ? (
-                    <div className="space-y-4">
-                      {(["morning", "afternoon"] as const).map((period) => (
-                        <TimeSlotSection
-                          key={period}
-                          period={period}
-                          slots={selectedSlot[period]}
-                          form={form}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">No slots available</p>
-                  )}
-                </CardContent>
-                <div className="mt-4 space-y-2">
-                  {submitError && (
-                    <p className="text-sm text-red-600">{submitError}</p>
-                  )}
-                  <div className="flex justify-end">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="default"
-                          size="sm"
-                          disabled={
-                            !form.watch("date") ||
-                            !form.watch("time") ||
-                            !selectedConsultationType ||
-                            isSubmitting
+                        );
+                        const formattedMonthDay = date.toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            timeZone: "UTC",
                           }
-                        >
-                          {isSubmitting ? "Booking..." : "Book Appointment"}
-                        </Button>
-                      </AlertDialogTrigger>
-                      {/* AlertDialog for confirmation */}
+                        );
 
-                      <AlertDialogContent className="sm:max-w-md">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Confirm Booking</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to book this appointment?
-                            <br />
-                            {selectedConsultationType} on {form.watch("date")}{" "}
-                            at {form.watch("time")}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={form.handleSubmit(onSubmit)}
+                        return (
+                          <Button
+                            key={slot.date}
+                            type="button"
+                            onClick={() => handleDateSelect(actualIndex)}
+                            variant={
+                              actualIndex === selectedDateIndex
+                                ? "default"
+                                : "outline"
+                            }
+                            size="sm"
+                            className={`flex flex-col items-center ${
+                              actualIndex === selectedDateIndex
+                                ? "bg-pink-600 text-white"
+                                : ""
+                            } px-3 py-2 rounded-md min-w-[60px] sm:min-w-[80px]`}
                           >
-                            Confirm
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                            <span className="text-xs font-medium">
+                              {formattedWeekday}
+                            </span>
+                            <span className="text-sm">{formattedMonthDay}</span>
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Next Button */}
+                    <Button
+                      type="button"
+                      onClick={() => handleDateNavigation("next")}
+                      variant="outline"
+                      size="sm"
+                      disabled={selectedDateIndex === availability.length - 1}
+                      className="px-2 py-1 text-sm flex-shrink-0"
+                    >
+                      Next &gt;
+                    </Button>
                   </div>
-                </div>
-              </Card>
-            </form>
-          </Form>
+
+                  {/* Time Slots */}
+                  <CardContent className="mt-6">
+                    {selectedSlot ? (
+                      <div className="space-y-4">
+                        {(["morning", "afternoon"] as const).map((period) => (
+                          <TimeSlotSection
+                            key={period}
+                            period={period}
+                            slots={selectedSlot[period]}
+                            form={form}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        No slots available
+                      </p>
+                    )}
+                  </CardContent>
+                  <div className="mt-4 space-y-2">
+                    {submitError && (
+                      <p className="text-sm text-red-600">{submitError}</p>
+                    )}
+                    <div className="flex justify-end">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="default"
+                            size="sm"
+                            disabled={
+                              !form.watch("date") ||
+                              !form.watch("time") ||
+                              !selectedConsultationType ||
+                              isSubmitting
+                            }
+                          >
+                            {isSubmitting ? "Booking..." : "Book Appointment"}
+                          </Button>
+                        </AlertDialogTrigger>
+                        {/* AlertDialog for confirmation */}
+
+                        <AlertDialogContent className="sm:max-w-md">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirm Booking</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to book this appointment?
+                              <br />
+                              {selectedConsultationType} on {form.watch("date")}{" "}
+                              at {form.watch("time")}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={form.handleSubmit(onSubmit)}
+                            >
+                              Confirm
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                </Card>
+              </form>
+            </Form>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

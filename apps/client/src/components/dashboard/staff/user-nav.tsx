@@ -15,7 +15,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "@/hooks/use-toast";
 import { LogOut } from "lucide-react";
 import { Spinner } from "@/components/spinner";
-import { navUserItems } from "@/components/app-sidebar-patient";
+import { navUserItems } from "@/components/app-sidebar-staff";
 
 interface User {
   name: string;
@@ -36,7 +36,7 @@ export function UserNav() {
         console.log("data fetched {sidebar}:  ", data);
         setUser(data);
         if (data.avatar) {
-          const apiBaseUrl = "http://localhost:5431";
+          const apiBaseUrl = "http://192.168.0.139:5431";
           const avatarUrl = `${apiBaseUrl}/${data.avatar}`;
           console.log("Avatar URL:", avatarUrl);
 

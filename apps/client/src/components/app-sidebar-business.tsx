@@ -7,23 +7,36 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { BadgeCheck, Bell, Calendar, Home, Sparkles } from "lucide-react";
+import {
+  BadgeCheck,
+  Bell,
+  Calendar,
+  Home,
+  NotebookPen,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import type * as React from "react";
 import { ModeToggle } from "./ui/mode-toggle";
-import { NavUser } from "./nav-therapist";
+import { NavUser } from "./nav-user";
 
 // Main navigation items
 const navItems = [
   {
     title: "Dashboard",
-    url: "/therapist/dashboard",
+    url: "/business/dashboard",
     icon: Home,
   },
 
   {
-    title: "Appointments",
-    url: "/therapist/appointment",
-    icon: Calendar,
+    title: "Staff",
+    url: "/business/staff_list",
+    icon: Users,
+  },
+  {
+    title: "Physiotherapist",
+    url: "/business/therapist_list",
+    icon: Users,
   },
 ];
 
@@ -31,7 +44,7 @@ const navItems = [
 export const navUserItems = [
   {
     title: "Account",
-    url: "/therapist/profile",
+    url: "/user/profile",
     icon: BadgeCheck,
   },
 

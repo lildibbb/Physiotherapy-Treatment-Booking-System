@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { MainNav } from "@/components/dashboard/patient/main-nav";
-import { UserNav } from "@/components/dashboard/patient/user-nav";
+import { UserNav } from "@/components/dashboard/staff/user-nav";
 
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
@@ -9,6 +8,7 @@ import { useEffect, useState } from "react";
 import { getDataTherapistForStaff } from "@/lib/api";
 import { columns } from "@/components/dashboard/staff/columns-therapist";
 import { DataTable } from "@/components/dashboard/staff/data-table";
+import { MainNav } from "@/components/dashboard/staff/main-nav";
 
 export const Route = createFileRoute("/staff/_staff/therapist_list")({
   component: RouteComponent,
@@ -56,12 +56,14 @@ function RouteComponent() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="border-b">
-        <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-          <MainNav />
-          <UserNav />
-        </div>
-      </header>
+      {isSmallScreen ? (
+        <header className="border-b">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <MainNav />
+            <UserNav />
+          </div>
+        </header>
+      ) : null}
 
       {/* Main Content */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">

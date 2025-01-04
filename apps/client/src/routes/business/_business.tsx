@@ -1,10 +1,9 @@
 import * as React from "react";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar-therapist";
+import { AppSidebar } from "@/components/app-sidebar-business";
 
-export const Route = createFileRoute("/therapist/_therapist")({
+export const Route = createFileRoute("/business/_business")({
   component: AuthLayout,
 });
 

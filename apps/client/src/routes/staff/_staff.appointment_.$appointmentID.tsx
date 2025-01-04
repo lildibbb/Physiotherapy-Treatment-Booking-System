@@ -27,6 +27,7 @@ import {
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   AlertDialog,
+  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -56,11 +57,11 @@ import { ExercisePayload, TreatmentPayload } from "@/types/types";
 import ExerciseForm from "@/components/forms/exerciseForm";
 import { toast } from "@/hooks/use-toast";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-export const Route = createFileRoute("/user/_user/appointment_/$appointmentID")(
-  {
-    component: RouteComponent,
-  }
-);
+export const Route = createFileRoute(
+  "/staff/_staff/appointment_/$appointmentID"
+)({
+  component: RouteComponent,
+});
 interface AppointmentData {
   appointmentID: string;
   patientID: string;
@@ -95,7 +96,8 @@ function RouteComponent() {
   const [exercise, setExercise] = useState<Exercise[] | null>(null);
   const [isExerciseExist, setIsExerciseExist] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  // Use the custom useMediaQuery hook to determine screen size
+  const isSmallScreen = useMediaQuery("(max-width: 767px)"); // Tailwind's md breakpoint is 768px
   // Input validation
   if (!appointmentID) {
     console.error("therapistID is missing in params");
@@ -433,7 +435,8 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col h-screen">
-      {isMobile ? (
+      {/* Header */}
+      {isSmallScreen ? (
         <header className="border-b">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <MainNav />
@@ -441,11 +444,10 @@ function RouteComponent() {
           </div>
         </header>
       ) : null}
-
       {/* Main Content */}
       <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
         {/* Container */}
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto">
           {/* Top Navigation and Actions */}
           <div className="flex items-center justify-between mb-8">
             {/* Back Button and Title */}

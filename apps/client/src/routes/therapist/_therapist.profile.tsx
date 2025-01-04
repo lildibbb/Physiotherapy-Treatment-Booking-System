@@ -51,8 +51,8 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { MainNav } from "@/components/dashboard/patient/main-nav";
-import { UserNav } from "@/components/dashboard/patient/user-nav";
+import { MainNav } from "@/components/dashboard/therapist/main-nav";
+import { UserNav } from "@/components/dashboard/therapist/user-nav";
 
 import { fetchUserProfile, updateUserProfile } from "@/lib/api"; // Import API functions
 import { toast } from "@/hooks/use-toast";
@@ -60,8 +60,7 @@ import specialization from "../../data/specialization.json"; // Import the speci
 import { MultiSelect } from "@/components/ui/multi-seletc";
 import { InputTags } from "@/components/ui/input-tags";
 import { Textarea } from "@/components/ui/textarea";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
-
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 // Define language options with icons
 const frameworksList = [
   { value: "Malay", label: "Malay", icon: Turtle },
@@ -165,7 +164,7 @@ type StaffData = z.infer<typeof staffSchema>;
 type FormData = PatientData | TherapistData | StaffData;
 
 // Create the route for the profile page
-export const Route = createFileRoute("/user/_user/profile")({
+export const Route = createFileRoute("/therapist/_therapist/profile")({
   component: ProfilePage,
 });
 

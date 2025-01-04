@@ -6,7 +6,7 @@ import {
 } from "@/types/types";
 import { handleExpiredSession } from "./helper";
 
-const apiBaseUrl = "http://localhost:5431/api";
+const apiBaseUrl = "http://192.168.0.139:5431/api";
 
 // Fetch data from the API
 export const registerUser = async (

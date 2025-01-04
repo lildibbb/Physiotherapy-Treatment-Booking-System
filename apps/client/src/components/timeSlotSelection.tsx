@@ -21,8 +21,12 @@ interface TimeSlotSectionProps {
   form: UseFormReturn<AppointmentFormData>;
 }
 
-const TimeSlotSection = ({ period, slots, form }: TimeSlotSectionProps) => {
-  const iconProps = { className: "mr-2", size: 16 };
+const TimeSlotSelection: React.FC<TimeSlotSectionProps> = ({
+  form,
+  period,
+  slots,
+}) => {
+  const iconProps = { className: "text-primary", size: 20 };
 
   const getPeriodIcon = (period: PeriodType) => {
     switch (period) {
@@ -30,7 +34,6 @@ const TimeSlotSection = ({ period, slots, form }: TimeSlotSectionProps) => {
         return <Sun {...iconProps} />;
       case "afternoon":
         return <Sunrise {...iconProps} />;
-
       default:
         return null;
     }
@@ -41,36 +44,41 @@ const TimeSlotSection = ({ period, slots, form }: TimeSlotSectionProps) => {
       control={form.control}
       name="time"
       render={({ field }) => (
-        <FormItem>
-          <FormLabel className="font-medium text-gray-600 mb-2 flex items-center gap-2">
+        <FormItem className="space-y-4 p-4 rounded-lg border bg-card">
+          <FormLabel className="text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
             {getPeriodIcon(period)}
             {period.charAt(0).toUpperCase() + period.slice(1)} Slots
           </FormLabel>
-          <FormControl>
-            <div className="flex flex-wrap gap-2">
-              {slots?.length > 0 ? (
-                slots.map((time: string) => (
-                  <Button
-                    key={time}
-                    type="button"
-                    onClick={() => field.onChange(time)}
-                    variant={field.value === time ? "default" : "outline"}
-                    size="sm"
-                    className="rounded-md"
-                  >
-                    {time}
-                  </Button>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500">No slots available</p>
-              )}
-            </div>
-          </FormControl>
-          <FormMessage />
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+            {slots?.length > 0 ? (
+              slots.map((time) => (
+                <Button
+                  key={time}
+                  type="button"
+                  onClick={() => field.onChange(time)}
+                  variant={field.value === time ? "default" : "outline"}
+                  size="sm"
+                  aria-label={`Select ${time} time slot`}
+                  aria-selected={field.value === time}
+                  className={`w-full transition-all duration-200 ${
+                    field.value === time
+                      ? "bg-primary text-primary-foreground shadow-md scale-105"
+                      : "hover:bg-primary/10"
+                  }`}
+                >
+                  {time}
+                </Button>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground col-span-full">
+                No slots available
+              </p>
+            )}
+          </div>
         </FormItem>
       )}
     />
   );
 };
 
-export default TimeSlotSection;
+export default TimeSlotSelection;

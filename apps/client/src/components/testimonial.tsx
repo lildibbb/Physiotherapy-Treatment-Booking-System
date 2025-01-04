@@ -37,7 +37,7 @@ export const Testimonial = () => {
         "https://cdn.discordapp.com/avatars/684424900232085522/74ba83eb9bf7be0a9cd14d19df122e4f.webp?size=80",
       feedback:
         "Booking my physiotherapy sessions online has been a game changer! The convenience and personalized care I receive are unmatched.",
-      role: "Professional Yapper",
+      role: "Doctor",
     },
     {
       name: "James Carter",

@@ -51,8 +51,9 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { MainNav } from "@/components/dashboard/patient/main-nav";
-import { UserNav } from "@/components/dashboard/patient/user-nav";
+
+import { MainNav } from "@/components/dashboard/staff/main-nav";
+import { UserNav } from "@/components/dashboard/staff/user-nav";
 
 import { fetchUserProfile, updateUserProfile } from "@/lib/api"; // Import API functions
 import { toast } from "@/hooks/use-toast";
@@ -60,8 +61,7 @@ import specialization from "../../data/specialization.json"; // Import the speci
 import { MultiSelect } from "@/components/ui/multi-seletc";
 import { InputTags } from "@/components/ui/input-tags";
 import { Textarea } from "@/components/ui/textarea";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
-
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 // Define language options with icons
 const frameworksList = [
   { value: "Malay", label: "Malay", icon: Turtle },
@@ -165,7 +165,7 @@ type StaffData = z.infer<typeof staffSchema>;
 type FormData = PatientData | TherapistData | StaffData;
 
 // Create the route for the profile page
-export const Route = createFileRoute("/user/_user/profile")({
+export const Route = createFileRoute("/staff/_staff/profile")({
   component: ProfilePage,
 });
 
@@ -444,7 +444,6 @@ function ProfilePage() {
           </div>
         </header>
       ) : null}
-
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
         <Card>
           <CardHeader>

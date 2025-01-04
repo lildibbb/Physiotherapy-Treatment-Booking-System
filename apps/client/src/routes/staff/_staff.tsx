@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/app-sidebar-patient";
+import { AppSidebar } from "@/components/app-sidebar-staff";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 

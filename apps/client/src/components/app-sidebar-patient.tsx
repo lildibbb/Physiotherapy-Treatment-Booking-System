@@ -39,11 +39,6 @@ const navItems = [
     url: "/findDoctor",
     icon: NotebookPen,
   },
-  {
-    title: "Physiotherapist",
-    url: "/staff/therapist_list",
-    icon: Users,
-  },
 ];
 
 // User-specific navigation items

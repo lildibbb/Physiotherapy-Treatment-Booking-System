@@ -1,5 +1,4 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,20 +8,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { LogOut } from "lucide-react";
+// src/components/nav-user.tsx
 import { useEffect, useState } from "react";
+
 import { fetchUserProfile, logoutUser } from "@/lib/api";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { navUserItems } from "./app-sidebar-therapist";
 import { toast } from "@/hooks/use-toast";
-import { LogOut } from "lucide-react";
-import { Spinner } from "@/components/spinner";
-import { navUserItems } from "@/components/app-sidebar-patient";
+import { Spinner } from "./spinner";
 
 interface User {
   name: string;
   email: string;
   avatar: string;
 }
-export function UserNav() {
+
+export function NavUser() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -36,7 +43,7 @@ export function UserNav() {
         console.log("data fetched {sidebar}:  ", data);
         setUser(data);
         if (data.avatar) {
-          const apiBaseUrl = "http://localhost:5431";
+          const apiBaseUrl = "http://192.168.0.139:5431";
           const avatarUrl = `${apiBaseUrl}/${data.avatar}`;
           console.log("Avatar URL:", avatarUrl);
 
@@ -86,50 +93,54 @@ export function UserNav() {
   };
   if (error) return <p className="text-red-500">{error}</p>;
   if (!user) return null;
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={avatar || undefined}
-              alt={user.name}
-              onError={(e) => {
-                const imgElement = e.target as HTMLImageElement;
-                imgElement.style.display = "none";
-              }}
-            />
-            <AvatarFallback>SC</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <span className="truncate font-semibold">{user.name}</span>
-            <span className="truncate text-xs">{user.email}</span>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          {navUserItems.map((item) => (
-            <DropdownMenuItem asChild key={item.title}>
-              <Link to={item.url} className="flex items-center gap-2">
-                <item.icon className="w-4 h-4" />
-                {item.title}
-              </Link>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton size="lg">
+              <Avatar className="h-8 w-8 rounded-lg">
+                <AvatarImage
+                  src={avatar || undefined}
+                  alt={user.name}
+                  onError={(e) => {
+                    const imgElement = e.target as HTMLImageElement;
+                    imgElement.style.display = "none";
+                  }}
+                />
+                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">{user.name}</span>
+                <span className="truncate text-xs">{user.email}</span>
+              </div>
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {navUserItems.map((item) => (
+                <DropdownMenuItem asChild key={item.title}>
+                  <Link to={item.url} className="flex items-center gap-2">
+                    <item.icon className="w-4 h-4" />
+                    {item.title}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
+              <LogOut />
+              {isLoggingOut ? (
+                <Spinner className="w-4 h-4 mr-2" /> // Spinner size and margin
+              ) : null}
+              Log out
             </DropdownMenuItem>
-          ))}
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
-          <LogOut />
-          {isLoggingOut ? (
-            <Spinner className="w-4 h-4 mr-2" /> // Spinner size and margin
-          ) : null}
-          Log out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }

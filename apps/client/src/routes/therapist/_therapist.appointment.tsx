@@ -7,9 +7,9 @@ import { Spinner } from "@/components/spinner";
 
 import { Calendar } from "@/components/ui/calendar";
 
-import AppointmentSlots from "@/components/appointmentTimeSlot";
-import { MainNav } from "@/components/dashboard/patient/main-nav";
-import { UserNav } from "@/components/dashboard/patient/user-nav";
+import AppointmentSlots from "@/components/appointmentTimeSlotTherapistView";
+import { MainNav } from "@/components/dashboard/therapist/main-nav";
+import { UserNav } from "@/components/dashboard/therapist/user-nav";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DataTable } from "@/components/data-table";
@@ -25,7 +25,7 @@ interface AppointmentData {
   avatar?: string | null;
 }
 
-export const Route = createFileRoute("/user/_user/appointment")({
+export const Route = createFileRoute("/therapist/_therapist/appointment")({
   component: RouteComponent,
 });
 

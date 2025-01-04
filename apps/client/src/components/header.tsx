@@ -91,6 +91,21 @@ export const Header = () => {
         return "/login"; // Default dashboard or a fallback route
     }
   };
+
+  const getAppointmentHref = () => {
+    switch (role) {
+      case "staff":
+        return "/staff/appointment";
+      case "business":
+        return "/404";
+      case "patient":
+        return "/user/appointment";
+      case "therapist":
+        return "/therapist/appointment";
+      default:
+        return "/login"; // Default dashboard or a fallback route
+    }
+  };
   const navigationItems = [
     {
       title: "Home",
@@ -108,7 +123,7 @@ export const Header = () => {
       items: [
         {
           title: "Appointments",
-          href: "/404",
+          href: getAppointmentHref(),
         },
         {
           title: "Book Specialist Doctors",

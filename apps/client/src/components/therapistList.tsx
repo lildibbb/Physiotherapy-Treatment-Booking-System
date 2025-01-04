@@ -33,61 +33,16 @@ type Therapist = {
   image?: string;
   language?: string[];
 };
-
-export const TherapistList = () => {
-  const [therapists, setTherapists] = useState<Therapist[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function getTherapists() {
-      try {
-        const data = await fetchAllTherapistPublic();
-        console.log("data therapistPublic", data);
-
-        console.log("data avatar", data.data.avatar);
-        const apiBaseUrl = "http://localhost:5431";
-        // Map the data to include full avatar URLs
-        const therapistsWithAvatar = data.data.map((therapist: Therapist) => ({
-          ...therapist,
-          avatar: therapist.avatar
-            ? `${apiBaseUrl}/${therapist.avatar.replace(/\\/g, "/")}` // Replace backslashes with forward slashes
-            : null, // Keep null if no avatar
-        }));
-
-        setTherapists(therapistsWithAvatar);
-        console.log("Processed Therapists:", therapistsWithAvatar);
-      } catch (err) {
-        setError("Failed to fetch therapists.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    getTherapists();
-  }, []);
-
-  if (loading) {
+type TherapistProps = {
+  therapists: Therapist[];
+};
+export const TherapistList: React.FC<TherapistProps> = ({ therapists }) => {
+  if (!therapists || therapists.length === 0) {
     return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, index) => (
-          <Card key={index} className="p-4">
-            <div className="flex items-center space-x-4">
-              <Skeleton className="h-12 w-12 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            </div>
-          </Card>
-        ))}
+      <div className="text-center text-muted-foreground py-4">
+        No therapists found. Try adjusting your search criteria.
       </div>
     );
-  }
-
-  if (error) {
-    return <div className="text-center text-red-500 py-4">{error}</div>;
   }
 
   return (
@@ -154,23 +109,6 @@ export const TherapistList = () => {
             </div>
           </CardContent>
           <CardFooter className="flex justify-end items-center pt-2">
-            {/* <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="link" className="p-0">
-                  <User className="h-4 w-4 mr-2" />
-                  View Profile
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{therapist.name}</DialogTitle>
-                  <DialogDescription>
-                    Fill out the form below to add a new therapist.
-                  </DialogDescription>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog> */}
-
             <Link
               to="/findDoctor/$therapistID"
               params={{ therapistID: therapist.therapistID.toString() }}

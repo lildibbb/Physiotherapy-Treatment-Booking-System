@@ -11,28 +11,23 @@ export function MainNav({
       {...props}
     >
       <Link
-        href="/therapist/dashboard"
+        href="/user/dashboard"
         className="text-sm font-medium transition-colors hover:text-primary"
       >
         Overview
       </Link>
+
       <Link
-        href="/examples/dashboard"
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-      >
-        Patient
-      </Link>
-      <Link
-        href="/examples/dashboard"
+        href="/user/appointment"
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
         Appointment
       </Link>
       <Link
-        href="/examples/dashboard"
+        href="/findDoctor"
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
-        Settings
+        Booking
       </Link>
     </nav>
   );
