@@ -16,7 +16,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { DataTable } from "@/components/data-table";
 import { columns } from "@/components/columns-appointment";
 
-interface AppointmentData {
+export interface AppointmentData {
   appointmentID: string;
   appointmentDate: string;
   time: string;

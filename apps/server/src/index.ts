@@ -12,6 +12,7 @@ import { paymentRoutes } from "./routes/payment.routes";
 import { bookingRoutes } from "./routes/booking.routes";
 import { staticPlugin } from "@elysiajs/static";
 import { treatmentPlanRoutes } from "./routes/treatmentPlan.routes";
+import { NotificationRoutes } from "./routes/notification.routes";
 // PostgreSQL Client
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
@@ -50,6 +51,7 @@ const app = new Elysia()
     })
   )
   .use(authRoutes)
+  .use(NotificationRoutes)
   .use(businessRoutes)
   .use(staffRoutes)
   .use(therapistRoutes)

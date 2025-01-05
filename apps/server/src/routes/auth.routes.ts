@@ -113,8 +113,8 @@ export const authRoutes = new Elysia()
           auth.set({
             value: token,
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            secure: true,
+            sameSite: "none", // "lax" only if use same domain/protocol
             maxAge: 60 * 60,
             path: "/",
           });

@@ -1,12 +1,11 @@
-// vite.config.js
 import path from "node:path";
+
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-
-const apiBaseUrl = "http://localhost:5431/api"; // Updated to proxy path
-
+const apiBaseUrl = import.meta.env.VITE_ENDPOINT_BASE_URL; // Updated to proxy path
+console.log("VITE_ENDPOINT_BASE_URL:", apiBaseUrl);
 export default defineConfig({
   plugins: [
     TanStackRouterVite(),
@@ -14,7 +13,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       devOptions: {
-        enabled: true,
+        enabled: false,
+        type: "module",
       },
       includeAssets: [
         "favicon.svg",
@@ -51,8 +51,7 @@ export default defineConfig({
       workbox: {
         runtimeCaching: [
           {
-            // Adjusted to match the proxied API path
-            urlPattern: new RegExp(`^${apiBaseUrl}/therapist/public(?:/|$)`),
+            urlPattern: new RegExp("^/therapist/public(?:/|$)"),
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
@@ -67,7 +66,6 @@ export default defineConfig({
             },
           },
           {
-            // Cache static assets
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
             handler: "CacheFirst",
             options: {
@@ -80,6 +78,13 @@ export default defineConfig({
           },
         ],
       },
+      // srcDir: "src", // Directory where your service-worker-notification.js is located
+      // filename: "service-worker.js", // Name for the generated service worker
+      // strategies: "injectManifest",
+      // injectManifest: {
+      //   swSrc: "./src/service-worker-notification.js", // Path to your custom service worker
+      //   swDest: "sw.js", // Name for the generated service worker
+      // },
     }),
   ],
   server: {

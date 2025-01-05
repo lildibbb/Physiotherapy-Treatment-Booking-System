@@ -36,7 +36,7 @@ export function UserNav() {
         console.log("data fetched {sidebar}:  ", data);
         setUser(data);
         if (data.avatar) {
-          const apiBaseUrl = "http://localhost:5431";
+          const apiBaseUrl = import.meta.env.VITE_ENDPOINT_AVATAR_URL;
           const avatarUrl = `${apiBaseUrl}/${data.avatar}`;
           console.log("Avatar URL:", avatarUrl);
 

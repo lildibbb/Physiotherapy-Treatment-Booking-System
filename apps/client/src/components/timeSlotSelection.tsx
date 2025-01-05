@@ -1,30 +1,33 @@
+import React from "react";
 import { Sun, Sunrise } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-
 import { AppointmentFormData } from "./forms/formSchema";
 
 // Define allowed period values
 type PeriodType = "morning" | "afternoon";
 
-// Define props interface
+interface Appointment {
+  appointmentDate: string;
+  time: string;
+  status: string;
+}
+
 interface TimeSlotSectionProps {
   period: PeriodType;
   slots: string[];
   form: UseFormReturn<AppointmentFormData>;
+  appointments: Appointment[];
+  selectedDate: string;
 }
 
 const TimeSlotSelection: React.FC<TimeSlotSectionProps> = ({
   form,
   period,
   slots,
+  appointments,
+  selectedDate,
 }) => {
   const iconProps = { className: "text-primary", size: 20 };
 
@@ -39,6 +42,17 @@ const TimeSlotSelection: React.FC<TimeSlotSectionProps> = ({
     }
   };
 
+  // Filter out slots that match an appointment with status "ongoing" for the selected date
+  const filteredSlots = slots.filter(
+    (slot) =>
+      !appointments.some(
+        (appointment) =>
+          appointment.appointmentDate === selectedDate &&
+          appointment.time === slot &&
+          appointment.status === "Ongoing"
+      )
+  );
+
   return (
     <FormField
       control={form.control}
@@ -50,8 +64,8 @@ const TimeSlotSelection: React.FC<TimeSlotSectionProps> = ({
             {period.charAt(0).toUpperCase() + period.slice(1)} Slots
           </FormLabel>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-            {slots?.length > 0 ? (
-              slots.map((time) => (
+            {filteredSlots.length > 0 ? (
+              filteredSlots.map((time) => (
                 <Button
                   key={time}
                   type="button"

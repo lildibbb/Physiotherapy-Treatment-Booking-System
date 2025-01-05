@@ -3,10 +3,21 @@ import * as dotenv from "dotenv";
 import * as path from "path";
 import type { Payment } from "../../types";
 import jsonResponse from "./auth-services";
-import { appointments, payments } from "../schema";
+import {
+  appointments,
+  patients,
+  payments,
+  physiotherapists,
+  staffs,
+  user_authentications,
+} from "../schema";
 import db from "../db";
 import { eq } from "drizzle-orm";
-
+import {
+  sendNotification,
+  sendNotificationToUser,
+} from "./notification-services";
+import { format } from "date-fns";
 // Adjust path to point to root .env file
 dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
 console.log("Stripe Secret Key:", process.env.STRIPE_SECRET_KEY);
@@ -43,10 +54,8 @@ export const createCheckoutSession = async (
         },
       ],
       mode: "payment",
-      success_url:
-        "http://192.168.0.139:3000/checkout/success?session_id={CHECKOUT_SESSION_ID}",
-      cancel_url:
-        "http://192.168.0.139:3000/checkout/cancel?session_id={CHECKOUT_SESSION_ID}",
+      success_url: `${process.env.STRIPE_SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.STRIPE_CANCEL_URL}?session_id={CHECKOUT_SESSION_ID}`,
     });
     // const price = await fetchPriceDetails("price_1QNWvrGH6JXUmBKomzBv7qLq");
     // const { unit_amount_decimal } = price;
@@ -138,9 +147,74 @@ export async function fulfillCheckoutRequest(sessionID: string) {
             .execute();
 
           console.log("Appointment Data {Fullfillservice}:", appointmentData);
+
+          const therapistID = appointmentData[0].therapistID;
+          const staffID = appointmentData[0].staffID;
+          const patientID = appointmentData[0].patientID;
+
+          const therapistUserID = await db
+            .select({ userID: physiotherapists.userID })
+            .from(physiotherapists)
+            .where(eq(physiotherapists.therapistID, therapistID))
+            .execute();
+
+          const staffUserID = await db
+            .select({ userID: staffs.userID })
+            .from(staffs)
+            .where(eq(staffs.staffID, staffID))
+            .execute();
+
+          const patientUserID = await db
+            .select({ userID: patients.userID })
+            .from(patients)
+            .where(eq(patients.patientID, patientID))
+            .execute();
+
+          const therapistName = await db
+            .select({ name: user_authentications.name })
+            .from(user_authentications)
+            .where(eq(user_authentications.userID, therapistUserID[0].userID))
+            .execute();
+          const formattedDate = format(
+            new Date(appointmentData[0].appointmentDate),
+            "d MMM yyyy"
+          );
+          const notificationPayloadUser = {
+            title: "Appointment Update",
+            body: `You have appointment on ${formattedDate} at ${appointmentData[0].time}`,
+          };
+          const notificationPayloadTherapist = {
+            title: `A new appointment has been booked`,
+            body: `You have appointment on ${formattedDate} at ${appointmentData[0].time}`,
+          };
+          const notificationPayloadStaff = {
+            title: `A new appointment has been booked`,
+            body: `A new appointment with Physiotherapist ${therapistName} has been scheduled`,
+          };
+
+          // Send notifications
+          if (therapistID) {
+            await sendNotificationToUser(
+              therapistUserID[0].userID,
+              notificationPayloadTherapist
+            );
+          }
+          if (staffID) {
+            await sendNotificationToUser(
+              staffUserID[0].userID,
+              notificationPayloadStaff
+            );
+          }
+          if (patientID) {
+            await sendNotificationToUser(
+              patientUserID[0].userID,
+              notificationPayloadUser
+            );
+          }
         } else {
           return jsonResponse({ error: "No payment data updated" }, 500);
         }
+
         return jsonResponse({ message: "Payment has been paid" }, 200);
       } else {
         const paymentData = await db

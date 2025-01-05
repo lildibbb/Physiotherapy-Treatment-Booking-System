@@ -6,8 +6,8 @@ import {
 } from "@/types/types";
 import { handleExpiredSession } from "./helper";
 
-const apiBaseUrl = "http://192.168.0.139:5431/api";
-
+const apiBaseUrl = import.meta.env.VITE_ENDPOINT_BASE_URL;
+console.log("apiBaseUrl: " + apiBaseUrl);
 // Fetch data from the API
 export const registerUser = async (
   name: string,
@@ -884,4 +884,85 @@ export const cancelAppointment = async (payload: { appointmentID: number }) => {
     throw new Error("Failed to cancel appointment");
   }
   return response.json();
+};
+
+export interface PushSubscriptions {
+  endpoint: string;
+
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+}
+export const subscribeToNotifications = async (
+  subscription: PushSubscriptions
+) => {
+  try {
+    const response = await fetch(`${apiBaseUrl}/notifications/subscribe`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(subscription),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error || "Failed to subscribe to notifications"
+      );
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error subscribing to notifications:", error);
+    throw new Error("Network error or server is unavailable");
+  }
+};
+
+export interface NotificationPayload {
+  title: string;
+  body: string;
+  icon?: string;
+  url?: string;
+}
+
+export interface NotificationResponse {
+  message: string;
+  total: number;
+  failed: number;
+  errors: Array<{
+    success: boolean;
+    error: string;
+    endpoint: string;
+  }>;
+}
+
+// Function to send a notification
+export const sendNotification = async (
+  payload: NotificationPayload
+): Promise<NotificationResponse> => {
+  try {
+    const response = await fetch(
+      `${apiBaseUrl}/notifications/send-notification`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ payload }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to send notification.");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    throw new Error("Failed to send notification. Please try again.");
+  }
 };

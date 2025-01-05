@@ -8,9 +8,10 @@ import {
   fetchTherapistAvailability,
   createAppointment,
   createCheckoutSession,
+  fetchAppointments,
 } from "../../lib/api";
 import { Header } from "@/components/header";
-import { Input } from "@/components/ui/input";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -34,6 +35,7 @@ import {
   AppointmentFormData,
   appointmentFormSchema,
 } from "@/components/forms/formSchema";
+import { AppointmentData } from "../staff/_staff.appointment";
 type Slot = {
   date: string;
   morning: string[];
@@ -56,6 +58,7 @@ function RouteComponent() {
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [data, setData] = React.useState<AppointmentData[]>([]);
   const [avatar, setAvatar] = useState<string | null>(null);
   const { toast } = useToast();
   const form = useForm<AppointmentFormData>({
@@ -88,7 +91,7 @@ function RouteComponent() {
         setTherapist(therapistData);
 
         if (therapistData.avatar) {
-          const apiBaseUrl = "http://192.168.0.139:5431"; // Update with your actual API base URL
+          const apiBaseUrl = import.meta.env.VITE_ENDPOINT_AVATAR_URL; // Update with your actual API base URL
           const avatarUrl = `${apiBaseUrl}/${therapistData.avatar}`;
           console.log("Avatar URL:", avatarUrl);
 
@@ -104,6 +107,22 @@ function RouteComponent() {
     fetchDetails();
   }, [id]);
 
+  useEffect(() => {
+    const loadAppointments = async () => {
+      try {
+        const appointments = await fetchAppointments();
+        console.log("Fetched Appointments:", appointments);
+        setData(appointments);
+      } catch (error) {
+        setError("Failed to fetch appointments");
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAppointments();
+  }, []);
   // Fetch availability
   useEffect(() => {
     async function fetchAvailability() {
@@ -376,6 +395,8 @@ function RouteComponent() {
                             period={period}
                             slots={selectedSlot[period]}
                             form={form}
+                            appointments={data} // Pass the fetched appointments here
+                            selectedDate={selectedSlot.date} // Pass the selected date
                           />
                         ))}
                       </div>

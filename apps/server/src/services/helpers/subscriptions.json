@@ -1,0 +1,12 @@
+[
+  {
+    "userID": 3,
+    "subscription": {
+      "endpoint": "https://fcm.googleapis.com/fcm/send/dMcgUCpqrYM:APA91bFL2HL0O278TauEBk9m55tGRDsSxsWcF34hpW0dElml_U2adkEYNezdoVUUDpsg2Pvxpfba22TkGtQMnvnPhF12tVUzH641h-Vt75yVtN5mu9L9NJkZsqaprBmuThJoEuzxceLS",
+      "keys": {
+        "p256dh": "BP_SNud6-dZLrdjP8lSGifei81VwypQbNn-botaC1F2LFVU1c7PW_kupM326g6W9-Oqykp5ATpo9nO0HDDO2F0c",
+        "auth": "xs1SH0krVOVw28h-_v3dXQ"
+      }
+    }
+  }
+]

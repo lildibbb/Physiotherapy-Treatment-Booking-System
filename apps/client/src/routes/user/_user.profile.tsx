@@ -276,7 +276,7 @@ function ProfilePage() {
 
           // Set avatar if available
           if (data.avatar) {
-            const apiBaseUrl = "http://192.168.0.139:5431"; // Update with your actual API base URL
+            const apiBaseUrl = import.meta.env.VITE_ENDPOINT_AVATAR_URL; // Update with your actual API base URL
             const avatarUrl = `${apiBaseUrl}/${data.avatar}`;
             console.log("Avatar URL:", avatarUrl);
 
