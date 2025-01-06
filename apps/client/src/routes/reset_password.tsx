@@ -66,7 +66,7 @@ function RouteComponent() {
         if (response?.email && response?.name) {
           const { email, name } = response;
 
-          const updateUrl = "http://localhost:3000/login";
+          const updateUrl = `${import.meta.env.VITE_API_BASE_URL}/login`;
           await sendUpdateResetPasswordEmail({
             name,
             email,

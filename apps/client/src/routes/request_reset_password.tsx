@@ -46,7 +46,7 @@ function RouteComponent() {
     try {
       const response = await requestPasswordReset(data.email);
       if (response) {
-        const resetUrl = `http://localhost:3000/reset_password?token=${response.token}`;
+        const resetUrl = `${import.meta.env.VITE_API_BASE_URL}/reset_password?token=${response.token}`;
 
         await sendForgotPasswordEmail({
           name: response.name || "User",

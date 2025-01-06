@@ -114,6 +114,7 @@ export const authRoutes = new Elysia()
             value: token,
             httpOnly: true,
             secure: true,
+            // domain: ".trycloudflare.com",
             sameSite: "none", // "lax" only if use same domain/protocol
             maxAge: 60 * 60,
             path: "/",
@@ -522,11 +523,12 @@ authRoutes
       auth.set({
         value: auth?.value,
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: true,
+        sameSite: "none", // "lax" only if use same domain/protocol
         maxAge: 0,
         path: "/",
       });
+
       return jsonResponse({ message: "Logout success", status: 200 });
     },
     {

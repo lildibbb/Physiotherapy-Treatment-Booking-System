@@ -45,11 +45,15 @@ const TimeSlotSelection: React.FC<TimeSlotSectionProps> = ({
   // Filter out slots that match an appointment with status "ongoing" for the selected date
   const filteredSlots = slots.filter(
     (slot) =>
-      !appointments.some(
-        (appointment) =>
-          appointment.appointmentDate === selectedDate &&
-          appointment.time === slot &&
-          appointment.status === "Ongoing"
+      !(
+        appointments &&
+        Array.isArray(appointments) &&
+        appointments.some(
+          (appointment) =>
+            appointment.appointmentDate === selectedDate &&
+            appointment.time === slot &&
+            appointment.status === "Ongoing"
+        )
       )
   );
 
