@@ -79,15 +79,61 @@ export async function sendNotificationToUser(
 ) {
   try {
     const subscriptions = loadSubscriptionsFromFile();
-    const userSubscription = subscriptions.find((sub) => sub.userID === userID);
+    const userSubscriptions = subscriptions.filter(
+      (sub) => sub.userID === userID
+    );
 
-    if (!userSubscription) {
-      console.error(`No subscription found for user ID: ${userID}`);
+    if (!userSubscriptions.length) {
+      console.error(`No subscriptions found for user ID: ${userID}`);
       return;
     }
 
-    await sendNotification(userSubscription.subscription, payload);
-    console.log(`Notification sent to user ID: ${userID}`);
+    const validSubscriptions: UserSubscription[] = [];
+    const results = await Promise.all(
+      userSubscriptions.map(async (sub) => {
+        try {
+          await sendNotification(sub.subscription, payload);
+          validSubscriptions.push(sub); // Keep valid subscriptions
+          return { success: true };
+        } catch (error: any) {
+          console.error(
+            `Error sending notification to user ID: ${userID}`,
+            error.message,
+            "Endpoint:",
+            sub.subscription.endpoint
+          );
+
+          // Handle expired subscription (status code 410)
+          if (error.statusCode === 410) {
+            console.log(
+              "Removing expired subscription:",
+              sub.subscription.endpoint
+            );
+          }
+          return {
+            success: false,
+            error: error.message,
+            endpoint: sub.subscription.endpoint,
+          };
+        }
+      })
+    );
+
+    // Update the subscription file with valid subscriptions
+    const updatedSubscriptions = subscriptions.filter((sub) =>
+      validSubscriptions.some(
+        (validSub) =>
+          validSub.subscription.endpoint === sub.subscription.endpoint
+      )
+    );
+    saveSubscriptionsToFile(updatedSubscriptions);
+
+    const failed = results.filter((result) => !result.success);
+    console.log(
+      `Notifications processed for user ID: ${userID}. Total: ${
+        userSubscriptions.length
+      }, Failed: ${failed.length}`
+    );
   } catch (error) {
     console.error(`Error sending notification to user ID: ${userID}`, error);
   }

@@ -1,9 +1,8 @@
-import { PushSubscriptions, subscribeToNotifications } from "@/lib/api";
-import { useEffect } from "react";
+import { subscribeToNotifications } from "@/lib/api";
+import { useEffect, useRef } from "react";
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-console.log("VAPID_PUBLIC_KEY:", VAPID_PUBLIC_KEY);
-console.log("Environment Variables:", import.meta.env);
+
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -12,69 +11,74 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 function NotificationSetup() {
+  const setupComplete = useRef(false);
+
   useEffect(() => {
-    // Ask for notification permissions
-    if ("Notification" in window) {
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          console.log("Notification permission granted.");
-          subscribeToPushNotifications();
-        } else {
-          console.error("Notification permission denied.");
-        }
-      });
-    }
-  }, []);
+    const setupNotifications = async () => {
+      // Only run setup once
+      if (setupComplete.current) return;
 
-  const subscribeToPushNotifications = async () => {
-    if ("serviceWorker" in navigator && "PushManager" in window) {
+      if (!("Notification" in window)) {
+        console.log("This browser does not support notifications");
+        return;
+      }
+
       try {
-        const registration = await navigator.serviceWorker.ready;
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          console.log("Notification permission not granted");
+          return;
+        }
 
-        // Check for existing subscription
+        if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+          console.log("Push notifications not supported");
+          return;
+        }
+
+        const registration = await navigator.serviceWorker.ready;
         const existingSubscription =
           await registration.pushManager.getSubscription();
-        if (existingSubscription) {
-          console.log("Existing subscription found:", existingSubscription);
 
-          // Send existing subscription to server
+        // If we have an existing subscription, use it
+        if (existingSubscription) {
+          console.log("Using existing push subscription");
           const subscriptionJSON = existingSubscription.toJSON();
-          const subscriptionWithKeys: PushSubscriptions = {
+          await subscribeToNotifications({
             endpoint: subscriptionJSON.endpoint || "",
             keys: {
               p256dh: subscriptionJSON.keys?.p256dh || "",
               auth: subscriptionJSON.keys?.auth || "",
             },
-          };
-
-          await subscribeToNotifications(subscriptionWithKeys);
+          });
+          setupComplete.current = true;
           return;
         }
 
-        // Create a new subscription
-        const newSubscription = await registration.pushManager.subscribe({
+        // Create new subscription
+        console.log("Creating new push subscription");
+        const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
 
-        console.log("New Push subscription:", newSubscription);
-
-        // Send new subscription to server
-        const newSubscriptionJSON = newSubscription.toJSON();
-        const subscriptionWithKeys: PushSubscriptions = {
-          endpoint: newSubscriptionJSON.endpoint || "",
+        const subscriptionJSON = subscription.toJSON();
+        await subscribeToNotifications({
+          endpoint: subscriptionJSON.endpoint || "",
           keys: {
-            p256dh: newSubscriptionJSON.keys?.p256dh || "",
-            auth: newSubscriptionJSON.keys?.auth || "",
+            p256dh: subscriptionJSON.keys?.p256dh || "",
+            auth: subscriptionJSON.keys?.auth || "",
           },
-        };
+        });
 
-        await subscribeToNotifications(subscriptionWithKeys);
+        setupComplete.current = true;
       } catch (error) {
-        console.error("Push subscription failed:", error);
+        console.error("Failed to setup notifications:", error);
       }
-    }
-  };
+    };
+
+    setupNotifications();
+  }, []);
+
   return null;
 }
 

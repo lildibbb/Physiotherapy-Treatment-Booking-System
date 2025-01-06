@@ -22,7 +22,7 @@ export const NotificationRoutes = new Elysia()
         jwt,
         cookie: { auth },
       }: {
-        body: Subscription; // No nested subscription key
+        body: Subscription;
         jwt: any;
         cookie: { auth: { value: string | undefined } };
       }) => {
@@ -31,125 +31,109 @@ export const NotificationRoutes = new Elysia()
         if ("error" in authResult) {
           return jsonResponse(authResult, 401);
         }
-        console.log("Received request at /subscribe:", body);
 
-        // Extract userID from the authenticated user's profile
         const userID = authResult.profile.id;
-        console.log("User ID:", userID);
+        console.log("Processing subscription for user:", userID);
 
         // Validate the subscription object
         if (!body?.endpoint || !body.keys?.p256dh || !body.keys?.auth) {
-          return { error: "Invalid subscription data" };
-        }
-        console.log("New subscription received for user:", userID);
-
-        // Check if the subscription already exists
-        const exists = subscriptions.some(
-          (sub) =>
-            sub.userID === userID && sub.subscription.endpoint === body.endpoint
-        );
-
-        if (exists) {
-          console.log("Subscription already exists for user:", userID);
-          return { message: "Subscription already exists!" };
+          return jsonResponse({ error: "Invalid subscription data" }, 400);
         }
 
-        // Add the new subscription with userID to the subscriptions list
-        subscriptions.push({
+        // Remove any existing subscriptions for this user
+        subscriptions = subscriptions.filter((sub) => sub.userID !== userID);
+        console.log(`Removed existing subscriptions for user ${userID}`);
+
+        // Add the new subscription
+        const newSubscription: UserSubscription = {
           userID,
           subscription: {
             endpoint: body.endpoint,
             keys: body.keys,
           },
-        });
+        };
 
-        // Save subscriptions to file
+        subscriptions.push(newSubscription);
+        console.log(`Added new subscription for user ${userID}`);
+
+        // Save updated subscriptions to file
         try {
           saveSubscriptionsToFile(subscriptions);
-          console.log("Subscriptions saved to file.");
+          console.log("Updated subscriptions saved to file");
+          return jsonResponse(
+            {
+              message: "Subscription updated successfully",
+              subscription: newSubscription,
+            },
+            200
+          );
         } catch (error) {
-          console.error("Error saving subscriptions to file:", error);
-          return { error: "Failed to save subscription data." };
+          console.error("Error saving subscription:", error);
+          return jsonResponse(
+            {
+              error: "Failed to save subscription",
+            },
+            500
+          );
         }
-
-        return { message: "Subscription saved successfully!" };
       }
     );
+
     group.post(
       "/send-notification",
       async ({ body }: { body: { payload: NotificationPayload } }) => {
         const { payload } = body;
-        console.log("Payload being sent to subscription:", payload);
-        console.log("subscription data:", subscriptions);
+        console.log("Processing notification payload:", payload);
 
         if (!subscriptions.length) {
-          return { error: "No subscriptions available to send notifications." };
+          return jsonResponse(
+            {
+              error: "No subscriptions available",
+            },
+            404
+          );
         }
 
-        // Validate subscriptions
-        const validSubscriptions = subscriptions.filter(
-          (sub: UserSubscription) => {
-            const subscription = sub.subscription; // Access the subscription object
-            if (
-              !subscription.endpoint ||
-              !subscription.keys?.p256dh ||
-              !subscription.keys?.auth
-            ) {
-              console.error("Invalid subscription object:", subscription);
-              return false;
-            }
-            return true;
-          }
-        );
-
+        const validSubscriptions: UserSubscription[] = [];
         const results = await Promise.all(
-          validSubscriptions.map(async (sub: UserSubscription) => {
-            const subscription = sub.subscription; // Access the subscription object
+          subscriptions.map(async (sub) => {
             try {
               await webPush.sendNotification(
-                subscription,
+                sub.subscription,
                 JSON.stringify(payload)
               );
-              console.log("Payload sent:", JSON.stringify(payload));
-
-              return { success: true };
+              validSubscriptions.push(sub);
+              return { success: true, userID: sub.userID };
             } catch (error: any) {
               console.error(
-                "Error sending notification:",
-                error.message,
-                "Endpoint:",
-                subscription.endpoint
+                `Error sending notification to user ${sub.userID}:`,
+                error.message
               );
-              // Remove invalid subscription
-              if (error.statusCode === 410) {
-                console.log(
-                  "Removing expired subscription:",
-                  subscription.endpoint
-                );
-                const subIndex = subscriptions.findIndex(
-                  (s) => s.subscription.endpoint === subscription.endpoint
-                );
-                if (subIndex !== -1) {
-                  subscriptions.splice(subIndex, 1); // Remove the invalid subscription
-                }
-                saveSubscriptionsToFile(subscriptions); // Save updated subscriptions
-              }
               return {
                 success: false,
+                userID: sub.userID,
                 error: error.message,
-                endpoint: subscription.endpoint,
+                endpoint: sub.subscription.endpoint,
               };
             }
           })
         );
 
+        // Update subscriptions list with only valid ones
+        subscriptions = validSubscriptions;
+        saveSubscriptionsToFile(subscriptions);
+
         const failed = results.filter((result) => !result.success);
-        return {
-          message: "Notifications processed.",
-          total: validSubscriptions.length,
-          failed: failed.length,
-          errors: failed, // Include detailed errors in the response
-        };
+        return jsonResponse(
+          {
+            message: "Notifications processed",
+            total: subscriptions.length,
+            successful: subscriptions.length,
+            failed: failed.length,
+            errors: failed,
+          },
+          200
+        );
       }
     );
 
