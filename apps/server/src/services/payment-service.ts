@@ -13,10 +13,7 @@ import {
 } from "../schema";
 import db from "../db";
 import { eq } from "drizzle-orm";
-import {
-  sendNotification,
-  sendNotificationToUser,
-} from "./notification-services";
+import { sendNotificationToUser } from "./notification-services";
 import { format } from "date-fns";
 // Adjust path to point to root .env file
 dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
@@ -193,24 +190,21 @@ export async function fulfillCheckoutRequest(sessionID: string) {
           };
 
           // Send notifications
-          if (therapistID) {
-            await sendNotificationToUser(
-              therapistUserID[0].userID,
-              notificationPayloadTherapist
-            );
-          }
-          if (staffID) {
-            await sendNotificationToUser(
-              staffUserID[0].userID,
-              notificationPayloadStaff
-            );
-          }
-          if (patientID) {
-            await sendNotificationToUser(
-              patientUserID[0].userID,
-              notificationPayloadUser
-            );
-          }
+
+          await sendNotificationToUser(
+            therapistUserID[0].userID,
+            notificationPayloadTherapist
+          );
+
+          await sendNotificationToUser(
+            staffUserID[0].userID,
+            notificationPayloadStaff
+          );
+
+          await sendNotificationToUser(
+            patientUserID[0].userID,
+            notificationPayloadUser
+          );
         } else {
           return jsonResponse({ error: "No payment data updated" }, 500);
         }
