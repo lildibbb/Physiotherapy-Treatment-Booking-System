@@ -28,6 +28,20 @@ interface TherapistData {
   contactDetails: string;
   availability: Availability[];
 }
+function sortAvailabilityByDay(availability: Availability[]): Availability[] {
+  const dayOrder = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+  return availability.sort(
+    (a, b) => dayOrder.indexOf(a.dayOfWeek) - dayOrder.indexOf(b.dayOfWeek)
+  );
+}
 function RouteComponent() {
   const isSmallScreen = useMediaQuery("(max-width: 767px)");
   const [isLoading, setIsLoading] = useState<boolean>(true); // Loading state
@@ -39,7 +53,14 @@ function RouteComponent() {
         const data = await getDataTherapistForStaff();
         console.log("Data fetched {TherapistData}:  ", data);
         if (data.TherapistData) {
-          setTherapists(data.TherapistData);
+          // Sort the availability for each therapist
+          const sortedTherapists = data.TherapistData.map(
+            (therapist: TherapistData) => ({
+              ...therapist,
+              availability: sortAvailabilityByDay(therapist.availability),
+            })
+          );
+          setTherapists(sortedTherapists);
         } else {
           setError("TherapistData key not found in fetched data.");
           console.error("TherapistData key not found in fetched data.");
@@ -53,6 +74,7 @@ function RouteComponent() {
     };
     getTherapistData();
   }, []);
+
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}

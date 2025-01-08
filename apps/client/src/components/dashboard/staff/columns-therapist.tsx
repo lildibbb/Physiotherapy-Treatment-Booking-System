@@ -236,23 +236,39 @@ const EditAvailabilityForm = ({
           {/* Start Time */}
           <div className="flex items-center space-x-2">
             <span className="font-medium w-24">Start Time:</span>
-            <input
-              type="time"
-              value={slot.startTime}
-              onChange={(e) => handleChange(index, "startTime", e.target.value)}
+            <select
+              value={slot.startTime.split(":")[0]}
+              onChange={(e) => {
+                const hour = e.target.value.padStart(2, "0");
+                handleChange(index, "startTime", `${hour}:00`);
+              }}
               className="border p-2 rounded w-full"
-            />
+            >
+              {Array.from({ length: 11 }, (_, i) => i + 8).map((hour) => (
+                <option key={hour} value={hour.toString().padStart(2, "0")}>
+                  {hour.toString().padStart(2, "0")}:00
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* End Time */}
           <div className="flex items-center space-x-2">
             <span className="font-medium w-24">End Time:</span>
-            <input
-              type="time"
-              value={slot.endTime}
-              onChange={(e) => handleChange(index, "endTime", e.target.value)}
+            <select
+              value={slot.endTime.split(":")[0]}
+              onChange={(e) => {
+                const hour = e.target.value.padStart(2, "0");
+                handleChange(index, "endTime", `${hour}:00`);
+              }}
               className="border p-2 rounded w-full"
-            />
+            >
+              {Array.from({ length: 11 }, (_, i) => i + 8).map((hour) => (
+                <option key={hour} value={hour.toString().padStart(2, "0")}>
+                  {hour.toString().padStart(2, "0")}:00
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Availability Checkbox */}
@@ -437,7 +453,7 @@ export const columns: ColumnDef<Therapist>[] = [
               <DialogContent className="max-w-2xl max-h-screen overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
-                    Edit Availability - {row.getValue("name")}
+                    Edit Availability Physiotherapist - {row.getValue("name")}
                   </DialogTitle>
                 </DialogHeader>
                 <DialogDescription>
@@ -463,7 +479,7 @@ export const columns: ColumnDef<Therapist>[] = [
               <DrawerContent className="overflow-y-auto">
                 <DrawerHeader>
                   <DrawerTitle>
-                    Edit Availability - {row.getValue("name")}
+                    Edit Availability Physiotherapist - {row.getValue("name")}
                   </DrawerTitle>
                 </DrawerHeader>
                 <div className="p-4">

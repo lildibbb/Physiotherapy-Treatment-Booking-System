@@ -80,13 +80,13 @@ export const Header = () => {
   const getDashboardHref = () => {
     switch (role) {
       case "staff":
-        return "/staff/dashboard";
+        return "/staff/appointment";
       case "business":
-        return "/business/dashboard";
+        return "/business/appointment";
       case "patient":
-        return "/user/dashboard";
+        return "/user/appointment";
       case "therapist":
-        return "/therapist/dashboard";
+        return "/therapist/appointment";
       default:
         return "/login"; // Default dashboard or a fallback route
     }

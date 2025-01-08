@@ -309,23 +309,22 @@ export const therapistRoutes = new Elysia()
                 error: error.message || "Unknown error",
               });
             }
-            const successCount = results.filter(
-              (r) => r.status === "success"
-            ).length;
-            const errorCount = results.filter(
-              (r) => r.status === "error"
-            ).length;
-
-            return jsonResponse(
-              {
-                message: "Processing completed",
-                successCount,
-                errorCount,
-                results,
-              },
-              200
-            );
           }
+
+          const successCount = results.filter(
+            (r) => r.status === "success"
+          ).length;
+          const errorCount = results.filter((r) => r.status === "error").length;
+
+          return jsonResponse(
+            {
+              message: "Processing completed",
+              successCount,
+              errorCount,
+              results,
+            },
+            200
+          );
         },
         {
           body: AvailabilityBatchSchema,

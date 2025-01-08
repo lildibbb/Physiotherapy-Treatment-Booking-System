@@ -14,11 +14,11 @@ import { NavUser } from "./nav-therapist";
 
 // Main navigation items
 const navItems = [
-  {
-    title: "Dashboard",
-    url: "/therapist/dashboard",
-    icon: Home,
-  },
+  // {
+  //   title: "Dashboard",
+  //   url: "/therapist/dashboard",
+  //   icon: Home,
+  // },
 
   {
     title: "Appointments",

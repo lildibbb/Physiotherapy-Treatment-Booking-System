@@ -22,11 +22,11 @@ import { NavUser } from "./nav-user";
 
 // Main navigation items
 const navItems = [
-  {
-    title: "Dashboard",
-    url: "/user/dashboard",
-    icon: Home,
-  },
+  // {
+  //   title: "Dashboard",
+  //   url: "/user/dashboard",
+  //   icon: Home,
+  // },
 
   {
     title: "Appointments",

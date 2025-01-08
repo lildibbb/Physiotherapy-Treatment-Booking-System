@@ -81,7 +81,7 @@ const AppointmentSlots: React.FC<AppointmentSlotsProps> = ({
   };
 
   // Generate hours from 8 AM to 4 PM (8 to 16)
-  const timeSlots = Array.from({ length: 9 }, (_, i) => i + 8);
+  const timeSlots = Array.from({ length: 9 }, (_, i) => i + 9);
 
   return (
     <div className="flex-1 overflow-auto">

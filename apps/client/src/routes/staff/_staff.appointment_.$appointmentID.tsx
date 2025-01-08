@@ -307,6 +307,13 @@ function RouteComponent() {
       console.log("payload:", payload, "appointmentID", id);
       const newTreatmentPlan = await createTreatmentPlan(id, payload);
       console.log("NewtreatmentPlan:", newTreatmentPlan);
+
+      // Fetch the updated treatment plan from the server
+      const new_data = await getTreatmentPlan(id);
+      console.log("Fetched treatment plan data:", new_data);
+
+      // Update the state
+      setTreatmentPlan(new_data);
       return newTreatmentPlan;
     } catch (error) {
       console.error("Failed to create treatment plan", error);

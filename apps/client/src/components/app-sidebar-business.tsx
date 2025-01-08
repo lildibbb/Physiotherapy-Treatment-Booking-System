@@ -22,11 +22,11 @@ import { NavUser } from "./nav-business";
 
 // Main navigation items
 const navItems = [
-  {
-    title: "Dashboard",
-    url: "/business/dashboard",
-    icon: Home,
-  },
+  // {
+  //   title: "Dashboard",
+  //   url: "/business/dashboard",
+  //   icon: Home,
+  // },
 
   {
     title: "Staff",
