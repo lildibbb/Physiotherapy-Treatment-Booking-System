@@ -53,15 +53,11 @@ function RouteComponent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = () => {
-    console.log("Search initiated with params:", searchParams);
-  };
-
   useEffect(() => {
     async function getTherapists() {
       try {
         const data = await fetchAllTherapistPublic();
-        const apiBaseUrl = "http://192.168.0.139:5431";
+        const apiBaseUrl = import.meta.env.VITE_ENDPOINT_AVATAR_URL;
         const therapistsWithAvatar = data.data.map((therapist: Therapist) => ({
           ...therapist,
           avatar: therapist.avatar

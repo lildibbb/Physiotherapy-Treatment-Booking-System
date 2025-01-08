@@ -45,18 +45,20 @@ import {
   cancelAppointment,
   checkSession,
   createExercise,
+  createMeetingLink,
   createTreatmentPlan,
   fetchAppointmentByID,
   fetchExerciseByID,
   getTreatmentPlan,
 } from "@/lib/api";
-import { Pen } from "lucide-react";
+import { Pen, Video } from "lucide-react";
 import TreatmentPlanForm from "@/components/forms/treatmentPlan";
 import { ExercisePayload, TreatmentPayload } from "@/types/types";
 import ExerciseForm from "@/components/forms/exerciseForm";
 import { toast } from "@/hooks/use-toast";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
-
+import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { divIcon } from "leaflet";
+import MeetingLinkForm from "@/components/forms/meetingLinkForm";
 export const Route = createFileRoute(
   "/therapist/_therapist/appointment_/$appointmentID"
 )({
@@ -72,7 +74,10 @@ interface AppointmentData {
   therapistName: string;
   gender: string;
   status: string;
+  contactDetails: string;
   avatar?: string | null;
+
+  meetingLink?: string | null;
 }
 interface Exercise {
   exerciseID: number;
@@ -96,7 +101,9 @@ function RouteComponent() {
   const [exercise, setExercise] = useState<Exercise[] | null>(null);
   const [isExerciseExist, setIsExerciseExist] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const isSmallScreen = useMediaQuery("(max-width: 767px)");
+  const [isMeetingLinkExist, setIsMeetingLinkExist] = useState(false);
+
+  const isMobile = useMediaQuery("(max-width: 768px)");
   // Input validation
   if (!appointmentID) {
     console.error("therapistID is missing in params");
@@ -117,7 +124,8 @@ function RouteComponent() {
     patientName: data?.patientName,
     gender: data?.gender,
     status: data?.status,
-
+    meetingLink: data?.meetingLink,
+    contactDetails: data?.contactDetails,
     lastVisit: data?.appointmentDate
       ? new Date(data.appointmentDate).toLocaleDateString("en-US", {
           month: "short",
@@ -138,6 +146,7 @@ function RouteComponent() {
       duration: treatmentPlan?.duration + " weeks",
       frequency: treatmentPlan?.frequency + " times a week",
     },
+
     pastAppointments: [
       {
         date: "Mar 18, 2024",
@@ -226,6 +235,13 @@ function RouteComponent() {
         const appointments = await fetchAppointmentByID(id);
         console.log("Fetched Appointments:", appointments);
         setData(appointments);
+
+        if (!appointments.meetingLink) {
+          setIsMeetingLinkExist(false);
+        } else {
+          setIsMeetingLinkExist(true);
+        }
+        console.log("ismettingexits", isMeetingLinkExist);
         if (appointments.avatar) {
           const apiBaseUrl = import.meta.env.VITE_ENDPOINT_AVATAR_URL; // Update with your actual API base URL
           const avatarUrl = `${apiBaseUrl}/${appointments.avatar}`;
@@ -360,7 +376,47 @@ function RouteComponent() {
       return null;
     }
   };
+  const handleCreateMeetingLink = async (data: {
+    meetingLink: string;
+  }): Promise<Partial<{ meetingLink: string }> | null> => {
+    try {
+      console.log("payload:", data.meetingLink);
+      const meetingLink = await createMeetingLink(data.meetingLink, id);
+      console.log("Meeting Link:", meetingLink);
 
+      setIsMeetingLinkExist(true);
+      toast({
+        title: "Meeting Link Created",
+        description: "Meeting link created successfully",
+        variant: "default",
+      });
+
+      const appointments = await fetchAppointmentByID(id);
+      console.log("Fetched Appointments:", appointments);
+      setData(appointments);
+
+      if (appointments.avatar) {
+        const apiBaseUrl = import.meta.env.VITE_ENDPOINT_AVATAR_URL; // Update with your actual API base URL
+        const avatarUrl = `${apiBaseUrl}/${appointments.avatar}`;
+        console.log("Avatar URL:", avatarUrl);
+
+        setAvatar(avatarUrl);
+      }
+
+      // Return the created meeting link as required
+      return { meetingLink: data.meetingLink };
+    } catch (error) {
+      console.error("Failed to create meeting link", error);
+      toast({
+        title: "Failed to create meeting link",
+        description: "Unable to create meeting link at this moment",
+        variant: "destructive",
+      });
+
+      // Return null in case of failure
+      return null;
+    }
+  };
   const handleCancelAppointment = async () => {
     try {
       const payload = {
@@ -434,8 +490,7 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Header */}
-      {isSmallScreen ? (
+      {isMobile ? (
         <header className="border-b">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <MainNav />
@@ -447,7 +502,7 @@ function RouteComponent() {
       {/* Main Content */}
       <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
         {/* Container */}
-        <div className=" mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Top Navigation and Actions */}
           <div className="flex items-center justify-between mb-8">
             {/* Back Button and Title */}
@@ -479,17 +534,17 @@ function RouteComponent() {
                   Appointment Details
                 </h1>
                 <p className="text-secondary-600">
-                  View and manage your physiotherapy appointment information
+                  View and manage your patient's appointment information
                 </p>
               </div>
             </div>
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
-              {role === "staff" || role === "therapist" ? (
+              {/* {role === "staff" || role === "therapist" ? (
                 <Button variant="secondary" className="px-4 py-2">
                   Edit Appointment
                 </Button>
-              ) : null}
+              ) : null} */}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -566,7 +621,7 @@ function RouteComponent() {
                         {appointment.gender} •
                       </p>
                     </div>
-                    <span className="px-3 py-1 rounded-full text-xs border bg-amber-50 text-amber-700 border-amber-100">
+                    <span className="px-3 py-1 rounded-full text-sm border bg-amber-50 text-amber-700 border-amber-100">
                       {appointment.status}
                     </span>
                   </div>
@@ -692,79 +747,96 @@ function RouteComponent() {
               )}
             </Card>
 
-            {/* Past Appointments */}
-            <Card className=" rounded-xl border  p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-secondary-900">
-                  Past Appointments
-                </h3>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-calendar w-5 h-5 text-secondary-400"
-                >
-                  <path d="M8 2v4"></path>
-                  <path d="M16 2v4"></path>
-                  <rect width="18" height="18" x="3" y="4" rx="2"></rect>
-                  <path d="M3 10h18"></path>
-                </svg>
-              </div>
-              <div className="space-y-4">
-                {appointment.pastAppointments.map((appt, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex gap-3 items-center">
-                      <div className="w-2 h-2 rounded-full bg-gray-500"></div>
-                      <div>
-                        <p className="font-medium text-secondary-900">
-                          {appt.date}
+            {/* Contact with therapist */}
+            <Card className="rounded-xl border p-4">
+              {isMeetingLinkExist === true ? (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-secondary-900">
+                      Contact with your therapist
+                    </h3>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-4">
+                      <a
+                        href={`${appointment.meetingLink}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                      >
+                        <Video className="w-4 h-4 mr-2" />
+                        Join Google Meet
+                      </a>
+                      <a
+                        href={`https://wa.me/${appointment.contactDetails}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-message-circle mr-2 h-4 w-4"
+                        >
+                          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                        </svg>
+                        WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-secondary-900">
+                      Contact with your therapist
+                    </h3>
+                    {role === "therapist" ? (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="link" className="p-0">
+                            <Pen className="h-4 w-4 mr-2" /> Add meeting link
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle></DialogTitle>
+                            <DialogDescription>
+                              Fill out the form below to add meeting link.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <MeetingLinkForm onSubmit={handleCreateMeetingLink} />
+                        </DialogContent>
+                      </Dialog>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center rounded-lg bg-secondary-100 p-6">
+                      <div className="text-center">
+                        <p className="text-primary-600 font-medium">
+                          No meeting link available at the moment.
                         </p>
-                        <p className="text-sm text-secondary-500">
-                          {appt.time} • {appt.type}
-                        </p>
-                        <p className="text-sm text-secondary-500">
-                          {appt.notes}
+                        <p className="text-secondary-600 text-sm mt-1">
+                          Your physiotherapist will provide a meeting link soon.
                         </p>
                       </div>
                     </div>
-                    <button
-                      className="text-secondary-400 hover:text-secondary-600"
-                      aria-label="View Appointment"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="lucide lucide-chevron-right w-5 h-5"
-                      >
-                        <path d="m9 18 6-6-6-6"></path>
-                      </svg>
-                    </button>
                   </div>
-                ))}
-              </div>
-              <button className="mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium w-full text-center">
-                View All Past Appointments
-              </button>
+                </>
+              )}
             </Card>
 
             {/* Current Exercises */}
-            <Card className=" rounded-xl border  p-4">
+            <Card className="lg:col-span-3  rounded-xl border  p-4">
               {isExerciseExist === true ? (
                 <>
                   <div className="flex items-center justify-between mb-4">
@@ -915,84 +987,6 @@ function RouteComponent() {
                   </div>
                 </>
               )}
-            </Card>
-
-            {/* Recent Documents */}
-            <Card className=" rounded-xl border  p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-secondary-900">
-                  Recent Documents
-                </h3>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-file-text w-5 h-5 text-secondary-400"
-                >
-                  <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
-                  <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
-                  <path d="M10 9H8"></path>
-                  <path d="M16 13H8"></path>
-                  <path d="M16 17H8"></path>
-                </svg>
-              </div>
-              <div className="space-y-4">
-                {appointment.recentDocuments.map((doc, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <h4 className="font-medium text-secondary-900">
-                        {doc.title}
-                      </h4>
-                      <p className="text-sm text-secondary-500">
-                        {doc.date} • {doc.category}
-                      </p>
-                    </div>
-                    <button
-                      className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                      aria-label={`View ${doc.title}`}
-                    >
-                      View
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <button className="mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium w-full text-center">
-                View All Documents
-              </button>
-            </Card>
-
-            {/* Clinical Notes */}
-            <Card className=" rounded-xl border  p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-secondary-900">
-                  Clinical Notes
-                </h3>
-                <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
-                  Add Note
-                </button>
-              </div>
-              <div className="space-y-4">
-                {appointment.clinicalNotes.map((note, index) => (
-                  <div key={index} className="p-3  rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-medium text-secondary-900">
-                        {note.author}
-                      </p>
-                      <p className="text-xs text-secondary-500">{note.date}</p>
-                    </div>
-                    <p className="text-sm text-secondary-600">{note.note}</p>
-                  </div>
-                ))}
-              </div>
             </Card>
           </div>
         </div>

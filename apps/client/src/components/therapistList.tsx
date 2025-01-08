@@ -67,7 +67,10 @@ export const TherapistList: React.FC<TherapistProps> = ({ therapists }) => {
                   <AvatarFallback>{therapist.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-lg font-semibold">{therapist.name}</h3>
+                  <h3 className="text-lg font-semibold">
+                    {" "}
+                    Physiotherapist {therapist.name}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     {therapist.specialization}
                   </p>

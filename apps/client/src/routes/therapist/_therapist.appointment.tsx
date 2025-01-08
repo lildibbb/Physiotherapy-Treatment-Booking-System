@@ -96,7 +96,7 @@ function RouteComponent() {
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold">Appointments</h2>
             <p className="text-secondary-600 mt-1 sm:mt-2">
-              Your appointments with your therapist
+              Your appointments with your patient
             </p>
           </div>
         </div>

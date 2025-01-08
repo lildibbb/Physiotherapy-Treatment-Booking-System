@@ -138,6 +138,7 @@ export const appointments = pgTable("appointments", {
   appointmentDate: date("appointmentDate").notNull(),
   time: varchar("time", { length: 10 }).notNull(),
   status: varchar("status", { length: 50 }).notNull(),
+  meetingLink: varchar("meetingLink", { length: 255 }),
   patientID: integer("patientID")
     .references(() => patients.patientID)
     .notNull(),

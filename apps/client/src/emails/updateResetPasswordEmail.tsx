@@ -74,7 +74,7 @@ const UpdateResetPassword: React.FC<UpdateResetPasswordProps> = ({
   );
 };
 
-// Function to send the Password Update Confirmation email
+// Function to send the Password Update Confirmation emaail
 export const sendUpdateResetPasswordEmail = async (
   props: UpdateResetPasswordProps
 ) => {

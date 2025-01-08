@@ -12,7 +12,10 @@ import {
   TreatmentPlanSchema,
   type Exercise,
   type TreatmentPlan,
+  type MeetingLink,
+  MeetingLinkSchema,
 } from "../../types";
+import { createMeetingLink } from "../services/appointment-services";
 
 export const treatmentPlanRoutes = new Elysia()
   .use(jwtAccessSetup)
@@ -319,6 +322,64 @@ export const treatmentPlanRoutes = new Elysia()
                 description: "Unexpected server error while fetching exercises",
               },
             },
+          },
+        }
+      )
+      .patch(
+        `/:appointmentID/meeting-link`,
+        async ({ body, jwt, cookie: { auth }, params }) => {
+          //Authenticate user
+          const authResult = await verifyAuth(jwt, auth?.value);
+          console.log("Auth Result [fromMeetingLink]:", authResult);
+
+          if ("error" in authResult) {
+            return jsonResponse({ error: authResult.error }, 401);
+          }
+
+          // Parse
+          const appointmentID = Number(params.appointmentID);
+          if (isNaN(appointmentID)) {
+            return jsonResponse({ error: "Invalid appointment ID" }, 400);
+          }
+
+          console.log("received body", body);
+
+          try {
+            const result = await createMeetingLink(
+              body as MeetingLink,
+              appointmentID,
+              authResult.profile
+            );
+
+            return result;
+          } catch (error: any) {
+            console.error("Error creating meeting link", error.message);
+            return jsonResponse(
+              {
+                error:
+                  "An unexpected error occurred while creating the meeting link",
+              },
+              500
+            );
+          }
+        },
+        {
+          body: MeetingLinkSchema,
+          detail: {
+            description: "Create a meeting link for a specific appointment",
+            tags: ["Treatment Plan"],
+            parameters: [
+              {
+                name: "appointmentID",
+                in: "path",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+                description:
+                  "The ID of the appointment for which the meeting link is to be created",
+              },
+            ],
           },
         }
       );

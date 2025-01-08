@@ -31,7 +31,7 @@ export type StaffRegistration = {
   password: string; // Password for the staff account ( Required )
   name: string;
   role: string;
-  contactDetails: string; // Contact details for the staff account ( Required )
+  contactDetails?: string; // Contact details for the staff account ( Required )
 };
 
 export type TherapistRegistration = {
@@ -160,6 +160,14 @@ export type CancelAppointment = {
   appointmentID: number;
 };
 
+export type MeetingLink = {
+  meetingLink: string;
+};
+
+export const MeetingLinkSchema = t.Object({
+  meetingLink: t.String(),
+});
+
 export const ExerciseSchema = t.Object({
   planID: t.Number(),
   name: t.String(),
@@ -242,7 +250,7 @@ export const StaffRegistrationSchema = t.Object({
   password: t.String(),
   name: t.String(),
   role: t.String(),
-  contactDetails: t.String(),
+  contactDetails: t.Optional(t.String()),
 });
 
 export const TherapistRegistrationSchema = t.Object({

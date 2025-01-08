@@ -9,11 +9,12 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 import NotificationSetup from "./components/notification.tsx";
+
 // Register the service worker for push notifications
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("/service-worker-notification.js")
+      .register("/service-worker.js") // Use the correct path
       .then((registration) => {
         console.log(
           "Service Worker registered with scope:",

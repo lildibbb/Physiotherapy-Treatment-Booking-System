@@ -41,8 +41,9 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Header } from "@/components/header";
+import { sendBusinessAccountCreatedEmail } from "@/emails/accountBusinessCreatedEmail";
 
 // Typecast JSON data
 const stateCities: { [key: string]: string[] } = rawStateCities as {
@@ -84,7 +85,7 @@ export const Route = createFileRoute("/signup/business")({
 function RouteComponent() {
   const { toast } = useToast();
   const [availableCities, setAvailableCities] = useState<string[]>([]);
-
+  const navigate = useNavigate();
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -123,11 +124,20 @@ function RouteComponent() {
         data.city,
         data.postalCode
       );
-      toast({
-        variant: "default",
-        title: "Registration Successful",
-        description: "Your business account has been created.",
+      await sendBusinessAccountCreatedEmail({
+        businessName: data.companyName,
+        email: data.contactEmail,
+        tempPassword: "business123",
+        to: data.contactEmail,
+        loginUrl: `${import.meta.env.VITE_APP_URL}/login`,
       });
+      // toast({
+      //   variant: "default",
+      //   title: "Registration Successful",
+      //   description: "Your business account has been created.",
+      // });
+      // Navigate to the success page
+      navigate({ to: "/signup/success" });
     } catch (error) {
       console.error("Registration error:", error);
 
@@ -177,7 +187,7 @@ function RouteComponent() {
   return (
     <div className="min-h-screen dark:bg-gray-900">
       <Header />
-      <div className="flex items-center justify-center pt-8">
+      <div className="flex items-center justify-center pt-15">
         <Card className="w-full max-w-2xl p-6">
           <CardHeader>
             <CardTitle className="text-3xl font-semibold tracking-tight text-center">

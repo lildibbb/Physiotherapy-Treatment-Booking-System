@@ -111,7 +111,7 @@ function RouteComponent() {
         role: data.role,
         email: data.email,
         tempPassword: data.password,
-        loginUrl: "http://localhost:3000/auth/login", // Update this to your actual login URL
+        loginUrl: `${import.meta.env.VITE_API_BASE_URL}/login`, // Update this to your actual login URL
         to: data.email,
       });
     } catch (error) {

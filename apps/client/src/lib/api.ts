@@ -966,3 +966,25 @@ export const sendNotification = async (
     throw new Error("Failed to send notification. Please try again.");
   }
 };
+
+export const createMeetingLink = async (
+  meetingLink: string,
+  appointmentID: number
+) => {
+  const response = await fetch(
+    `${apiBaseUrl}/treatment-plan/${appointmentID}/meeting-link`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ meetingLink }),
+    }
+  );
+  console.log("Response from {api.ts createMeetingLink}:", response);
+  if (!response.ok) {
+    throw new Error("Failed to create meeting link");
+  }
+  return response.json();
+};

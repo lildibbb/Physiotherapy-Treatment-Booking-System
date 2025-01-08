@@ -127,6 +127,7 @@ export async function getAppointment(profile: {
         appointmentDate: appointments.appointmentDate,
         time: appointments.time,
         status: appointments.status,
+        meetingLink: appointments.meetingLink,
       })
       .from(appointments)
       .where(
@@ -179,7 +180,10 @@ export async function getAppointment(profile: {
     console.log("therapist userID: ", therapistUserID[0]?.therapistUserID);
 
     const therapistName = await db
-      .select({ therapistName: user_authentications.name })
+      .select({
+        therapistName: user_authentications.name,
+        contactDetails: user_authentications.contactDetails,
+      })
       .from(user_authentications)
       .where(
         eq(user_authentications.userID, therapistUserID[0]?.therapistUserID)
@@ -187,6 +191,7 @@ export async function getAppointment(profile: {
       .execute();
 
     console.log("therapist name: ", therapistName[0]?.therapistName);
+    console.log("therapist contactDetails: ", therapistName[0]?.contactDetails);
     const staffUserID = await db
       .select({ staffUserID: staffs.userID })
       .from(staffs)
@@ -208,6 +213,7 @@ export async function getAppointment(profile: {
       patientName: patientName[0]?.patientName || "Unknown Patient",
       gender: patientName[0]?.gender || "Unknown",
       therapistName: therapistName[0]?.therapistName || "Unknown Therapist",
+      contactDetails: therapistName[0]?.contactDetails || "Unknown Contact",
       staffName: staffName[0]?.staffName || "Unknown Staff",
     }));
 
@@ -271,5 +277,29 @@ export async function cancelAppointment(
   } catch (error) {
     console.error("Error fetching appointment data:", error);
     return jsonResponse({ error: "Unable to fetch appointment data" }, 500);
+  }
+}
+
+export async function createMeetingLink(
+  reqBody: { meetingLink: string },
+  appointmentID: number,
+  profile: { therapistID: number }
+) {
+  if (!reqBody.meetingLink) {
+    return jsonResponse({ error: "meetingLink is required." }, 400);
+  }
+  const therapistID = profile.therapistID;
+  console.log("Therapist ID received:", therapistID);
+
+  try {
+    const meetingLinkData = await db
+      .update(appointments)
+      .set({ meetingLink: reqBody.meetingLink })
+      .where(eq(appointments.appointmentID, appointmentID))
+      .returning()
+      .execute();
+  } catch (error) {
+    console.error("Error creating meeting link:", error);
+    return jsonResponse({ error: "Unable to create meeting link" }, 500);
   }
 }

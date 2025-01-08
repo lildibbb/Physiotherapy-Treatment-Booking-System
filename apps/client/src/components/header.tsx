@@ -82,7 +82,7 @@ export const Header = () => {
       case "staff":
         return "/staff/appointment";
       case "business":
-        return "/business/appointment";
+        return "/business/therapist_list";
       case "patient":
         return "/user/appointment";
       case "therapist":

@@ -186,7 +186,7 @@ export async function fulfillCheckoutRequest(sessionID: string) {
           };
           const notificationPayloadStaff = {
             title: `A new appointment has been booked`,
-            body: `A new appointment with Physiotherapist ${therapistName} has been scheduled`,
+            body: `A new appointment with Physiotherapist ${therapistName[0].name} has been scheduled`,
           };
 
           // Send notifications
