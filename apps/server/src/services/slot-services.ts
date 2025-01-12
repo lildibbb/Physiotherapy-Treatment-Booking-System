@@ -65,7 +65,20 @@ export async function getAvailableSlot(params: {
         dateKey = calculateDateForDay(slot.dayOfWeek);
       }
       console.log("Valid dateKey:", dateKey);
-
+      // if (slot.specialDate) {
+      //   const validatedSpecialDate = validateSpecialDate(
+      //     slot.specialDate,
+      //     slot.dayOfWeek
+      //   );
+      //   if (!validatedSpecialDate) {
+      //     console.log(
+      //       `Special date ${slot.specialDate} does not align with the expected day. Marking as available.`
+      //     );
+      //     slotsByDate[dateKey].unavailable = false;
+      //     return;
+      //   }
+      //   dateKey = validatedSpecialDate;
+      // }
       // Mark the day as available only if there's a start and end time
       if (slot.startTime && slot.endTime && slot.isAvailable === 1) {
         if (!slotsByDate[dateKey]) {
@@ -77,21 +90,36 @@ export async function getAvailableSlot(params: {
             unavailable: false, // Mark available
           };
           console.log(`Initialized AvailableSlot for ${dateKey}`);
+        } else if (slot.specialDate) {
+          const validatedSpecialDate = validateSpecialDate(
+            slot.specialDate,
+            slot.dayOfWeek
+          );
+          if (!validatedSpecialDate) {
+            console.log(
+              `Special date ${slot.specialDate} does not align with the expected day. Marking as available.`
+            );
+            slotsByDate[dateKey].unavailable = false;
+            return;
+          }
+          slotsByDate[dateKey].unavailable = true;
         } else {
           slotsByDate[dateKey].unavailable = false; // Mark as available
           console.log(`Marked ${dateKey} as available`);
         }
 
         let currentTime = slot.startTime;
-        while (currentTime < slot.endTime) {
-          if (isMorning(currentTime)) {
-            slotsByDate[dateKey].morning.push(currentTime);
-            console.log(`Added morning slot ${currentTime} to ${dateKey}`);
-          } else if (isAfternoon(currentTime)) {
-            slotsByDate[dateKey].afternoon.push(currentTime);
-            console.log(`Added afternoon slot ${currentTime} to ${dateKey}`);
+        if (!slot.specialDate) {
+          while (currentTime < slot.endTime) {
+            if (isMorning(currentTime)) {
+              slotsByDate[dateKey].morning.push(currentTime);
+              console.log(`Added morning slot ${currentTime} to ${dateKey}`);
+            } else if (isAfternoon(currentTime)) {
+              slotsByDate[dateKey].afternoon.push(currentTime);
+              console.log(`Added afternoon slot ${currentTime} to ${dateKey}`);
+            }
+            currentTime = addOneHour(currentTime);
           }
-          currentTime = addOneHour(currentTime);
         }
       } else {
         console.log(

@@ -4,18 +4,18 @@ import {
   CarouselApi,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from "@/components/ui/carousel";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const Testimonial = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    if (!api) {
-      return;
-    }
+    if (!api) return;
 
     const autoScroll = setTimeout(() => {
       if (api.selectedScrollSnap() + 1 === api.scrollSnapList().length) {
@@ -43,7 +43,7 @@ export const Testimonial = () => {
       name: "James Carter",
       image: "https://randomuser.me/api/portraits/men/2.jpg",
       feedback:
-        "I’ve saved so much time by switching to this platform for my physiotherapy treatments. The therapists are top-notch and certified!",
+        "I've saved so much time by switching to this platform for my physiotherapy treatments. The therapists are top-notch and certified!",
       role: "Software Developer",
     },
     {
@@ -56,50 +56,73 @@ export const Testimonial = () => {
   ];
 
   return (
-    <div className=" bg-teal-200 w-full px-4 py-10 lg:py-20">
-      <div className="container mx-auto">
-        <div className="flex flex-col gap-10">
-          <h2 className="text-3xl md:text-5xl tracking-tighter lg:max-w-xl font-bold text-left">
+    <section className="w-full bg-teal-50/50 py-16 md:py-24">
+      <div className="container mx-auto px-4">
+        <div className="mx-auto max-w-2xl text-center mb-12">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
             What Our Patients Say
           </h2>
-          <Carousel setApi={setApi} className="w-full ">
-            <CarouselContent>
+          <p className="text-lg text-muted-foreground">
+            Discover why thousands of patients trust PhysioConnect for their
+            physiotherapy needs.
+          </p>
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Carousel
+            setApi={setApi}
+            className="w-full"
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+          >
+            <CarouselContent className="-ml-2 md:-ml-4">
               {testimonials.map((testimonial, index) => (
-                <CarouselItem className="lg:basis-1/2" key={index}>
-                  <div className="bg-muted rounded-md h-full lg:col-span-2 p-6  flex flex-col justify-between">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex flex-col">
-                        <h3 className="text-xl tracking-tight font-semibold">
-                          {testimonial.feedback}
-                        </h3>
-                        <p className="text-muted-foreground max-w-xs text-base italic">
+                <CarouselItem
+                  key={index}
+                  className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3"
+                >
+                  <Card className="h-full">
+                    <CardContent className="p-6">
+                      <blockquote className="space-y-6">
+                        <p className="text-base leading-relaxed text-muted-foreground">
                           "{testimonial.feedback}"
                         </p>
-                      </div>
-                      <div className="flex items-center gap-x-2 sm:gap-x-4 mt-4 flex-wrap">
-                        <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
-                          <AvatarImage src={testimonial.image} />
-                          <AvatarFallback>
-                            {testimonial.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col">
-                          <p className="font-medium text-sm sm:text-base">
-                            {testimonial.name}
-                          </p>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
-                            {testimonial.role}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                        <footer className="mt-6">
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage
+                                src={testimonial.image}
+                                alt={testimonial.name}
+                              />
+                              <AvatarFallback>
+                                {testimonial.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="text-sm">
+                              <div className="font-semibold text-foreground">
+                                {testimonial.name}
+                              </div>
+                              <div className="text-muted-foreground">
+                                {testimonial.role}
+                              </div>
+                            </div>
+                          </div>
+                        </footer>
+                      </blockquote>
+                    </CardContent>
+                  </Card>
                 </CarouselItem>
               ))}
             </CarouselContent>
+            <div className="hidden md:block">
+              <CarouselPrevious className="absolute -left-12 top-1/2 -translate-y-1/2" />
+              <CarouselNext className="absolute -right-12 top-1/2 -translate-y-1/2" />
+            </div>
           </Carousel>
         </div>
       </div>
-    </div>
+    </section>
   );
 };

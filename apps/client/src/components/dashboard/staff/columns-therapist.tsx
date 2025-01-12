@@ -296,13 +296,22 @@ const EditAvailabilityForm = ({
             <span className="font-medium w-24">Special Date:</span>
             <DatePicker
               selected={slot.specialDate ? new Date(slot.specialDate) : null}
-              onChange={(date: Date | null) =>
-                handleChange(
-                  index,
-                  "specialDate",
-                  date ? date.toISOString().split("T")[0] : null
-                )
-              }
+              onChange={(date) => {
+                if (date) {
+                  const formattedDate = new Date(
+                    Date.UTC(
+                      date.getFullYear(),
+                      date.getMonth(),
+                      date.getDate()
+                    )
+                  );
+                  handleChange(
+                    index,
+                    "specialDate",
+                    formattedDate.toISOString().split("T")[0]
+                  );
+                }
+              }}
               className="border p-2 rounded w-full"
               placeholder="Select a date"
               isClearable

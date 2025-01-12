@@ -17,7 +17,10 @@ function RouteComponent() {
       <Header />
       <Hero />
       <Testimonial />
-      <FeatureBusiness />
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-teal-50/50 to-transparent h-32" />
+        <FeatureBusiness />
+      </div>
       <FAQ />
       <Footer />
     </div>

@@ -243,6 +243,10 @@ export const therapistRoutes = new Elysia()
         "/:therapistID/availability",
         async ({ params }) => {
           const therapistID = Number(params.therapistID);
+          console.log(
+            "Received GET /api/therapist/:therapistID/availability",
+            therapistID
+          );
           if (isNaN(therapistID)) {
             return jsonResponse({ error: "Invalid therapist ID" }, 400); // Invalid ID
           }
@@ -269,13 +273,13 @@ export const therapistRoutes = new Elysia()
           detail: {
             description: "Get therapist availability slots by ID",
             tags: ["Physiotherapist"],
-            parameters: [
-              {
-                name: "therapistID",
-                in: "path",
-                description: "ID of the therapist to fetch availability slots",
-              },
-            ],
+            // parameters: [
+            //   {
+            //     name: "therapistID",
+            //     in: "path",
+            //     description: "ID of the therapist to fetch availability slots",
+            //   },
+            // ],
           },
         }
       )
