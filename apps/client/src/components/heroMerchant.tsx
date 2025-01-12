@@ -3,65 +3,88 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@tanstack/react-router";
 import HeroImage from "../assets/HeroImage1.gif";
+
 export const HeroMerchant = () => (
-  <div className="w-full px-4 py-20 lg:py-40">
-    <div className="container mx-auto">
-      <div className="grid grid-cols-1 gap-8 items-center md:grid-cols-2">
-        <div className="flex gap-4 flex-col">
-          <div>
-            <Badge variant="outline">Merchant!</Badge>
-          </div>
-          <div className="flex gap-4 flex-col">
-            <h1 className="text-5xl md:text-7xl max-w-lg tracking-tighter text-left font-bold">
-              Ready to{" "}
-              <span className="inline bg-gradient-to-r from-[#61DAFB] via-[#1fc0f1] to-[#03a3d7] text-transparent bg-clip-text">
-                Transform
-              </span>{" "}
-              Your Physiotherapy Practice?
-            </h1>
-            <p className="text-xl leading-relaxed tracking-tight text-muted-foreground max-w-md text-left">
-              Managing a physiotherapy clinic shouldn't be more complicated than
-              necessary. Sign up today and simplify your business with
-              PhysioConnect – the platform built to streamline your operations
-              and enhance patient care.
-            </p>
-          </div>
-          <div className="flex flex-row gap-4">
-            <Button size="default" className="gap-4" variant="outline">
-              Jump on a call <PhoneCall className="w-4 h-4" />
-            </Button>
-            <Link to="/signup/business">
-              <Button variant="linkHover2" size="default" className="gap-4">
-                Sign me up!
-                <MoveRight className="w-4 h-4" />
+  <section className="relative overflow-hidden">
+    <div className="absolute inset-0 bg-grid-small-black/[0.02] -z-10" />
+    <div className="w-full px-4 py-20 lg:py-32">
+      <div className="container mx-auto">
+        <div className="grid grid-cols-1 gap-12 items-center lg:grid-cols-2">
+          <div className="flex gap-6 flex-col">
+            <div className="space-y-2">
+              <Badge variant="outline" className="px-4 py-1 text-base">
+                For Physiotherapy Clinics
+              </Badge>
+            </div>
+            <div className="space-y-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl max-w-xl tracking-tight font-bold">
+                Streamline Your{" "}
+                <span className="inline bg-gradient-to-r from-[#61DAFB] via-[#1fc0f1] to-[#03a3d7] text-transparent bg-clip-text">
+                  Physiotherapy Practice
+                </span>{" "}
+                with Ease
+              </h1>
+              <p className="text-xl leading-relaxed text-muted-foreground max-w-lg">
+                Transform your clinic's efficiency with our all-in-one platform.
+                Simplify scheduling, patient management, and billing while
+                delivering exceptional care.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Link to="/signup/business" className="w-full sm:w-auto">
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto gap-2"
+                  variant="default"
+                >
+                  Start Free Trial
+                  <MoveRight className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto gap-2"
+              >
+                Book a Demo
+                <PhoneCall className="w-4 h-4" />
               </Button>
-            </Link>
+            </div>
+            <div className="pt-6">
+              <p className="text-sm text-muted-foreground">
+                ✓ No credit card required &nbsp; ✓ 14-day free trial &nbsp; ✓
+                Cancel anytime
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-8">
-          <div className="bg-muted rounded-md aspect-square">
-            <img
-              src={HeroImage}
-              alt="placeholder hero"
-              className="max-h-96 w-full rounded-md object-cover"
-            />
-          </div>
-          <div className="bg-muted rounded-md row-span-2">
-            <img
-              src={HeroImage}
-              alt="placeholder hero"
-              className="max-h-96 w-full rounded-md object-cover"
-            />
-          </div>
-          <div className="bg-muted rounded-md aspect-square">
-            <img
-              src={HeroImage}
-              alt="placeholder hero"
-              className="max-h-96 w-full rounded-md object-cover"
-            />
+          <div className="relative">
+            <div className="absolute -inset-4 bg-gradient-to-r from-[#61DAFB]/20 via-[#1fc0f1]/20 to-[#03a3d7]/20 blur-3xl -z-10" />
+            <div className="grid grid-cols-5 gap-4 relative">
+              <div className="col-span-3 row-span-3">
+                <img
+                  src={HeroImage}
+                  alt="PhysioConnect dashboard interface"
+                  className="w-full h-full object-cover rounded-xl shadow-2xl"
+                />
+              </div>
+              <div className="col-span-2 row-span-2">
+                <img
+                  src={HeroImage}
+                  alt="Patient management interface"
+                  className="w-full h-full object-cover rounded-xl shadow-xl"
+                />
+              </div>
+              <div className="col-span-2">
+                <img
+                  src={HeroImage}
+                  alt="Scheduling interface"
+                  className="w-full h-full object-cover rounded-xl shadow-lg"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 );

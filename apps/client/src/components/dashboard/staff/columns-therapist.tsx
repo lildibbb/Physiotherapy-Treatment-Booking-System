@@ -234,16 +234,20 @@ const EditAvailabilityForm = ({
           </div>
 
           {/* Start Time */}
+          {/* Start Time */}
           <div className="flex items-center space-x-2">
             <span className="font-medium w-24">Start Time:</span>
             <select
-              value={slot.startTime.split(":")[0]}
+              value={slot.startTime ? slot.startTime.split(":")[0] : ""}
               onChange={(e) => {
                 const hour = e.target.value.padStart(2, "0");
                 handleChange(index, "startTime", `${hour}:00`);
               }}
               className="border p-2 rounded w-full"
             >
+              <option value="" disabled>
+                Select Start Time
+              </option>
               {Array.from({ length: 11 }, (_, i) => i + 8).map((hour) => (
                 <option key={hour} value={hour.toString().padStart(2, "0")}>
                   {hour.toString().padStart(2, "0")}:00
@@ -256,13 +260,16 @@ const EditAvailabilityForm = ({
           <div className="flex items-center space-x-2">
             <span className="font-medium w-24">End Time:</span>
             <select
-              value={slot.endTime.split(":")[0]}
+              value={slot.endTime ? slot.endTime.split(":")[0] : ""}
               onChange={(e) => {
                 const hour = e.target.value.padStart(2, "0");
                 handleChange(index, "endTime", `${hour}:00`);
               }}
               className="border p-2 rounded w-full"
             >
+              <option value="" disabled>
+                Select End Time
+              </option>
               {Array.from({ length: 11 }, (_, i) => i + 8).map((hour) => (
                 <option key={hour} value={hour.toString().padStart(2, "0")}>
                   {hour.toString().padStart(2, "0")}:00

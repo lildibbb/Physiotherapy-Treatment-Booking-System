@@ -187,7 +187,7 @@ function RouteComponent() {
   return (
     <div className="min-h-screen dark:bg-gray-900">
       <Header />
-      <div className="flex items-center justify-center pt-15">
+      <div className="flex items-center justify-center pt-24">
         <Card className="w-full max-w-2xl p-6">
           <CardHeader>
             <CardTitle className="text-3xl font-semibold tracking-tight text-center">
