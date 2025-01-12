@@ -102,7 +102,7 @@ function RouteComponent() {
   const [isExerciseExist, setIsExerciseExist] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [isMeetingLinkExist, setIsMeetingLinkExist] = useState(false);
-
+  const [MeetingLink, setMeetingLink] = useState<string | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
   // Input validation
   if (!appointmentID) {
@@ -322,6 +322,10 @@ function RouteComponent() {
       console.log("payload:", payload, "appointmentID", id);
       const newTreatmentPlan = await createTreatmentPlan(id, payload);
       console.log("NewtreatmentPlan:", newTreatmentPlan);
+      const newdata = await getTreatmentPlan(id);
+      console.log("Fetched treatment plan data:", newdata);
+      setTreatmentPlan(newdata);
+      setIsPlanExist(true);
       return newTreatmentPlan;
     } catch (error) {
       console.error("Failed to create treatment plan", error);
@@ -346,7 +350,7 @@ function RouteComponent() {
       const newExercise = await createExercise(payload);
       console.log("New exercise:", newExercise);
       const exercises = await fetchExerciseByID(treatmentPlan.planID);
-      console.log("Fetched Exercises:", exercises);
+      console.log("Fetched Exercises from exercise added:", exercises);
       // Handle exercise data appropriately
       // Sanitize and convert video URLs to embed format
       const sanitizedExercises = exercises.map(
@@ -369,6 +373,7 @@ function RouteComponent() {
       );
 
       setExercise(sanitizedExercises);
+      setIsExerciseExist(true);
 
       return newExercise;
     } catch (error) {
@@ -383,7 +388,9 @@ function RouteComponent() {
       console.log("payload:", data.meetingLink);
       const meetingLink = await createMeetingLink(data.meetingLink, id);
       console.log("Meeting Link:", meetingLink);
-
+      setMeetingLink(meetingLink);
+      console.log("Meeting Link:", MeetingLink);
+      console.log("Meeting Link:", meetingLink);
       setIsMeetingLinkExist(true);
       toast({
         title: "Meeting Link Created",
@@ -391,17 +398,17 @@ function RouteComponent() {
         variant: "default",
       });
 
-      const appointments = await fetchAppointmentByID(id);
-      console.log("Fetched Appointments:", appointments);
-      setData(appointments);
+      // const appointments = await fetchAppointmentByID(id);
+      // console.log("Fetched Appointments:", appointments);
+      // setData(appointments);
 
-      if (appointments.avatar) {
-        const apiBaseUrl = import.meta.env.VITE_ENDPOINT_AVATAR_URL; // Update with your actual API base URL
-        const avatarUrl = `${apiBaseUrl}/${appointments.avatar}`;
-        console.log("Avatar URL:", avatarUrl);
+      // if (appointments.avatar) {
+      //   const apiBaseUrl = import.meta.env.VITE_ENDPOINT_AVATAR_URL; // Update with your actual API base URL
+      //   const avatarUrl = `${apiBaseUrl}/${appointments.avatar}`;
+      //   console.log("Avatar URL:", avatarUrl);
 
-        setAvatar(avatarUrl);
-      }
+      //   setAvatar(avatarUrl);
+      // }
 
       // Return the created meeting link as required
       return { meetingLink: data.meetingLink };
@@ -760,7 +767,7 @@ function RouteComponent() {
                   <div className="space-y-4">
                     <div className="flex flex-col gap-4">
                       <a
-                        href={`${appointment.meetingLink}`}
+                        href={`${MeetingLink}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
