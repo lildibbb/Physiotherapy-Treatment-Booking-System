@@ -19,6 +19,7 @@ const badgeVariants = cva(
         pending: "bg-yellow-500/10 text-yellow-700 border-yellow-300",
         "Waiting for approval of refund":
           "bg-red-500/10 text-red-700 border-red-300",
+        cancelled: "bg-red-600/10 text-red-700 border-red-400",
       },
     },
     defaultVariants: {

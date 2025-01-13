@@ -21,10 +21,15 @@ interface AppointmentTimeSlotProps {
 
 const statusVariantMap: Record<
   string,
-  "ongoing" | "pending" | "Waiting for approval of refund" | "default"
+  | "ongoing"
+  | "pending"
+  | "Waiting for approval of refund"
+  | "cancelled"
+  | "default"
 > = {
   Ongoing: "ongoing", // Variant for "Ongoing"
   Pending: "pending", // Variant for "Pending"
+  Cancelled: "cancelled", // Variant for "Cancelled"
   "Waiting for approval of refund": "Waiting for approval of refund", // Variant for refund status
 };
 
