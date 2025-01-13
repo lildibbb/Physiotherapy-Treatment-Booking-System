@@ -986,5 +986,5 @@ export const createMeetingLink = async (
   if (!response.ok) {
     throw new Error("Failed to create meeting link");
   }
-  return response;
+  return response.json();
 };

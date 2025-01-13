@@ -1,6 +1,9 @@
-// appointmentTimeSlot.tsx
-import React from "react";
+import { Calendar, Clock, User } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface Appointment {
   appointmentID: string;
@@ -16,6 +19,15 @@ interface AppointmentTimeSlotProps {
   appointment?: Appointment;
 }
 
+const statusVariantMap: Record<
+  string,
+  "ongoing" | "pending" | "Waiting for approval of refund" | "default"
+> = {
+  Ongoing: "ongoing", // Variant for "Ongoing"
+  Pending: "pending", // Variant for "Pending"
+  "Waiting for approval of refund": "Waiting for approval of refund", // Variant for refund status
+};
+
 const AppointmentTimeSlot: React.FC<AppointmentTimeSlotProps> = ({
   time,
   appointment,
@@ -23,40 +35,53 @@ const AppointmentTimeSlot: React.FC<AppointmentTimeSlotProps> = ({
   const formattedTime = time.padStart(2, "0") + ":00";
   const hourNumber = parseInt(time, 10);
   const isAM = hourNumber < 12;
-  const displayTime = `${formattedTime} ${isAM ? "AM" : "PM"}`;
+  const displayTime = `${hourNumber > 12 ? hourNumber - 12 : hourNumber}:00 ${
+    isAM ? "AM" : "PM"
+  }`;
 
   return (
-    <div className="min-h-[80px] relative group p-4 sm:p-6 border-b last:border-b-0">
-      {/* Time Label */}
-      <div className="absolute left-4 top-2 text-sm text-secondary-500 sm:left-6 sm:top-3">
-        {displayTime}
+    <div className="group relative min-h-[100px] border-b last:border-b-0 p-4">
+      <div className="absolute left-4 top-4 flex items-center gap-2 text-sm text-muted-foreground">
+        <Clock className="h-4 w-4" />
+        <span>{displayTime}</span>
       </div>
 
-      {/* Appointment Details */}
       {appointment ? (
-        <div className="ml-16 sm:ml-20 mt-1 p-3 bg-blue-100 rounded-lg border border-blue-200">
-          <Link
-            to="/user/appointment/$appointmentID"
-            params={{ appointmentID: appointment.appointmentID.toString() }}
-            className="block"
-          >
-            <div className="font-medium text-sm sm:text-base">
-              Appointment with {appointment.therapistName}
+        <Link
+          to="/staff/appointment/$appointmentID"
+          params={{ appointmentID: appointment.appointmentID.toString() }}
+          className="block"
+        >
+          <Card className="ml-24 transition-shadow hover:shadow-md">
+            <div className="p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">
+                    Appointment with {appointment.therapistName}
+                  </span>
+                </div>
+                <Badge
+                  variant={statusVariantMap[appointment.status] || "default"}
+                >
+                  {appointment.status}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span>{appointment.patientName}</span>
+              </div>
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">
-              Patient: {appointment.patientName}
-            </div>
-            <div className="text-xs sm:text-sm text-gray-600">
-              Status: {appointment.status}
-            </div>
+          </Card>
+        </Link>
+      ) : (
+        <div className="ml-24 flex h-full items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+          <Link to="/findDoctor" className="w-full">
+            <Button variant="outline" className="w-full">
+              Book Appointment
+            </Button>
           </Link>
         </div>
-      ) : (
-        /* Hoverable Button for Available Slots */
-        <button
-          className="absolute inset-0 w-full h-full opacity-0 group-hover:opacity-100 bg-gray-50/50 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          aria-label={`Available slot at ${displayTime}`}
-        />
       )}
     </div>
   );
@@ -69,23 +94,20 @@ interface AppointmentSlotsProps {
 const AppointmentSlots: React.FC<AppointmentSlotsProps> = ({
   appointments,
 }) => {
-  // Convert appointment times to hour numbers for comparison
   const getHourFromTime = (timeString: string): number => {
     const [hours] = timeString.split(":");
     return parseInt(hours, 10);
   };
 
-  // Find appointment for a specific hour
   const findAppointmentForHour = (hour: number): Appointment | undefined => {
     return appointments.find((apt) => getHourFromTime(apt.time) === hour);
   };
 
-  // Generate hours from 8 AM to 4 PM (8 to 16)
-  const timeSlots = Array.from({ length: 9 }, (_, i) => i + 8);
+  const timeSlots = Array.from({ length: 11 }, (_, i) => i + 8);
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="grid grid-cols-1 divide-y divide-gray-200">
+    <div className="flex-1 overflow-auto rounded-lg border bg-background">
+      <div className="divide-y divide-border">
         {timeSlots.map((hour) => (
           <AppointmentTimeSlot
             key={hour}

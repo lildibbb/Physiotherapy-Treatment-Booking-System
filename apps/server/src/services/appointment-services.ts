@@ -85,7 +85,7 @@ export async function createAppointment(
         patientID: patientID, // Add patientID
         therapistID: therapistID, // Add therapistID
         staffID: staffID, // Add staffID
-        status: "pending", // Default status
+        status: "Pending", // Default status
         // Default plan ID (can be null if not provided)
       })
       .returning() // Return the inserted record

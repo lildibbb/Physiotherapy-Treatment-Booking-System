@@ -7,14 +7,13 @@ import { Spinner } from "@/components/spinner";
 
 import { Calendar } from "@/components/ui/calendar";
 
-import AppointmentSlots from "@/components/appointmentTimeSlotStaffView";
-
 import { MainNav } from "@/components/dashboard/staff/main-nav";
 import { UserNav } from "@/components/dashboard/staff/user-nav";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DataTable } from "@/components/data-table";
 import { columns } from "@/components/columns-appointment";
+import AppointmentSlots from "@/components/appointmentTimeSlot";
 
 export interface AppointmentData {
   appointmentID: string;

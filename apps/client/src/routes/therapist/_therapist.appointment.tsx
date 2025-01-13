@@ -7,13 +7,13 @@ import { Spinner } from "@/components/spinner";
 
 import { Calendar } from "@/components/ui/calendar";
 
-import AppointmentSlots from "@/components/appointmentTimeSlotTherapistView";
 import { MainNav } from "@/components/dashboard/therapist/main-nav";
 import { UserNav } from "@/components/dashboard/therapist/user-nav";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DataTable } from "@/components/data-table";
 import { columns } from "@/components/columns-appointment";
+import AppointmentSlots from "@/components/appointmentTimeSlot";
 
 interface AppointmentData {
   appointmentID: string;

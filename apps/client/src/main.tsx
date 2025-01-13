@@ -9,6 +9,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 import NotificationSetup from "./components/notification.tsx";
+import { NotFound } from "./components/404.tsx";
 
 // Register the service worker for push notifications
 if ("serviceWorker" in navigator) {
@@ -26,8 +27,20 @@ if ("serviceWorker" in navigator) {
       });
   });
 }
-// Create a new router instance
-const router = createRouter({ routeTree });
+// Create a new router instance with not found handling
+const router = createRouter({
+  routeTree,
+  defaultErrorComponent: ({ error }) => {
+    // Log the error
+    console.error("Router error:", error);
+    return <NotFound />;
+  },
+  defaultPendingComponent: () => (
+    <div className="flex h-screen items-center justify-center">
+      <p className="text-lg">Loading...</p>
+    </div>
+  ),
+});
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
