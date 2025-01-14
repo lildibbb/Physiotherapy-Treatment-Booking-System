@@ -9,6 +9,9 @@ import {
 } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
+import woman1 from "../assets/woman1.jpg";
+import woman2 from "../assets/woman2.jpg";
+import woman3 from "../assets/woman3.avif";
 
 export const Testimonial = () => {
   const [api, setApi] = useState<CarouselApi>();
@@ -33,22 +36,21 @@ export const Testimonial = () => {
   const testimonials = [
     {
       name: "Sarah Yasmein",
-      image:
-        "https://cdn.discordapp.com/avatars/684424900232085522/74ba83eb9bf7be0a9cd14d19df122e4f.webp?size=80",
+      image: woman1,
       feedback:
         "Booking my physiotherapy sessions online has been a game changer! The convenience and personalized care I receive are unmatched.",
       role: "Doctor",
     },
     {
       name: "James Carter",
-      image: "https://randomuser.me/api/portraits/men/2.jpg",
+      image: woman2,
       feedback:
         "I've saved so much time by switching to this platform for my physiotherapy treatments. The therapists are top-notch and certified!",
       role: "Software Developer",
     },
     {
       name: "Emily Walker",
-      image: "https://randomuser.me/api/portraits/women/3.jpg",
+      image: woman3,
       feedback:
         "The virtual session option is amazing. I was able to receive expert advice from the comfort of my home!",
       role: "Stay-at-home Mom",
