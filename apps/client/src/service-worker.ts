@@ -19,6 +19,9 @@ cleanupOutdatedCaches();
 
 // Use with precache injection
 precacheAndRoute(self.__WB_MANIFEST);
+precacheAndRoute([
+  { url: "/offline.html", revision: "1" }, // Add your offline fallback page
+]);
 
 // Navigation routes
 registerRoute(
