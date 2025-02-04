@@ -50,6 +50,7 @@ import { roles } from "../../data/roles.json";
 import { sendAccountCreatedEmail } from "../../emails/accountCreatedEmail";
 import { MainNav } from "@/components/dashboard/business/main-nav";
 import { UserNav } from "@/components/dashboard/business/user-nav";
+import { toast } from "@/hooks/use-toast";
 interface StaffData {
   staffID?: string;
   email: string;
@@ -105,7 +106,11 @@ function RouteComponent() {
       // Add the `id` returned by the API to the new staff data
       setStaff((prevStaff) => [...prevStaff, { ...data, id: newStaff.id }]);
       setIsSheetOpen(false);
-
+      toast({
+        title: "Physiotherapist registered",
+        description: "Your Therapist has been registered",
+        className: "bg-green-500 text-white",
+      });
       await sendAccountCreatedEmail({
         name: data.name,
         role: data.role,

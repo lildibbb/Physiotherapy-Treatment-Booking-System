@@ -50,6 +50,7 @@ import specialization from "../../data/specialization.json"; // Import the speci
 import { sendAccountCreatedEmail } from "@/emails/accountCreatedEmail";
 import { MainNav } from "@/components/dashboard/business/main-nav";
 import { UserNav } from "@/components/dashboard/business/user-nav";
+import { toast } from "@/hooks/use-toast";
 
 interface TherapistData {
   therapistID?: string;
@@ -107,7 +108,11 @@ function RouteComponent() {
         { ...data, therapistID: newTherapist.id }, // Ensure correct ID assignment
       ]);
       setIsSheetOpen(false);
-
+      toast({
+        title: "Physiotherapist registered",
+        description: "Your Therapist has been registered",
+        className: "bg-green-500 text-white",
+      });
       await sendAccountCreatedEmail({
         name: data.name,
         role: data.specialization,
