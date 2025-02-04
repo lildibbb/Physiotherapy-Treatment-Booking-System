@@ -8,7 +8,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
-import NotificationSetup from "./components/notification.tsx";
+
 import { NotFound } from "./components/404.tsx";
 
 // Register the service worker for push notifications
@@ -54,7 +54,6 @@ declare module "@tanstack/react-router" {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="light" storageKey="shadcn-theme">
-      <NotificationSetup />
       <RouterProvider router={router} />
       <Toaster /> {/* Place Toaster as a sibling to App */}
     </ThemeProvider>

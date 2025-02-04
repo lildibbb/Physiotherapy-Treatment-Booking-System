@@ -48,7 +48,7 @@ export const navUserItems = [
 
   {
     title: "Notifications",
-    url: "/notifications",
+    url: "/therapist/notification",
     icon: Bell,
   },
   {

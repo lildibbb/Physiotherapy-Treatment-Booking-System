@@ -56,7 +56,7 @@ export const navUserItems = [
 
   {
     title: "Notifications",
-    url: "/notifications",
+    url: "/user/notification",
     icon: Bell,
   },
   {

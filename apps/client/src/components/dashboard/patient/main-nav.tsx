@@ -11,10 +11,10 @@ export function MainNav({
       {...props}
     >
       <Link
-        href="/user/dashboard"
+        href="/"
         className="text-sm font-medium transition-colors hover:text-primary"
       >
-        Overview
+        Home
       </Link>
 
       <Link
