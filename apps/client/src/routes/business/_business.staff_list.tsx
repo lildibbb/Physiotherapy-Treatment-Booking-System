@@ -107,8 +107,8 @@ function RouteComponent() {
       setStaff((prevStaff) => [...prevStaff, { ...data, id: newStaff.id }]);
       setIsSheetOpen(false);
       toast({
-        title: "Physiotherapist registered",
-        description: "Your Therapist has been registered",
+        title: "Staff registered",
+        description: "Your staff has been registered",
         className: "bg-green-500 text-white",
       });
       await sendAccountCreatedEmail({
