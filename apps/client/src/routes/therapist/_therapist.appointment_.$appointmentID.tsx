@@ -260,7 +260,7 @@ function RouteComponent() {
     getAuthUser();
     getTreatmentPlanData(id);
     loadAppointments(id);
-  }, []); // Empty dependency array ensures this runs once on mount
+  }, [id]); // Empty dependency array ensures this runs once on mount
   useEffect(() => {
     if (treatmentPlan?.planID) {
       const loadExercise = async () => {
@@ -319,19 +319,31 @@ function RouteComponent() {
         frequency: data.frequency,
         startDate: data.startDate.toISOString(),
       };
-      console.log("payload:", payload, "appointmentID", id);
+
       const newTreatmentPlan = await createTreatmentPlan(id, payload);
-      console.log("NewtreatmentPlan:", newTreatmentPlan);
-      const newdata = await getTreatmentPlan(id);
-      console.log("Fetched treatment plan data:", newdata);
-      setTreatmentPlan(newdata);
+
+      // Update the treatment plan state directly
+      setTreatmentPlan(newTreatmentPlan);
       setIsPlanExist(true);
+
+      toast({
+        title: "Treatment Plan Created",
+        description: "Treatment plan created successfully",
+        variant: "default",
+      });
+
       return newTreatmentPlan;
     } catch (error) {
       console.error("Failed to create treatment plan", error);
+      toast({
+        title: "Failed to create treatment plan",
+        description: "Unable to create treatment plan at this moment",
+        variant: "destructive",
+      });
       return null;
     }
   };
+
   const handleCreateExercise = async (data: {
     name: string;
     description: string;
@@ -388,9 +400,10 @@ function RouteComponent() {
       console.log("payload:", data.meetingLink);
       const meetingLink = await createMeetingLink(data.meetingLink, id);
       console.log("Meeting Link:", meetingLink);
-      setMeetingLink(meetingLink);
+      const meetingLinkText = await meetingLink.text();
+      setMeetingLink(meetingLinkText);
       console.log("Meeting Link:", MeetingLink);
-      console.log("Meeting Link:", meetingLink);
+
       setIsMeetingLinkExist(true);
       toast({
         title: "Meeting Link Created",
@@ -665,7 +678,7 @@ function RouteComponent() {
                     <div>
                       <h4 className="font-medium text-secondary-900">Goals</h4>
                       <p className="text-secondary-600">
-                        {appointment.treatmentPlan.goals}
+                        {treatmentPlan?.goals}
                       </p>
                     </div>
                     <div>
@@ -693,7 +706,7 @@ function RouteComponent() {
                         Duration
                       </h4>
                       <p className="text-secondary-600">
-                        {appointment.treatmentPlan.duration}
+                        {treatmentPlan?.duration} weeks
                       </p>
                     </div>
                     <div>
@@ -701,7 +714,7 @@ function RouteComponent() {
                         Frequency
                       </h4>
                       <p className="text-secondary-600">
-                        {appointment.treatmentPlan.frequency}
+                        {treatmentPlan?.frequency} times a week
                       </p>
                     </div>
                   </div>
