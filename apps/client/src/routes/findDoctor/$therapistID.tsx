@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -36,6 +36,18 @@ import {
   appointmentFormSchema,
 } from "@/components/forms/formSchema";
 import { AppointmentData } from "../staff/_staff.appointment";
+import { Badge } from "@/components/ui/badge";
+import {
+  Building2,
+  Calendar,
+  Clock,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Star,
+  User,
+} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 type Slot = {
   date: string;
   morning: string[];
@@ -46,6 +58,7 @@ export const Route = createFileRoute("/findDoctor/$therapistID")({
   component: RouteComponent,
 });
 
+const languages = ["English", "Malay"];
 function RouteComponent() {
   const [therapist, setTherapist] = React.useState<any>(null);
   const [availability, setAvailability] = React.useState<Slot[]>([]);
@@ -225,48 +238,155 @@ function RouteComponent() {
           {/* Therapist Details Section */}
           <div className="flex-1 h-auto md:mr-4">
             <div className="space-y-6">
-              <div className="border rounded-lg p-6 shadow-sm">
-                <CardHeader>
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 mx-auto md:mx-0">
-                    <img
-                      src={
-                        avatar ||
-                        "https://static.vecteezy.com/system/resources/previews/009/749/645/non_2x/teacher-avatar-man-icon-cartoon-male-profile-mascot-illustration-head-face-business-user-logo-free-vector.jpg"
-                      }
-                      alt={therapist.name}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                </CardHeader>
-                <h2 className="text-2xl sm:text-3xl font-bold">
-                  {therapist.name}
-                </h2>
-                <p className="text-gray-600">{therapist.specialization}</p>
-                <p className="text-sm text-gray-500">
-                  {therapist.experience} Years Experience
-                </p>
-                <p className="text-sm text-gray-500">{therapist.location}</p>
-                <p className="text-sm text-gray-500 font-semibold mt-2">
-                  Rate: {formattedRate} per session
-                </p>
-                <div className="flex flex-wrap gap-2 mt-4">
-                  <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
-                    Highly recommended
-                  </span>
-                  <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
-                    Excellent wait time
-                  </span>
-                </div>
+              <div className="border rounded-lg p-6 shadow-md">
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
+                    {/* Left Column - Profile Image */}
+                    <div className="justify-self-center md:justify-self-start">
+                      <div className="relative">
+                        <div className="w-36 h-36 md:w-48 md:h-48 rounded-2xl overflow-hidden border-2 border-border">
+                          <img
+                            src={
+                              avatar ||
+                              "https://static.vecteezy.com/system/resources/previews/009/749/645/non_2x/teacher-avatar-man-icon-cartoon-male-profile-mascot-illustration-head-face-business-user-logo-free-vector.jpg"
+                            }
+                            alt={therapist.name}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="absolute -top-2 -right-2 bg-background rounded-lg px-2 py-1 flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-primary" />
+                          <span className="text-sm font-medium">10</span>
+                        </div>
+                      </div>
+                    </div>
 
-                <h3 className="mt-4 text-lg font-semibold">Practices</h3>
-                <p className="text-blue-600">{therapist.businessName}</p>
+                    {/* Right Column - Details */}
+                    <div className="space-y-4">
+                      {/* Header Section */}
+                      <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                        <div>
+                          <div className="space-y-1">
+                            <h2 className="text-2xl font-bold flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                              {therapist.name}
+                              <span className="text-base font-semibold text-blue-600 font-normal">
+                                • Physiotherapist
+                              </span>
+                            </h2>
+                            <p className="text-muted-foreground text-sm">
+                              {therapist.specialization}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-left sm:text-right">
+                          <div className="text-xl font-bold text-primary">
+                            RM {therapist.rate}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            per session
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Rating Section */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <Star className="w-4 h-4 fill-yellow-400 stroke-yellow-400" />
+                          <span className="text-sm font-medium">Rating</span>
+                          <button className="text-sm text-muted-foreground hover:underline hover:text-blue-600">
+                            (120 reviews)
+                          </button>
+                        </div>
+                        <span className="bg-green-50 text-green-600 px-2 py-0.5 rounded text-xs font-medium">
+                          ✓ Verified Profile
+                        </span>
+                      </div>
+
+                      {/* Info Grid */}
+                      <div className="grid gap-3 text-sm">
+                        {[
+                          {
+                            icon: <Clock className="w-4 h-4" />,
+                            text: `${therapist.experience} Years Experience`,
+                          },
+                          {
+                            icon: <MapPin className="w-4 h-4" />,
+                            text: therapist.location,
+                          },
+                          {
+                            icon: <Building2 className="w-4 h-4" />,
+                            text: therapist.businessName,
+                          },
+                        ].map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2 text-muted-foreground"
+                          >
+                            {item.icon}
+                            <span>{item.text}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <Separator className="my-4" />
+
+                      {/* Availability and Tags */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 text-xs font-medium border rounded-md">
+                            Next Available
+                          </span>
+                          <span className="text-sm font-medium text-green-600">
+                            Today
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            {
+                              label: "Highly recommended",
+                              class: "bg-yellow-100 text-yellow-800",
+                            },
+                            {
+                              label: "Excellent wait time",
+                              class: "bg-green-100 text-green-800",
+                            },
+                            {
+                              label: "English",
+                              class: "bg-gray-100 text-gray-800",
+                            },
+                            {
+                              label: "Malay",
+                              class: "bg-gray-100 text-gray-800",
+                            },
+                          ].map((badge, index) => (
+                            <span
+                              key={index}
+                              className={`px-3 py-1 text-xs font-medium rounded-full ${badge.class}`}
+                            >
+                              {badge.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
               </div>
 
               {/* About Section */}
-              <div className="border rounded-lg p-6 shadow-sm ">
-                <h3 className="mt text-lg font-semibold">About Doctor</h3>
-                <p className="text-gray-600">
-                  {therapist.about || "No description available"}
+              <div className="border border-gray-200 rounded-lg p-6 shadow-md bg-white">
+                {/* Section Title with Icon */}
+                <div className="flex items-center gap-2 mb-3">
+                  <User className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-xl font-bold text-gray-900">
+                    About Doctor
+                  </h3>
+                </div>
+
+                {/* Doctor's Description */}
+                <p className="text-gray-700 text-sm md:text-base leading-relaxed">
+                  {therapist.about || "No description available."}
                 </p>
               </div>
             </div>
