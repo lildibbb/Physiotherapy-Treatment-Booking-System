@@ -12,6 +12,7 @@ import {
   Bell,
   Calendar,
   Home,
+  House,
   NotebookPen,
   Sparkles,
   Users,
@@ -27,7 +28,11 @@ const navItems = [
   //   url: "/business/dashboard",
   //   icon: Home,
   // },
-
+  {
+    title: "Home",
+    url: "/",
+    icon: House,
+  },
   {
     title: "Staff",
     url: "/business/staff_list",
