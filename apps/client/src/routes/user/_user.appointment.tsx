@@ -7,7 +7,7 @@ import { Spinner } from "@/components/spinner";
 
 import { Calendar } from "@/components/ui/calendar";
 
-import AppointmentSlots from "@/components/appointmentTimeSlot";
+import AppointmentSlots from "@/components/appointmentTimeSlotPatient";
 import { MainNav } from "@/components/dashboard/patient/main-nav";
 import { UserNav } from "@/components/dashboard/patient/user-nav";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
