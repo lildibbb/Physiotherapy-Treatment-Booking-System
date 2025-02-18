@@ -53,7 +53,7 @@ const AppointmentTimeSlot: React.FC<AppointmentTimeSlotProps> = ({
 
       {appointment ? (
         <Link
-          to="/therapist/appointment/$appointmentID"
+          to="/patient/appointment/$appointmentID"
           params={{ appointmentID: appointment.appointmentID.toString() }}
           className="block"
         >
