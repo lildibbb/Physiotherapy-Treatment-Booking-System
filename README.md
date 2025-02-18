@@ -67,6 +67,7 @@ Then, update the .env file with your specific environment variables, such as you
 Before using push notifications in the PWA, you need to generate VAPID keys. Run the following command to generate the keys:
 
 ```bash
+cd backend
 bun run keys
 ```
 
